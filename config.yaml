@@ -15,3 +15,21 @@ scripts:
       - name: "update"
         parameter: "update"
         prompts: []
+
+  ca-cert-update:
+    description: "Install CA certificate from a server"
+    category: "Security"
+    file: "ca-cert-update.sh"
+    needs_sudo: true
+    os_family:
+      - debian
+      - redhat
+    
+    actions:
+      - name: "update"
+        parameter: "update"
+        prompts:
+          - question: "CA server hostname? (e.g., cert.my.lan)"
+            variable: "SERVER"
+            type: "text"
+            default: "cert.my.lan"
