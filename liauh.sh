@@ -16,16 +16,13 @@ done
 _auto_update() {
     # Check if we're in a git repository
     if [[ ! -d "$LIAUH_DIR/.git" ]]; then
-        debug_log "Not a git repository, skipping auto-update"
         return 0
     fi
     
     cd "$LIAUH_DIR"
-    debug_log "Checking for updates..."
     
     # Fetch latest from remote (silent, non-blocking)
     if ! git fetch origin &>/dev/null; then
-        debug_log "Could not fetch from remote (offline?)"
         return 0
     fi
     
@@ -40,12 +37,10 @@ _auto_update() {
             return 0
         else
             msg_warn "Auto-update failed - proceeding anyway"
-            debug_log "Update failed, check git status"
             return 1
         fi
     fi
     
-    debug_log "Already up to date"
     return 0
 }
 
