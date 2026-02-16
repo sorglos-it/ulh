@@ -33,5 +33,3 @@ fi
 
 echo "🚀 Starting LIAUH..."
 bash liauh.sh
-
-
