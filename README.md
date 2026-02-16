@@ -4,12 +4,23 @@
 
 ## 🚀 Installation
 
-### Option 1: One-liner (Recommended)
+### Option 1: Simple Clone (Recommended)
+```bash
+git clone https://github.com/sorglos-it/liauh.git
+cd liauh && bash liauh.sh
+```
+
+### Option 2: One-liner with wget
+```bash
+wget -qO - https://raw.githubusercontent.com/sorglos-it/liauh/main/install.sh | bash
+```
+
+### Option 3: One-liner with curl
 ```bash
 curl -sSL https://raw.githubusercontent.com/sorglos-it/liauh/main/install.sh | bash
 ```
 
-### Option 2: Manual
+### Option 4: Manual
 ```bash
 sudo apt-get update && sudo apt-get install -y git
 cd ~ && git clone https://github.com/sorglos-it/liauh.git

@@ -2,7 +2,7 @@
 set -e
 
 # LIAUH Installation Script
-# Downloads LIAUH and starts it
+# Installs dependencies and starts LIAUH
 
 echo "📦 Installing dependencies..."
 sudo apt-get update && sudo apt-get install -y git
@@ -12,3 +12,5 @@ cd ~ && git clone https://github.com/sorglos-it/liauh.git
 
 echo "🚀 Starting LIAUH..."
 cd liauh && bash liauh.sh
+
+
