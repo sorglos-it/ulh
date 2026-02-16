@@ -31,5 +31,7 @@ else
     cd liauh
 fi
 
-echo "🚀 Starting LIAUH..."
-bash liauh.sh
+echo "✅ LIAUH installed successfully!"
+echo ""
+echo "To start LIAUH, run:"
+echo "  cd ~/liauh && bash liauh.sh"

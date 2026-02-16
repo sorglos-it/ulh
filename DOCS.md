@@ -72,11 +72,22 @@ liauh/
 
 ## Quick Start
 
-### Run LIAUH
+### Install and Run LIAUH
 
+**With wget:**
 ```bash
-cd liauh
-bash liauh.sh
+wget -qO - https://raw.githubusercontent.com/sorglos-it/liauh/main/install.sh | bash && ./liauh/liauh.sh
+```
+
+**With curl:**
+```bash
+curl -sSL https://raw.githubusercontent.com/sorglos-it/liauh/main/install.sh | bash && ./liauh/liauh.sh
+```
+
+**Manual:**
+```bash
+git clone https://github.com/sorglos-it/liauh.git
+cd liauh && bash liauh.sh
 ```
 
 ### CLI Options
