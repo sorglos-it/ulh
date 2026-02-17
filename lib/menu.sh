@@ -59,7 +59,7 @@ _has_custom_scripts() {
 
 menu_show_main() {
     menu_clear; menu_header "LIAUH - Linux Install and Update Helper"
-    echo "  Detected: ${OS_DISTRO} (${OS_FAMILY}) - ${OS_VERSION}"; echo ""
+    echo "  Version: ${VERSION} | Detected: ${OS_DISTRO} (${OS_FAMILY}) - ${OS_VERSION}"; echo ""
     local -a cats; _get_categories cats
     local i=1; for c in "${cats[@]}"; do printf "  %2d) %s\n" $i "$c"; ((i++)); done
     if _has_custom_scripts; then echo ""; echo "   c) Custom scripts"; fi
