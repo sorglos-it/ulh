@@ -1,9 +1,9 @@
 #!/bin/bash
 # LIAUH - Linux Install and Update Helper (main entry point)
 
-VERSION="0.2"
+LIAUH_VERSION="0.2"
 LIAUH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export VERSION LIAUH_DIR
+export LIAUH_VERSION LIAUH_DIR
 
 # Load all required libraries
 for lib in core yaml menu execute repos; do
