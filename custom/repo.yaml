@@ -1,0 +1,159 @@
+# repo.yaml - Custom Repository Configuration for LIAUH
+# Define multiple custom script repositories with different authentication methods
+# All enabled repositories are cloned/pulled to custom/ folder on startup
+# Each repository should contain a custom.yaml with its own scripts
+
+repositories:
+  # Example 1: HTTPS with Personal Access Token (Private GitHub Repo)
+  custom-scripts:
+    name: "My Custom Scripts"
+    url: "https://github.com/your-org/liauh-custom.git"
+    path: "custom/custom-scripts"
+    auth_method: "https_token"
+    token: "${LIAUH_CUSTOM_TOKEN}"  # GitHub Personal Access Token
+    enabled: false  # Set to true when ready
+    auto_update: true
+
+  # Example 2: SSH with SSH Key (Private GitHub Repo - Recommended)
+  company-tools:
+    name: "Company Tools & Scripts"
+    url: "git@github.com:your-company/company-tools.git"
+    path: "custom/company-tools"
+    auth_method: "ssh"
+    ssh_key: "~/.ssh/id_rsa"  # Path to SSH private key
+    ssh_passphrase: "${SSH_KEY_PASSPHRASE}"  # Optional if key is encrypted
+    enabled: false  # Set to true when ready
+    auto_update: true
+
+  # Example 3: HTTPS with Username/Password
+  team-scripts:
+    name: "Team Scripts"
+    url: "https://your-gitserver.com/team/scripts.git"
+    path: "custom/team-scripts"
+    auth_method: "https_basic"
+    username: "${GIT_USERNAME}"
+    password: "${GIT_PASSWORD}"
+    enabled: false
+    auto_update: true
+
+  # Example 4: Public Repository (no auth)
+  community-addons:
+    name: "Community Addons"
+    url: "https://github.com/public-org/liauh-addons.git"
+    path: "custom/community-addons"
+    auth_method: "none"
+    enabled: false
+    auto_update: false
+
+# Global update settings
+update_settings:
+  auto_update_on_start: true        # Update all enabled repos when liauh starts (set false to disable)
+  retry_on_failure: 3               # Number of retries on clone/pull failure
+  retry_delay_seconds: 5            # Delay between retries
+
+# ============================================================================
+# How It Works
+# ============================================================================
+#
+# 1. LIAUH scans this file on startup
+# 2. For each enabled repository:
+#    - If "auto_update: true": Clone (if missing) or Pull (if exists)
+#    - If "auto_update: false": Skip update (useful for read-only repos)
+# 3. Each cloned repo should have its own custom.yaml with scripts
+# 4. All scripts are merged into the main LIAUH menu
+# 5. Your custom scripts can be run like system scripts
+#
+# Example Repository Structure:
+#
+#   liauh/
+#   ├── liauh.sh (main)
+#   ├── custom/
+#   │   ├── repo.yaml (this file)
+#   │   ├── custom-scripts/      ← Cloned from GitHub
+#   │   │   ├── custom.yaml      ← Defines scripts in this repo
+#   │   │   ├── scripts/
+#   │   │   │   ├── my-script.sh
+#   │   │   │   └── another.sh
+#   │   │   └── ...
+#   │   ├── company-tools/       ← Another cloned repo
+#   │   │   ├── custom.yaml
+#   │   │   └── scripts/
+#   │   └── team-scripts/        ← Third cloned repo
+#   │       ├── custom.yaml
+#   │       └── scripts/
+
+# ============================================================================
+# Authentication Methods
+# ============================================================================
+#
+# 1. "none"
+#    For: Public repositories
+#    No additional fields needed
+#    Example: Community addons, public tools
+#
+# 2. "https_token"
+#    For: Private repos via HTTPS with Personal Access Token
+#    Recommended for: CI/CD pipelines, one-off tokens
+#    Fields: token (set as environment variable)
+#    Setup:
+#      export LIAUH_CUSTOM_TOKEN="ghp_xxxxxxxxxxxx"
+#    Token generation:
+#      GitHub: Settings > Developer settings > Personal access tokens > Generate new token
+#      Select scopes: repo, read:org
+#
+# 3. "ssh"
+#    For: Private repos via SSH with SSH keys
+#    Recommended for: Personal use, long-term automation
+#    Fields: ssh_key (path), ssh_passphrase (optional)
+#    Setup:
+#      1. Generate key: ssh-keygen -t ed25519 -f ~/.ssh/id_rsa
+#      2. Add public key to GitHub: Settings > SSH and GPG keys
+#      3. Start SSH agent: eval $(ssh-agent -s)
+#      4. Add key: ssh-add ~/.ssh/id_rsa
+#      5. Reference in config: ssh_key: "~/.ssh/id_rsa"
+#
+# 4. "https_basic"
+#    For: Private repos with username/password
+#    Not recommended: GitHub doesn't support this (use token instead)
+#    Can use with: Private git servers, GitLab
+#    Fields: username, password (both as environment variables)
+#
+# ============================================================================
+# Environment Variables
+# ============================================================================
+#
+# Always use environment variables for sensitive data. Never hardcode secrets!
+#
+# Available variables (set before running liauh):
+#
+#   export LIAUH_CUSTOM_TOKEN="ghp_xxxxxxxxxxxx"
+#   export LIAUH_COMPANY_TOKEN="ghp_yyyyyyyyyyyyy"
+#   export GIT_USERNAME="myuser"
+#   export GIT_PASSWORD="mypass"
+#   export SSH_KEY_PASSPHRASE="my-key-passphrase"
+#
+# Reference them in repo.yaml with ${VARIABLE_NAME} syntax
+
+# ============================================================================
+# Quick Start
+# ============================================================================
+#
+# 1. Create a GitHub personal access token:
+#    https://github.com/settings/tokens/new
+#    Select: repo (full control of private repositories)
+#
+# 2. Set the token in your environment:
+#    export LIAUH_CUSTOM_TOKEN="ghp_xxxxxxxxxxxx"
+#
+# 3. Update the "custom-scripts" repository above:
+#    url: "https://github.com/YOUR-ORG/liauh-custom.git"
+#    enabled: true
+#
+# 4. Create a custom.yaml in your repo:
+#    scripts:
+#      my-tool:
+#        description: "My custom tool"
+#        path: "scripts/my-tool.sh"
+#        needs_sudo: false
+#
+# 5. Run liauh.sh - your scripts will appear in the menu!

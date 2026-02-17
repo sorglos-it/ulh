@@ -5,7 +5,7 @@ LIAUH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export LIAUH_DIR
 
 # Load all required libraries
-for lib in core yaml menu execute; do
+for lib in core yaml menu execute repos; do
     source "${LIAUH_DIR}/lib/${lib}.sh"
 done
 
@@ -122,6 +122,9 @@ detect_os || exit 1
 
 # Load main configuration
 yaml_load "config" || exit 1
+
+# Initialize custom repositories (clone/pull and merge configs)
+repo_init "$LIAUH_DIR"
 
 # Start main menu loop
 menu_main

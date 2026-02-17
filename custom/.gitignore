@@ -1,0 +1,5 @@
+# Ignore cloned repositories (but keep repo.yaml and .gitkeep)
+/*
+!.gitignore
+!repo.yaml
+!.gitkeep

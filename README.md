@@ -69,12 +69,34 @@ scripts:
 ```
 
 ### Custom Scripts
-Create your own scripts in `custom.yaml` (never overwritten by updates):
+Add custom scripts from **multiple repositories** via `custom/repo.yaml`:
+
+**Option 1: Local Custom Scripts (Single Repo)**
+- Clone your scripts repo to `custom/custom-scripts/`
+- Add entry to `custom/repo.yaml` with SSH or Token auth
+- Each repo has its own `custom.yaml` defining scripts
+
+**Option 2: Multiple Custom Repositories**
 ```yaml
+# custom/repo.yaml
+repositories:
+  my-scripts:
+    name: "My Scripts"
+    url: "git@github.com:org/my-scripts.git"
+    path: "custom/my-scripts"
+    auth_method: "ssh"
+    ssh_key: "~/.ssh/id_rsa"
+    enabled: true
+    auto_update: true
+```
+
+Each cloned repo contains:
+```yaml
+# custom/my-scripts/custom.yaml
 scripts:
-  my-custom:
-    description: "My custom script"
-    path: custom/my-script.sh
+  my-tool:
+    description: "My custom tool"
+    path: scripts/my-tool.sh
     needs_sudo: false
 ```
 

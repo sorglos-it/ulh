@@ -42,11 +42,28 @@ LIAUH is a Bash-based system for organizing and executing scripts through an int
 
 ```
 liauh/
-├── liauh.sh             # Main entry point (11 lines)
-├── config.yaml          # System scripts configuration
-├── custom.yaml          # Custom scripts configuration (optional)
-├── README.md            # Quick reference
-├── DOCS.md              # This file - complete documentation
+├── liauh.sh                 # Main entry point
+├── config.yaml              # System scripts configuration
+├── lib/                     # Library functions
+│   ├── core.sh
+│   ├── yaml.sh
+│   ├── menu.sh
+│   ├── execute.sh
+│   ├── repos.sh             # Repository management (NEW)
+│   └── yq/                  # yq binaries (auto-installed)
+├── scripts/                 # System scripts (13 production)
+├── custom/                  # Custom repositories hub
+│   ├── repo.yaml            # Configure custom repos
+│   ├── .gitkeep
+│   ├── .gitignore           # Ignore cloned repos locally
+│   ├── custom-scripts/      # Cloned repo 1
+│   ├── company-tools/       # Cloned repo 2
+│   └── ...                  # More cloned repos
+├── README.md                # Quick reference
+├── DOCS.md                  # This file
+├── SCRIPTS.md               # Available scripts reference
+├── CHANGES.md               # Version history
+└── LICENSE                  # MIT License
 │
 ├── lib/                 # Core libraries
 │   ├── core.sh          # Colors, OS detection, utilities
