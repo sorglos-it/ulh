@@ -1,0 +1,65 @@
+# Custom Repository Configuration for LIAUH
+# 
+# See DOCS.md > "Custom Repositories" for complete documentation,
+# setup guides, authentication options, and troubleshooting.
+#
+# Flag Logic (independent):
+#   enabled    = true  → show in menu
+#   enabled    = false → hide from menu, ignore completely
+#   auto_update= true  → git pull on startup (if it's a git repo)
+#   auto_update= false → don't pull on startup
+#
+# Examples:
+#   enabled:true + auto_update:true   → show in menu + auto-pull at startup
+#   enabled:true + auto_update:false  → show in menu, no auto-pull
+#   enabled:false + auto_update:true  → hidden from menu, but auto-pull at startup
+#   enabled:false + auto_update:false → completely ignored
+
+repositories:
+  # Demo Repository - Built-in example scripts
+  # Already exists locally in custom/demo-scripts/
+  # If you want to clone from remote: set enabled: true and add git URL
+  demo-scripts:
+    name: "Demo Scripts"
+    url: ""  # Leave empty for local-only; set to git URL to enable cloning/pulling
+    path: "demo-scripts"
+    auth_method: "none"
+    enabled: false     # Disabled by default - uncomment to use
+    auto_update: false  # Don't auto-pull on startup
+
+  # Example 1: SSH with custom/keys/ (recommended)
+  # enabled:true + auto_update:true = show in menu + auto-pull at startup
+  # See DOCS.md for SSH setup instructions
+  custom-scripts:
+    name: "My Custom Scripts"
+    url: "git@github.com:your-org/liauh-custom.git"
+    path: "custom-scripts"
+    auth_method: "ssh"
+    ssh_key: "id_rsa"
+    enabled: false      # Change to true to show in menu and enable cloning
+    auto_update: false  # Auto-pull updates on startup (independent of enabled)
+
+  # Example 2: HTTPS with Personal Access Token
+  # See DOCS.md for GitHub token setup
+  company-tools:
+    name: "Company Tools & Scripts"
+    url: "https://github.com/your-company/company-tools.git"
+    path: "company-tools"
+    auth_method: "https_token"
+    token: "${COMPANY_TOKEN}"
+    enabled: false
+    auto_update: false
+
+  # Example 3: Public repository (no authentication)
+  community-addons:
+    name: "Community Addons"
+    url: "https://github.com/public-org/liauh-addons.git"
+    path: "community-addons"
+    auth_method: "none"
+    enabled: false
+    auto_update: false
+
+update_settings:
+  auto_update_on_start: true
+  retry_on_failure: 3
+  retry_delay_seconds: 5

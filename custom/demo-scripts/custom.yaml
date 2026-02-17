@@ -1,0 +1,54 @@
+# Demo Custom Repository Scripts
+# This is an example of how to structure scripts in a custom repository
+
+scripts:
+  hello:
+    description: "Simple Hello World demo"
+    path: "scripts/hello.sh"
+    needs_sudo: false
+    
+    actions:
+      - name: "run"
+        parameter: "run"
+        description: "Say hello to someone"
+        prompts:
+          - question: "Your name?"
+            variable: "NAME"
+            type: "text"
+            default: "World"
+
+  system-info:
+    description: "Display system information"
+    path: "scripts/system-info.sh"
+    needs_sudo: false
+    
+    actions:
+      - name: "show"
+        parameter: "show"
+        description: "Show system details"
+        prompts: []
+      
+      - name: "disk"
+        parameter: "disk"
+        description: "Show disk usage"
+        prompts: []
+
+  file-backup:
+    description: "Simple file backup utility"
+    path: "scripts/file-backup.sh"
+    needs_sudo: false
+    
+    actions:
+      - name: "backup"
+        parameter: "backup"
+        description: "Backup a file"
+        prompts:
+          - question: "File path to backup?"
+            variable: "SOURCE_FILE"
+            type: "text"
+            default: "/etc/hosts"
+          
+          - question: "Backup destination?"
+            variable: "BACKUP_DIR"
+            type: "text"
+            default: "/tmp"
