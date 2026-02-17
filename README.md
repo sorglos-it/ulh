@@ -137,6 +137,26 @@ Make sure `custom.yaml` is in the liauh directory and script path is correct.
 
 ---
 
+## 📋 Available Scripts
+
+| Script | Category | Supported OS | Actions |
+|--------|----------|--------------|---------|
+| **ubuntu** | System Updates | Ubuntu | `update` (system upgrade), `ubuntu-pro` (attach subscription), `detach` (remove subscription) |
+| **ca-cert-update** | Security | Debian, Red Hat | `update` (install CA certificate from server) |
+| **compression** | Tools | Debian, Red Hat, Arch, SUSE, Alpine | `install` (zip/unzip), `uninstall` (zip/unzip) |
+| **mariadb** | Database | Debian, Red Hat | `install`, `update`, `uninstall`, `config` (max connections, buffer pool, bind address, charset) |
+
+**Legend:**
+- **Debian:** Ubuntu, Debian, Linux Mint, etc.
+- **Red Hat:** CentOS, RHEL, Fedora, etc.
+- **Arch:** Arch Linux, Manjaro, etc.
+- **SUSE:** openSUSE, SUSE Linux, etc.
+- **Alpine:** Alpine Linux (lightweight)
+
+**Note:** This list is automatically maintained. Check back for new scripts!
+
+---
+
 ## 💝 Support & Donate
 
 If you find LIAUH helpful, please consider supporting its development!
