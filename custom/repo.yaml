@@ -7,6 +7,16 @@
 # Each repository should contain a custom.yaml file defining its scripts.
 
 repositories:
+  # Demo Repository - Local (for testing)
+  # This is a built-in demo repository in custom/demo-scripts/
+  demo-scripts:
+    name: "Demo Scripts"
+    url: "demoURL"
+    path: "demo-scripts"
+    auth_method: "none"
+    enabled: true
+    auto_update: false
+
   # Example 1: SSH with custom/keys/ (recommended)
   # See DOCS.md for SSH setup instructions
   custom-scripts:

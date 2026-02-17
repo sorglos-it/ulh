@@ -1,6 +1,28 @@
 #!/bin/bash
 # LIAUH - Script Execution Engine (prompts, validation, execution)
 
+# Get correct yq binary for current architecture
+_get_yq() {
+    if [[ -z "$_YQ_CACHE" ]]; then
+        local arch=$(uname -m)
+        case "$arch" in
+            x86_64) _YQ_CACHE="${LIAUH_DIR}/lib/yq/yq-amd64" ;;
+            aarch64) _YQ_CACHE="${LIAUH_DIR}/lib/yq/yq-arm64" ;;
+            armv7l) _YQ_CACHE="${LIAUH_DIR}/lib/yq/yq-arm" ;;
+            i686) _YQ_CACHE="${LIAUH_DIR}/lib/yq/yq-386" ;;
+            *) _YQ_CACHE="yq" ;;  # Fallback to PATH
+        esac
+        [[ -x "$_YQ_CACHE" ]] || chmod +x "$_YQ_CACHE" 2>/dev/null
+    fi
+    echo "$_YQ_CACHE"
+}
+
+# Helper: execute yq with proper binary
+_yq_eval() {
+    local yq=$(_get_yq)
+    "$yq" eval "$@"
+}
+
 # Prompt a single question with type validation
 # Returns answer on stdout
 _prompt_by_type() {
@@ -126,17 +148,17 @@ execute_custom_repo_action() {
     [[ ! -f "$custom_yaml" ]] && { menu_error "custom.yaml not found in $repo_path"; return 1; }
     
     # Get script path from repo
-    local script_file=$(yq eval ".scripts.$script_name.path" "$custom_yaml" 2>/dev/null)
+    local script_file=$(_yq_eval ".scripts.$script_name.path" "$custom_yaml" 2>/dev/null)
     local script_path="$repo_path/$script_file"
     
     [[ ! -f "$script_path" ]] && { menu_error "Script not found: $script_path"; return 1; }
     [[ ! -x "$script_path" ]] && chmod +x "$script_path" 2>/dev/null
     
     # Get action details
-    local aname=$(yq eval ".scripts.$script_name.actions[$action_index].name" "$custom_yaml" 2>/dev/null)
-    local parameter=$(yq eval ".scripts.$script_name.actions[$action_index].parameter" "$custom_yaml" 2>/dev/null)
-    local needs_sudo=$(yq eval ".scripts.$script_name.needs_sudo // false" "$custom_yaml" 2>/dev/null)
-    local prompt_count=$(yq eval ".scripts.$script_name.actions[$action_index].prompts | length" "$custom_yaml" 2>/dev/null)
+    local aname=$(_yq_eval ".scripts.$script_name.actions[$action_index].name" "$custom_yaml" 2>/dev/null)
+    local parameter=$(_yq_eval ".scripts.$script_name.actions[$action_index].parameter" "$custom_yaml" 2>/dev/null)
+    local needs_sudo=$(_yq_eval ".scripts.$script_name.needs_sudo // false" "$custom_yaml" 2>/dev/null)
+    local prompt_count=$(_yq_eval ".scripts.$script_name.actions[$action_index].prompts | length" "$custom_yaml" 2>/dev/null)
     [[ -z "$prompt_count" || "$prompt_count" == "null" ]] && prompt_count=0
     
     local -a answers=()
@@ -150,10 +172,10 @@ execute_custom_repo_action() {
         echo ""
         
         for ((i=0; i<prompt_count; i++)); do
-            local question=$(yq eval ".scripts.$script_name.actions[$action_index].prompts[$i].question" "$custom_yaml" 2>/dev/null)
-            local ptype=$(yq eval ".scripts.$script_name.actions[$action_index].prompts[$i].type" "$custom_yaml" 2>/dev/null)
-            local default=$(yq eval ".scripts.$script_name.actions[$action_index].prompts[$i].default" "$custom_yaml" 2>/dev/null)
-            local varname=$(yq eval ".scripts.$script_name.actions[$action_index].prompts[$i].variable" "$custom_yaml" 2>/dev/null)
+            local question=$(_yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].question" "$custom_yaml" 2>/dev/null)
+            local ptype=$(_yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].type" "$custom_yaml" 2>/dev/null)
+            local default=$(_yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].default" "$custom_yaml" 2>/dev/null)
+            local varname=$(_yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].variable" "$custom_yaml" 2>/dev/null)
             
             local answer=$(_prompt_by_type "$question" "$ptype" "$default")
             

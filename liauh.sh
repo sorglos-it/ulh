@@ -5,7 +5,7 @@ LIAUH_VERSION="0.2"
 LIAUH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export LIAUH_VERSION LIAUH_DIR
 
-# Load all required libraries
+# Load all required libraries (order matters: dependencies first)
 for lib in core yaml menu execute repos; do
     source "${LIAUH_DIR}/lib/${lib}.sh"
 done
