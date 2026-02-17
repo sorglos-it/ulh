@@ -48,12 +48,15 @@ bash liauh.sh --update       # Apply updates manually
 ## ✨ Features
 
 - **Interactive Menu** - Easy navigation for non-technical users
-- **OS Detection** - Supports Debian, Red Hat, Arch, SUSE, Alpine
-- **Auto-Update** - Keeps scripts current from GitHub
-- **Custom Scripts** - Add your own scripts to `custom.yaml`
+- **OS Detection** - Supports Debian, Red Hat, Arch, SUSE, Alpine, Proxmox
+- **Auto-Update** - Keeps LIAUH scripts current from GitHub
+- **Multi-Repo Support** - Clone multiple custom script repositories with auto-updates
+- **Flexible Authentication** - SSH keys, Personal Access Tokens, or public repos
+- **SSH Key Management** - Store keys in `custom/keys/` (never committed)
 - **Interactive Prompts** - Text input, yes/no questions, number selection
-- **Sudo Caching** - Password prompted once per session
+- **Sudo Caching** - Password prompted once per session (~15 min reuse)
 - **No Dependencies** - Works with bash, git, and standard tools
+- **13 System Scripts** - Pre-built scripts for common Linux management tasks
 
 ## 🔧 Configuration
 
@@ -68,37 +71,84 @@ scripts:
     needs_sudo: true              # Optional: set if needs root
 ```
 
-### Custom Scripts
-Add custom scripts from **multiple repositories** via `custom/repo.yaml`:
+### Custom Script Repositories (Multi-Repo Hub)
 
-**Option 1: Local Custom Scripts (Single Repo)**
-- Clone your scripts repo to `custom/custom-scripts/`
-- Add entry to `custom/repo.yaml` with SSH or Token auth
-- Each repo has its own `custom.yaml` defining scripts
+LIAUH supports **multiple custom script repositories** via `custom/repo.yaml`. Each repository is cloned to `custom/` and auto-updated on startup.
 
-**Option 2: Multiple Custom Repositories**
+#### Quick Setup: SSH with Keys in custom/keys/
+
+**1. Add your SSH key to the keys directory:**
+```bash
+# Copy your GitHub SSH key
+cp ~/.ssh/id_rsa liauh/custom/keys/id_rsa
+chmod 600 liauh/custom/keys/id_rsa
+```
+
+**2. Configure repository in `custom/repo.yaml`:**
 ```yaml
-# custom/repo.yaml
 repositories:
   my-scripts:
     name: "My Scripts"
     url: "git@github.com:org/my-scripts.git"
-    path: "custom/my-scripts"
+    path: "my-scripts"              # Auto-prefixed with custom/
     auth_method: "ssh"
-    ssh_key: "~/.ssh/id_rsa"
+    ssh_key: "id_rsa"               # Filename in custom/keys/
     enabled: true
     auto_update: true
 ```
 
-Each cloned repo contains:
+**3. Create `custom/my-scripts/custom.yaml`:**
 ```yaml
-# custom/my-scripts/custom.yaml
 scripts:
   my-tool:
     description: "My custom tool"
     path: scripts/my-tool.sh
     needs_sudo: false
 ```
+
+#### Other Authentication Methods
+
+**HTTPS with Personal Access Token:**
+```yaml
+repositories:
+  github-repo:
+    url: "https://github.com/org/repo.git"
+    path: "github-repo"
+    auth_method: "https_token"
+    token: "${LIAUH_TOKEN}"         # Set environment variable first
+    enabled: true
+    auto_update: true
+```
+
+**Environment Setup:**
+```bash
+export LIAUH_TOKEN="ghp_xxxxxxxxxxxx"
+bash liauh.sh
+```
+
+**Public Repository (no auth):**
+```yaml
+repositories:
+  public-addons:
+    url: "https://github.com/org/public-repo.git"
+    path: "public-addons"
+    auth_method: "none"
+    enabled: true
+    auto_update: false
+```
+
+#### Disable Auto-Update for Read-Only Repos
+
+```yaml
+repositories:
+  company-standards:
+    url: "..."
+    path: "company-standards"
+    enabled: true
+    auto_update: false              # Won't update automatically
+```
+
+See **[custom/repo.yaml](custom/repo.yaml)** for complete documentation.
 
 ## 📚 Documentation
 
@@ -110,14 +160,27 @@ scripts:
 
 ```
 liauh/
-├── liauh.sh              # Main entry point
-├── lib/                  # Libraries (colors, menus, YAML, etc.)
-├── scripts/              # System scripts
-├── custom/               # Your custom scripts (not tracked)
-├── config.yaml           # System script definitions
-├── custom.yaml           # Your custom script definitions (not tracked)
-├── README.md             # This file
-├── DOCS.md               # Full documentation
+├── liauh.sh              # Main entry point (auto-updates self)
+├── config.yaml           # System scripts (auto-updated from GitHub)
+├── lib/                  # Library functions
+│   ├── core.sh
+│   ├── yaml.sh
+│   ├── menu.sh
+│   ├── execute.sh
+│   ├── repos.sh          # Repository management
+│   └── yq/               # YAML parser binaries (auto-installed)
+├── scripts/              # System scripts (13 production + 2 reference)
+├── custom/               # Custom repository hub (local, not in git)
+│   ├── repo.yaml         # Configure custom repositories
+│   ├── keys/             # SSH private keys (never committed)
+│   │   └── .gitignore
+│   ├── custom-scripts/   # Cloned repo 1 (auto-pulled)
+│   ├── company-tools/    # Cloned repo 2 (auto-pulled)
+│   └── ...               # More cloned repos
+├── README.md             # This file (quick start)
+├── DOCS.md               # Complete documentation
+├── SCRIPTS.md            # Available scripts reference
+├── CHANGES.md            # Version history
 └── LICENSE               # MIT License
 ```
 
@@ -154,8 +217,41 @@ bash liauh.sh --update
 ```
 If offline, LIAUH continues anyway.
 
-### Custom scripts not showing
-Make sure `custom.yaml` is in the liauh directory and script path is correct.
+### Custom repositories not cloning
+**Check SSH key:**
+```bash
+# Verify key exists and has correct permissions
+ls -la liauh/custom/keys/id_rsa
+chmod 600 liauh/custom/keys/id_rsa
+
+# Verify SSH access
+ssh -i liauh/custom/keys/id_rsa -T git@github.com
+```
+
+**Check repository configuration:**
+- Verify URL is correct in `custom/repo.yaml`
+- Ensure `enabled: true` is set
+- Check that repository is accessible with your credentials
+
+**Manual clone test:**
+```bash
+cd liauh/custom/
+git clone git@github.com:org/repo.git test-repo
+```
+
+### Custom scripts not showing in menu
+- Verify repository is in `custom/repo.yaml` with `enabled: true`
+- Check that `custom.yaml` exists in cloned repo with script definitions
+- Verify script path is correct: `path: "scripts/script-name.sh"`
+- Check OS compatibility: ensure your distro matches script's `os_family`
+
+### SSH key passphrase prompt
+If your SSH key is encrypted:
+```bash
+# Set passphrase in environment
+export SSH_KEY_PASSPHRASE="your-passphrase"
+bash liauh.sh
+```
 
 ---
 
