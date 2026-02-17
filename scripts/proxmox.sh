@@ -138,6 +138,20 @@ template_to_lxc() {
     fi
 }
 
+unlock_lxc() {
+    log_info "Unlocking LXC container..."
+    
+    [[ -z "$CTID" ]] && log_error "CTID not set"
+    
+    log_info "Unlocking container $CTID..."
+    
+    if pct unlock "$CTID"; then
+        log_info "Container $CTID unlocked successfully!"
+    else
+        log_error "Failed to unlock container $CTID"
+    fi
+}
+
 case "$ACTION" in
     stop-all)
         stop_all_vms_lxc
@@ -163,6 +177,10 @@ case "$ACTION" in
         template_to_lxc
         ;;
     
+    unlock-lxc)
+        unlock_lxc
+        ;;
+    
     *)
         log_error "Unknown action: $ACTION"
         echo "Usage:"
@@ -172,6 +190,7 @@ case "$ACTION" in
         echo "  proxmox.sh lxc-ssh-root"
         echo "  proxmox.sh lxc-to-template,CTID=100"
         echo "  proxmox.sh template-to-lxc,CTID=100"
+        echo "  proxmox.sh unlock-lxc,CTID=100"
         exit 1
         ;;
 esac

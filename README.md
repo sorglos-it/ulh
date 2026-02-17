@@ -142,7 +142,7 @@ Make sure `custom.yaml` is in the liauh directory and script path is correct.
 | Script | Category | Supported OS | Actions |
 |--------|----------|--------------|---------|
 | **linux** | System | Debian, Red Hat, Arch, SUSE, Alpine (not Proxmox) | `network` (DHCP/static), `dns`, `hostname`, `user-add`, `user-delete`, `user-password`, `group-create`, `user-to-group` |
-| **proxmox** | System | Proxmox VE | `stop-all` (VMs/LXC), `language`, `qemu-guest-agent`, `lxc-ssh-root`, `lxc-to-template`, `template-to-lxc` |
+| **proxmox** | System | Proxmox VE | `stop-all` (VMs/LXC), `language`, `qemu-guest-agent`, `lxc-ssh-root`, `lxc-to-template`, `template-to-lxc`, `unlock-lxc` |
 | **debian** | System Updates | Debian | `update` (system update to latest version) |
 | **ubuntu** | System Updates | Ubuntu | `update` (system upgrade), `ubuntu-pro` (attach subscription), `detach` (remove subscription) |
 | **ca-cert-update** | Security | Debian, Red Hat | `update` (install CA certificate from server) |

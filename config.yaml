@@ -635,6 +635,15 @@ scripts:
             variable: "CTID"
             type: "number"
             default: ""
+      
+      - name: "unlock-lxc"
+        parameter: "unlock-lxc"
+        description: "Unlock LXC container"
+        prompts:
+          - question: "Container ID (CTID)?"
+            variable: "CTID"
+            type: "number"
+            default: ""
 
   nodejs:
     description: "Node.js and npm management"
