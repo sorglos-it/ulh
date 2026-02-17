@@ -477,8 +477,8 @@ User selects action
   │   Example: install,DOMAIN=example.com,SSL=yes,EMAIL=admin@test.com
   └─ Execute script:
       ├─ If needs_sudo: true  → sudo bash script.sh "param_string"
-      │                         Password cached by sudo (system-level)
-      │                         LIAUH never handles the password
+      │                         (LIAUH runs unprivileged, script gets sudo elevation)
+      │                         (Password handled by system sudo, not LIAUH)
       └─ If needs_sudo: false → bash script.sh "param_string"
 ```
 
@@ -496,28 +496,35 @@ No chmod +x needed anywhere!
 
 Scripts can be distributed with 644 (rw-r--r--) permissions - LIAUH will make them executable when needed.
 
-### Sudo & Password Caching
+### Sudo Execution Model
 
 When `needs_sudo: true` is set:
 
-1. **User confirms execution** → "Execute '[action]' now? (y/N)"
-2. **LIAUH builds parameter string** → Comma-separated format
-3. **Script executes with sudo** → `sudo bash script.sh "param_string"`
-4. **Sudo caches password** → At system level, for ~15 minutes
-5. **LIAUH never handles password** → Only sudo kernel/system handles it
+1. **LIAUH runs as normal user** (no sudo required to start LIAUH)
+2. **User confirms execution** → "Execute '[action]' now? (y/N)"
+3. **LIAUH builds parameter string** → Comma-separated format  
+4. **Script executes with sudo** → `sudo bash script.sh "param_string"`
+5. **System prompts for password** → (if needed, standard sudo behavior)
+6. **Script runs as root** → Only this specific script, not LIAUH
 
-**Security Advantage:** The password stays at the OS/kernel level. LIAUH never touches it - only sudo and the operating system manage credentials.
+**Security Model:**
+- LIAUH stays unprivileged
+- Each script with `needs_sudo: true` gets sudo elevation
+- Variables passed as arguments (not environment globals)
+- No special password handling in LIAUH code
+- Sudo credentials managed entirely by OS
 
+**Example:**
 ```bash
-# What LIAUH does:
-# 1. Build parameter string
-param_string="install,DOMAIN=example.com,SSL=yes,EMAIL=admin@test.com"
+# User runs LIAUH as normal user
+$ bash liauh.sh
 
-# 2. Execute with sudo
-sudo bash script.sh "$param_string"
+# User selects action with needs_sudo: true
+# LIAUH executes:
+$ sudo bash scripts/apache.sh "install,DOMAIN=example.com,SSL=yes"
 
-# Sudo prompts for password (first time, then caches for ~15 min)
-# All subsequent sudo commands use cached credentials
+# Sudo prompts for password (system-level)
+# Script runs as root with the provided parameters
 ```
 
 ### Variable Passing
@@ -556,7 +563,7 @@ echo "Domain: $DOMAIN"
 echo "Email: $EMAIL"
 
 if [[ "$SSL_ENABLED" == "yes" ]]; then
-    sudo apt-get install -y ssl-cert  # Uses cached sudo password
+    sudo apt-get install -y ssl-cert  # Script runs as root (via sudo)
 fi
 ```
 
@@ -800,29 +807,39 @@ echo $?
 
 ### Issue: Running scripts with sudo
 
-If a script has `needs_sudo: true`, run LIAUH with sudo:
-
-```bash
-sudo bash liauh.sh
-```
+LIAUH runs as a normal user. When a script has `needs_sudo: true` in config.yaml:
 
 **How it works:**
-- Scripts run as root when LIAUH is called with `sudo`
-- No extra password handling needed in your script
-- Sudo credentials are managed by the Linux system, not LIAUH
+1. You run: `bash liauh.sh` (normal user, no sudo needed)
+2. LIAUH reads config.yaml and sees script needs sudo
+3. LIAUH executes: `sudo bash script.sh "action,DOMAIN=value,PORT=8080"`
+4. System prompts for your sudo password (if needed)
+5. Script runs with root access, receives parameters as arguments
 
 **Example:**
 ```bash
 #!/bin/bash
-# Script runs with sudo already applied
-apt-get update          # Works - already root
-apt-get install pkg     # Works - already root
+# Your script receives sudo'd execution
+# Parameters come as arguments: "install,DOMAIN=example.com,PORT=8080"
+
+ACTION="${1%%,*}"
+# Parse parameters...
+
+# These run as root (sudo executed us):
+apt-get update          # Works - script is already root
+apt-get install pkg     # Works - script is already root
 ```
 
-**If password is still requested:**
-- You may not have sudo permissions
-- Run `sudo -l` to check your sudoers configuration
-- System administrator may need to update sudoers
+**Security model:**
+- LIAUH stays unprivileged
+- Only specific scripts get sudo elevation
+- Variables passed as arguments (not globals)
+- Clean parameter passing prevents injection
+
+**If password is requested:**
+- This is normal - sudo is prompting the user
+- Verify your sudoers configuration: `sudo -l`
+- System administrator can configure passwordless sudo if desired
 
 3. If sudo still prompts, ask your system admin to check:
    - sudoers `timestamp_timeout` setting (default 15 minutes)

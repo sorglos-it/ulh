@@ -54,7 +54,7 @@ bash liauh.sh --update       # Apply updates manually
 - **Flexible Authentication** - SSH keys, Personal Access Tokens, or public repos
 - **SSH Key Management** - Store keys in `custom/keys/` (never committed)
 - **Interactive Prompts** - Text input, yes/no questions, number selection
-- **Sudo Support** - Scripts can require root access (run with `sudo bash liauh.sh`)
+- **Sudo Support** - Individual scripts run with sudo when needed (LIAUH runs as normal user)
 - **No Dependencies** - Works with bash, git, and standard tools
 - **13 System Scripts** - Pre-built scripts for common Linux management tasks
 
@@ -150,14 +150,20 @@ repositories:
 
 See **[custom/repo.yaml](custom/repo.yaml)** for complete documentation.
 
-#### Running Scripts Requiring Root Access
+#### Scripts with Sudo Requirements
 
-Some scripts need root access. Run LIAUH with sudo:
-```bash
-sudo bash liauh.sh
-```
+LIAUH runs as a normal user and auto-detects which scripts need root access from config.yaml.
 
-This allows scripts with `needs_sudo: true` in config.yaml to execute properly. LIAUH itself does not manage passwords - sudo authentication is handled by the Linux system.
+When you execute a script with `needs_sudo: true`:
+- LIAUH launches it as: `sudo bash script.sh "action,VAR1=value1,VAR2=value2"`
+- Only that specific script runs as root
+- LIAUH itself remains unprivileged
+- You'll be prompted for your sudo password by the system
+
+**Security:**
+- Variables passed as script arguments (not environment)
+- No privilege escalation for LIAUH itself
+- Clean separation: LIAUH coordinates, scripts execute
 
 ## 📚 Documentation
 
@@ -218,11 +224,10 @@ bash liauh.sh
 (Usually not needed - auto-handled on first run)
 
 ### Scripts requiring sudo
-If a script has `needs_sudo: true` in config.yaml, you must run LIAUH with sudo:
-```bash
-sudo bash liauh.sh
-```
-LIAUH itself does not manage passwords - sudo is handled at the Linux system level.
+LIAUH runs as a normal user. When a script has `needs_sudo: true` in config.yaml:
+- LIAUH executes it with: `sudo bash script.sh "parameter,VARIABLE=value"`
+- Only that script runs as root, not LIAUH itself
+- You may be prompted for your sudo password when executing the script
 
 ### Update not working
 ```bash
