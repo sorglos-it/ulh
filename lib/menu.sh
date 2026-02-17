@@ -151,7 +151,11 @@ menu_show_main() {
     local -a cats; _get_categories cats
     local i=1; for c in "${cats[@]}"; do 
         local desc=$(yaml_info "$c" description)
-        printf "|  %d) %-20s - %s\n" $i "$c" "$desc"
+        if [[ -n "$desc" && "$desc" != "null" ]]; then
+            printf "|  %d) %-20s - %s\n" $i "$c" "$desc"
+        else
+            printf "|  %d) %s\n" $i "$c"
+        fi
         ((i++))
     done
     
