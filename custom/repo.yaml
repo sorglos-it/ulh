@@ -3,22 +3,32 @@
 # See DOCS.md > "Custom Script Repositories" for complete documentation,
 # setup guides, authentication options, and troubleshooting.
 #
-# This file defines which repositories to clone/pull on startup.
-# Each repository should contain a custom.yaml file defining its scripts.
+# Flag Logic (independent):
+#   enabled    = true  → show in menu
+#   enabled    = false → hide from menu, ignore completely
+#   auto_update= true  → git pull on startup (if it's a git repo)
+#   auto_update= false → don't pull on startup
+#
+# Examples:
+#   enabled:true + auto_update:true   → show in menu + auto-pull at startup
+#   enabled:true + auto_update:false  → show in menu, no auto-pull
+#   enabled:false + auto_update:true  → hidden from menu, but auto-pull at startup
+#   enabled:false + auto_update:false → completely ignored
 
 repositories:
   # Demo Repository - Built-in example scripts
   # Already exists locally in custom/demo-scripts/
-  # If you want to clone from remote: set enabled: true and add git URL
+  # enabled:true = show in menu | auto_update:false = don't auto-pull
   demo-scripts:
     name: "Demo Scripts"
-    url: ""  # Leave empty to use local; set to git URL to clone from remote
+    url: ""  # Leave empty for local-only; set to git URL to enable cloning/pulling
     path: "demo-scripts"
     auth_method: "none"
-    enabled: true  # Use local repo; set URL + enabled: true to sync from remote
+    enabled: true      # Show in menu
     auto_update: false  # Don't auto-pull on startup
 
   # Example 1: SSH with custom/keys/ (recommended)
+  # enabled:true + auto_update:true = show in menu + auto-pull at startup
   # See DOCS.md for SSH setup instructions
   custom-scripts:
     name: "My Custom Scripts"
@@ -26,8 +36,8 @@ repositories:
     path: "custom-scripts"
     auth_method: "ssh"
     ssh_key: "id_rsa"
-    enabled: false
-    auto_update: true
+    enabled: false      # Change to true to show in menu and enable cloning
+    auto_update: true   # Auto-pull updates on startup (if enabled=true or repo exists)
 
   # Example 2: HTTPS with Personal Access Token
   # See DOCS.md for GitHub token setup

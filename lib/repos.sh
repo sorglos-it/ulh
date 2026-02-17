@@ -57,6 +57,12 @@ repo_sync_all() {
 }
 
 # Sync single repository
+# Logic:
+#   enabled=true  → show in menu, only clone if directory doesn't exist
+#   enabled=false → don't show in menu, never clone
+#   auto_update=true  → pull from git on startup (if it's a git repo)
+#   auto_update=false → don't auto-pull on startup
+# These two flags are independent!
 repo_sync_one() {
     local repo_config="$1"
     local repo_name="$2"
@@ -65,7 +71,7 @@ repo_sync_one() {
     
     # Get config
     enabled=$(_yq_eval ".repositories.$repo_name.enabled // false" "$repo_config" 2>/dev/null)
-    auto_update=$(_yq_eval ".repositories.$repo_name.auto_update // true" "$repo_config" 2>/dev/null)
+    auto_update=$(_yq_eval ".repositories.$repo_name.auto_update // false" "$repo_config" 2>/dev/null)
     url=$(_yq_eval ".repositories.$repo_name.url" "$repo_config" 2>/dev/null)
     path=$(_yq_eval ".repositories.$repo_name.path" "$repo_config" 2>/dev/null)
     auth_method=$(_yq_eval ".repositories.$repo_name.auth_method // none" "$repo_config" 2>/dev/null)
@@ -80,27 +86,26 @@ repo_sync_one() {
         path="${LIAUH_DIR}/custom/${path}"
     fi
     
-    # If repo already exists locally (as git or normal dir), use it (regardless of clone/update)
+    # Step 1: If repo exists, handle auto_update
     if [[ -d "$path" ]]; then
-        # Repository exists locally
-        if [[ -d "$path/.git" && "$auto_update" == "true" ]]; then
+        if [[ -d "$path/.git" && "$auto_update" == "true" && -n "$url" ]]; then
             # It's a git repo and auto_update is enabled → pull updates
             repo_pull "$repo_name" "$url" "$path" "$auth_method" "$repo_config"
-        else
-            # Either not a git repo, or auto_update is false
-            msg_info "Using local repo '$repo_name'"
         fi
+        # If directory exists, we're done (menu visibility is controlled by enabled flag)
         return 0
     fi
     
-    # Repo doesn't exist locally
+    # Step 2: Repo doesn't exist locally
     # Only try to clone if enabled=true AND url is non-empty
     if [[ "$enabled" != "true" ]]; then
+        # enabled=false: ignore this repo completely (no clone, not in menu)
         return 0
     fi
     
     if [[ -z "$url" ]]; then
-        msg_info "Repository '$repo_name' disabled or no URL specified"
+        # enabled=true but no URL: use as local placeholder, skip clone
+        msg_info "Repository '$repo_name' has no URL (local placeholder)"
         return 0
     fi
     
