@@ -1,6 +1,10 @@
 #!/bin/bash
 # LIAUH - Linux Install and Update Helper (main entry point)
 
+# Set UTF-8 locale for proper string length calculation
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
+
 LIAUH_VERSION="0.3"
 LIAUH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export LIAUH_VERSION LIAUH_DIR
