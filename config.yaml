@@ -17,7 +17,7 @@ categories:
     description: "System configuration and management"
 
 scripts:
-  # Essential Tools (13)
+  # Essential Tools (10)
   curl:
     description: "HTTP requests utility"
     category: "Essential Tools"
@@ -174,7 +174,7 @@ scripts:
 
   openssh:
     description: "SSH server and client"
-    category: "Essential Tools"
+    category: "Networking"
     file: "openssh.sh"
     needs_sudo: true
     os_family: [debian, redhat, arch, suse, alpine]
@@ -188,10 +188,58 @@ scripts:
       - name: "uninstall"
         parameter: "uninstall"
         description: "Uninstall SSH"
+      - name: "config"
+        parameter: "config"
+        description: "Configure SSH interactively"
+        prompts:
+          - question: "SSH Port?"
+            variable: "SSH_PORT"
+            type: "number"
+            default: "22"
+          - question: "Password Authentication?"
+            variable: "PASS_AUTH"
+            type: "yes/no"
+            default: "yes"
+          - question: "Public Key Authentication?"
+            variable: "PUBKEY_AUTH"
+            type: "yes/no"
+            default: "yes"
+          - question: "Permit Root Login?"
+            variable: "PERMIT_ROOT"
+            type: "text"
+            default: "prohibit-password"
+          - question: "X11 Forwarding?"
+            variable: "X11_FORWARD"
+            type: "yes/no"
+            default: "no"
+          - question: "Login Grace Time (seconds)?"
+            variable: "LOGIN_GRACE"
+            type: "number"
+            default: "120"
+          - question: "Max Auth Tries?"
+            variable: "MAX_AUTH"
+            type: "number"
+            default: "6"
+          - question: "Max Sessions?"
+            variable: "MAX_SESSIONS"
+            type: "number"
+            default: "10"
+          - question: "Allow Users (comma-separated)?"
+            variable: "ALLOW_USERS"
+            type: "text"
+            default: ""
+          - question: "Allow Groups (comma-separated)?"
+            variable: "ALLOW_GROUPS"
+            type: "text"
+            default: ""
+          - question: "Client Alive Interval (seconds)?"
+            variable: "CLIENT_ALIVE"
+            type: "number"
+            default: "300"
 
   net-tools:
     description: "Network utilities (ifconfig, netstat)"
-    category: "Essential Tools"
+    category: "Networking"
     file: "net-tools.sh"
     needs_sudo: false
     os_family: [debian, redhat, arch, suse, alpine]
@@ -239,31 +287,6 @@ scripts:
       - name: "uninstall"
         parameter: "uninstall"
         description: "Uninstall jq"
-
-  ufw:
-    description: "Uncomplicated Firewall"
-    category: "Essential Tools"
-    file: "ufw.sh"
-    needs_sudo: true
-    os_family: [debian, redhat, arch, suse, alpine]
-    actions:
-      - name: "install"
-        parameter: "install"
-        description: "Install firewall"
-      - name: "enable"
-        parameter: "enable"
-        description: "Enable firewall"
-      - name: "disable"
-        parameter: "disable"
-        description: "Disable firewall"
-      - name: "config"
-        parameter: "config"
-        description: "Configure firewall rule"
-        prompts:
-          - question: "Port to allow?"
-            variable: "PORT"
-            type: "number"
-            default: "80"
 
   # Web Servers (2)
   apache:
@@ -417,7 +440,7 @@ scripts:
         parameter: "config"
         description: "Configure MySQL"
 
-  # Containerization (3)
+  # Containerization (2)
   docker:
     description: "Docker container runtime"
     category: "Containerization"
@@ -653,7 +676,7 @@ scripts:
         parameter: "config"
         description: "Configure logrotate"
 
-  # Networking (3)
+  # Networking (8)
   bind-utils:
     description: "DNS tools (dig, nslookup, host)"
     category: "Networking"
@@ -714,7 +737,79 @@ scripts:
         parameter: "config"
         description: "Configure OpenVPN"
 
-  # System Management (6)
+  ufw:
+    description: "Uncomplicated Firewall"
+    category: "Networking"
+    file: "ufw.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install firewall"
+      - name: "update"
+        parameter: "update"
+        description: "Update firewall"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall firewall"
+      - name: "enable"
+        parameter: "enable"
+        description: "Enable firewall"
+      - name: "disable"
+        parameter: "disable"
+        description: "Disable firewall"
+      - name: "config"
+        parameter: "config"
+        description: "Manage firewall rules interactively"
+      - name: "status"
+        parameter: "status"
+        description: "Show firewall status"
+      - name: "reset"
+        parameter: "reset"
+        description: "Reset firewall to defaults"
+
+  pihole:
+    description: "Pi-hole DNS ad-blocking service"
+    category: "Networking"
+    file: "pihole.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install Pi-hole"
+      - name: "update"
+        parameter: "update"
+        description: "Update Pi-hole"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall Pi-hole"
+      - name: "config"
+        parameter: "config"
+        description: "Show Pi-hole configuration info"
+
+  adguard-home:
+    description: "AdGuard Home DNS ad-blocking service"
+    category: "Networking"
+    file: "adguard-home.sh"
+    needs_sudo: true
+    os_family: [debian, redhat, arch, suse, alpine]
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install AdGuard Home"
+      - name: "update"
+        parameter: "update"
+        description: "Update AdGuard Home"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall AdGuard Home"
+      - name: "config"
+        parameter: "config"
+        description: "Show AdGuard Home configuration info"
+
+  # System Management (5)
   linux:
     description: "Network, DNS, users, groups configuration"
     category: "System Management"
@@ -897,3 +992,4 @@ scripts:
       - name: "vnc-enable"
         parameter: "vnc-enable"
         description: "Enable VNC server"
+

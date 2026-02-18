@@ -1,27 +1,27 @@
 # LIAUH Scripts Reference
 
-**v0.3** | Complete catalog of 38 system management scripts
+**v0.3** | Complete catalog of 40 system management scripts
 
 All scripts support **install**, **update**, **uninstall**, and **config** actions (where applicable).
 
 ---
 
-## Script Categories (8 Categories, 38 Scripts)
+## Script Categories (8 Categories, 40 Scripts)
 
 LIAUH organizes scripts into 8 logical categories:
 
-1. **Essential Tools** (13)
+1. **Essential Tools** (10)
 2. **Webservers** (2)
 3. **Databases** (3)
 4. **Containerization** (2)
 5. **Programming Languages** (6)
 6. **Logging & Monitoring** (4)
-7. **Networking** (3)
+7. **Networking** (8)
 8. **System Management** (5)
 
 ---
 
-## Essential Tools (13)
+## Essential Tools (10)
 
 Core utilities for system administration and development:
 
@@ -35,11 +35,8 @@ Core utilities for system administration and development:
 | **htop** | Interactive system resource monitor | All 5 distros |
 | **tmux** | Terminal multiplexer | All 5 distros |
 | **screen** | Terminal multiplexer | All 5 distros |
-| **openssh** | SSH server and client | All 5 distros |
-| **net-tools** | Network utilities (ifconfig, netstat, etc.) | All 5 distros |
 | **build-essential** | Development tools and compilers | All 5 distros |
 | **jq** | JSON query processor | All 5 distros |
-| **ufw** | Uncomplicated Firewall | All 5 distros |
 
 ---
 
@@ -105,15 +102,20 @@ System logging, log management, and security monitoring:
 
 ---
 
-## Networking (3)
+## Networking (8)
 
-Network tools, VPN, and connectivity:
+Network tools, VPN, DNS ad-blocking, and connectivity:
 
 | Script | Description | Supports |
 |--------|-------------|----------|
+| **openssh** | SSH server and client for secure remote access | All 5 distros |
+| **net-tools** | Network utilities (ifconfig, netstat, etc.) | All 5 distros |
 | **bind-utils** | DNS tools (dig, nslookup, host) | All 5 distros |
 | **wireguard** | Modern, high-performance VPN protocol | All 5 distros |
 | **openvpn** | Open-source VPN tunneling solution | All 5 distros |
+| **ufw** | Uncomplicated Firewall for network security | All 5 distros |
+| **pihole** | Pi-hole DNS ad-blocking service | All 5 distros |
+| **adguard-home** | AdGuard Home DNS ad-blocking service | All 5 distros |
 
 ---
 
