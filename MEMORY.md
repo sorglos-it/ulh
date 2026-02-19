@@ -52,8 +52,8 @@ liauh/
 3. **Databases** (3)
    - MariaDB, PostgreSQL, MySQL
 
-4. **Containerization** (3)
-   - Docker, Portainer, Docker Compose
+4. **Containerization & VM** (4)
+   - Docker, Portainer, Docker Compose, Proxmox (7 actions: install, update, uninstall, make-lxc-to-template, make-template-to-lxc, unlock-vm, stop-all)
 
 5. **Programming Languages** (6)
    - Node.js, Python, Ruby, Go, PHP, Perl
@@ -64,8 +64,8 @@ liauh/
 7. **Networking** (10)
    - OpenSSH, net-tools, bind-utils, WireGuard, OpenVPN, UFW, Pi-hole, AdGuard Home, Samba, cifs-utils
 
-8. **System Management** (6)
-   - Linux (network, DNS, users, groups), Ubuntu, Debian, Proxmox (4 actions: update, maintenance-mode, list-lxc, list-lxc-running), PiKVM v3, Remotely
+8. **System Management** (5)
+   - Linux (network, DNS, users, groups), Ubuntu, Debian, PiKVM v3, Remotely
 
 ### Testing Status
 - **Total Scripts**: 45
@@ -126,10 +126,13 @@ SSH keys stored in `custom/keys/` (protected by .gitignore)
 - Updated System Management category: 5 → 6 scripts
 - Total script count: 43 → 44 → 45
 - Enhanced networking, file sharing, and remote support capabilities
-- **Proxmox Enhanced (v0.4+)**:
-  - Added `list-lxc` action: Display all LXC containers (running and offline)
-  - Added `list-lxc-running` action: Display running LXC containers with live IPs
-  - Proxmox now supports 4 actions: update, maintenance-mode, list-lxc, list-lxc-running
+- **Proxmox Rewrite (v0.5+)**:
+  - Complete rewrite from Proxmox VE server installation to guest agent + container management
+  - For guests: qemu-guest-agent installation/update/uninstall with multi-distro support
+  - For hosts: VM/LXC container operations (make-lxc-to-template, make-template-to-lxc, unlock-vm, stop-all)
+  - Proxmox now supports 7 actions: install, update, uninstall, make-lxc-to-template, make-template-to-lxc, unlock-vm, stop-all
+  - All prompts properly integrated for CTID input
+  - Comprehensive error handling and validation
 - All documentation updated
 
 ## Security Notes

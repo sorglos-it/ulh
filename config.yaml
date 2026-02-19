@@ -5,8 +5,8 @@ categories:
     description: "HTTP/HTTPS web servers"
   Database:
     description: "Database management systems"
-  Containerization:
-    description: "Container and orchestration tools"
+  Containerization & VM:
+    description: "Container, orchestration, and VM management tools"
   Programming Languages:
     description: "Development language runtimes"
   Logging & Monitoring:
@@ -606,10 +606,10 @@ scripts:
         parameter: "config"
         description: "Configure MySQL"
 
-  # Containerization (2)
+  # Containerization & VM (3)
   docker:
     description: "Docker container runtime"
-    category: "Containerization"
+    category: "Containerization & VM"
     file: "docker.sh"
     needs_sudo: true
     os_family: [debian, redhat, arch, suse, alpine]
@@ -643,7 +643,7 @@ scripts:
 
   portainer:
     description: "Portainer container management UI"
-    category: "Containerization"
+    category: "Containerization & VM"
     file: "portainer.sh"
     needs_sudo: true
     os_family: [debian, redhat, arch, suse, alpine]
@@ -658,9 +658,59 @@ scripts:
         parameter: "uninstall"
         description: "Uninstall Portainer"
 
+  proxmox:
+    description: "Proxmox guest agent and container management"
+    category: "Containerization & VM"
+    file: "proxmox.sh"
+    needs_sudo: true
+    os_only: "proxmox"
+    actions:
+      - name: "install"
+        parameter: "install"
+        description: "Install qemu-guest-agent (multi-distro)"
+      - name: "update"
+        parameter: "update"
+        description: "Update qemu-guest-agent"
+      - name: "uninstall"
+        parameter: "uninstall"
+        description: "Uninstall qemu-guest-agent"
+      - name: "make-lxc-to-template"
+        parameter: "make-lxc-to-template"
+        description: "Convert LXC container to template"
+        prompts:
+          - question: "Container ID (CTID)?"
+            variable: "CTID"
+            type: "number"
+            default: ""
+      - name: "make-template-to-lxc"
+        parameter: "make-template-to-lxc"
+        description: "Convert template back to normal LXC container"
+        prompts:
+          - question: "Container ID (CTID)?"
+            variable: "CTID"
+            type: "number"
+            default: ""
+      - name: "unlock-vm"
+        parameter: "unlock-vm"
+        description: "Unlock a locked VM or container"
+        prompts:
+          - question: "Container/VM ID (CTID)?"
+            variable: "CTID"
+            type: "number"
+            default: ""
+      - name: "stop-all"
+        parameter: "stop-all"
+        description: "Stop all VMs and LXC containers"
+      - name: "list-lxc"
+        parameter: "list-lxc"
+        description: "List all LXC containers (running and offline) with VMID, Hostname, IP, Status"
+      - name: "list-lxc-running"
+        parameter: "list-lxc-running"
+        description: "List only running LXC containers with VMID, Hostname, and live IP (from eth0)"
+
   docker-compose:
     description: "Docker Compose multi-container orchestration"
-    category: "Containerization"
+    category: "Containerization & VM"
     file: "docker-compose.sh"
     needs_sudo: true
     os_family: [debian, redhat, arch, suse, alpine]
@@ -1186,23 +1236,6 @@ scripts:
       - name: "dist-upgrade"
         parameter: "dist-upgrade"
         description: "Distribution upgrade"
-
-  proxmox:
-    description: "Proxmox VE management (3 actions)"
-    category: "System Management"
-    file: "proxmox.sh"
-    needs_sudo: true
-    os_only: "proxmox"
-    actions:
-      - name: "update"
-        parameter: "update"
-        description: "Update Proxmox"
-      - name: "maintenance-mode"
-        parameter: "maintenance-mode"
-        description: "Toggle maintenance mode"
-      - name: "list-lxc"
-        parameter: "list-lxc"
-        description: "List all LXC containers (running and offline)"
 
   pikvm-v3:
     description: "PiKVM v3 appliance management"

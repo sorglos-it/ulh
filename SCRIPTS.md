@@ -13,11 +13,11 @@ LIAUH organizes scripts into 8 logical categories:
 1. **Essential Tools** (11)
 2. **Webservers** (2)
 3. **Databases** (3)
-4. **Containerization** (3)
+4. **Containerization & VM** (4)
 5. **Programming Languages** (6)
 6. **Logging & Monitoring** (4)
 7. **Networking** (10)
-8. **System Management** (6)
+8. **System Management** (5)
 
 ---
 
@@ -64,15 +64,16 @@ Data persistence and management:
 
 ---
 
-## Containerization (3)
+## Containerization & VM (4)
 
-Container runtime and management platforms:
+Container runtime, VM management, and orchestration platforms:
 
 | Script | Description | Supports |
 |--------|-------------|----------|
 | **docker** | Docker container runtime | All 5 distros |
 | **portainer** | Portainer container management UI | All 5 distros |
 | **docker-compose** | Docker Compose multi-container orchestration | All 5 distros |
+| **proxmox** | Proxmox guest agent and container management (install, update, uninstall, make-lxc-to-template, make-template-to-lxc, unlock-vm, stop-all, list-lxc, list-lxc-running) | Proxmox only |
 
 ---
 
@@ -123,7 +124,7 @@ Network tools, VPN, DNS ad-blocking, file sharing, and connectivity:
 
 ---
 
-## System Management (6)
+## System Management (5)
 
 OS-level management and specialized appliances:
 
@@ -132,7 +133,6 @@ OS-level management and specialized appliances:
 | **linux** | Core Linux system configuration (network, DNS, users, groups, CA certs) | All 5 distros |
 | **ubuntu** | Ubuntu-specific system management | Ubuntu only |
 | **debian** | Debian-specific system management | Debian only |
-| **proxmox** | Proxmox VE virtualization platform management (update, maintenance-mode, list-lxc) | Proxmox only |
 | **pikvm-v3** | PiKVM v3 appliance configuration and management | Arch (PiKVM) only |
 | **remotely** | Remotely remote desktop and support software | Debian, Ubuntu, RHEL, CentOS, Rocky, Alma, Fedora, openSUSE, SLES, Amazon Linux |
 

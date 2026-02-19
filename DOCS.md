@@ -47,7 +47,7 @@ liauh/
 │   ├── nodejs.sh, python.sh, ruby.sh, golang.sh, php.sh, perl.sh (languages)
 │   ├── rsyslog.sh, syslog-ng.sh, fail2ban.sh, logrotate.sh (logging & monitoring)
 │   ├── openssh.sh, net-tools.sh, bind-utils.sh, wireguard.sh, openvpn.sh, ufw.sh, pihole.sh, adguard-home.sh (networking)
-│   ├── linux.sh, ubuntu.sh, debian.sh, proxmox.sh (virtualization + LXC management), pikvm-v3.sh (system management)
+│   ├── linux.sh, ubuntu.sh, debian.sh, proxmox.sh (guest agent + VM/LXC management), pikvm-v3.sh (system management)
 │   └── _template.sh (reference template for new scripts)
 ├── custom/              # User repositories (git-ignored except repo.yaml)
 │   ├── repo.yaml        # Repository configuration

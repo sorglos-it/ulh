@@ -57,8 +57,8 @@ Apache, Nginx
 ### Databases (3)
 MariaDB, PostgreSQL, MySQL
 
-### Containerization (3)
-Docker, Portainer, Docker Compose
+### Containerization & VM (4)
+Docker, Portainer, Docker Compose, Proxmox
 
 ### Programming Languages (6)
 Node.js, Python, Ruby, Go, PHP, Perl
@@ -69,8 +69,8 @@ rsyslog, syslog-ng, fail2ban, logrotate
 ### Networking (10)
 OpenSSH, net-tools, bind-utils, WireGuard, OpenVPN, UFW, Pi-hole, AdGuard Home, Samba, cifs-utils
 
-### System Management (6)
-Linux (network, DNS, users, groups), Ubuntu, Debian, Proxmox (virtualization + LXC), PiKVM v3, Remotely
+### System Management (5)
+Linux (network, DNS, users, groups), Ubuntu, Debian, PiKVM v3, Remotely
 
 See **[SCRIPTS.md](SCRIPTS.md)** for complete reference.
 
