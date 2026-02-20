@@ -118,7 +118,6 @@ scripts:
     description: "HTTP requests utility"
     category: "Essential Tools"
     file: "curl.sh"
-    needs_sudo: false
     os_family:
       - debian
       - redhat
@@ -146,7 +145,7 @@ scripts:
     description: "MariaDB database server"
     category: "Database"
     file: "mariadb.sh"
-    needs_sudo: true
+    sudo:
     os_family:
       - debian
       - redhat
@@ -166,7 +165,7 @@ scripts:
 - `category` - Shown in menu
 - `description` - Brief info
 - `file` - Script path (relative to scripts/)
-- `needs_sudo` - Elevate with sudo
+- `sudo:` - Elevate with sudo (presence-based, optional)
 - `os_family` - Supported distributions (optional)
 - `os_only` - Single distro (optional, overrides os_family)
 - `os_exclude` - Blacklist distros (optional)
@@ -298,7 +297,7 @@ scripts:
 - **Quote values:** Always use `"quotes"` around defaults
 - **Empty default:** Use `default: ""` if user must type (no suggestion)
 - **Fallback:** If answer.yaml missing/invalid → uses config.yaml defaults
-- **Graceful fallback:** If autoscript=true but answers missing → shows prompts anyway
+- **Graceful fallback:** If autoscript field present but answers missing → shows prompts anyway
 - **YAML validation:** Invalid YAML silently falls back to config.yaml defaults
 
 ### When to Use Each Mode
@@ -386,8 +385,7 @@ repositories:
     url: "https://github.com/user/my-scripts.git"
     path: "my-scripts"
     auth_method: "none"
-    enabled: true
-    auto_update: false
+    enabled:
 ```
 
 3. **ULH handles the rest** - Auto-clone, sync, execute
@@ -436,12 +434,12 @@ repositories:
 
 ### Flag Combinations
 
-| enabled | auto_update | Behavior |
-|---------|-------------|----------|
-| true | true | Show in menu + auto-pull on startup |
-| true | false | Show in menu, no auto-pull |
-| false | true | Hidden from menu, but auto-pull on startup |
-| false | false | Completely ignored |
+| enabled: | auto_update: | Behavior |
+|----------|--------------|----------|
+| ✓ (present) | ✓ (present) | Show in menu + auto-pull on startup |
+| ✓ (present) | (absent) | Show in menu, no auto-pull |
+| (absent) | ✓ (present) | Hidden from menu, but auto-pull on startup |
+| (absent) | (absent) | Completely ignored |
 
 ---
 

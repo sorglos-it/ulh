@@ -65,8 +65,7 @@ repositories:
     url: "git@github.com:user/my-scripts.git"
     path: "my-scripts"
     auth_method: "ssh"
-    enabled: true
-    auto_update: false
+    enabled:
 ```
 
 See **[DOCS.md](DOCS.md#custom-repositories)** for setup.
