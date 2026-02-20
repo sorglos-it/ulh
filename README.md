@@ -51,30 +51,6 @@ Menu flow:
 
 ## 🛠️ System Scripts (45)
 
-### Essential Tools (11)
-curl, wget, git, vim, nano, htop, tmux, screen, build-essential, jq, locate
-
-### Webservers (2)
-Apache, Nginx
-
-### Databases (3)
-MariaDB, PostgreSQL, MySQL
-
-### Containerization & VM (4)
-Docker, Portainer, Docker Compose, Proxmox
-
-### Programming Languages (6)
-Node.js, Python, Ruby, Go, PHP, Perl
-
-### Logging & Monitoring (4)
-rsyslog, syslog-ng, fail2ban, logrotate
-
-### Networking (10)
-OpenSSH, net-tools, bind-utils, WireGuard, OpenVPN, UFW, Pi-hole, AdGuard Home, Samba, cifs-utils
-
-### System Management (5)
-Linux (network, DNS, users, groups), Ubuntu, Debian, PiKVM v3, Remotely
-
 See **[SCRIPTS.md](SCRIPTS.md)** for complete reference.
 
 ## 🔧 Custom Repositories
