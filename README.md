@@ -6,18 +6,18 @@
 
 ### One-liner (Auto-install wget)
 ```bash
-wget -qO - https://raw.githubusercontent.com/sorglos-it/ULH/main/install.sh | bash && cd ~/ULH && bash ULH.sh
+wget -qO - https://raw.githubusercontent.com/sorglos-it/ulh/main/install.sh | bash && cd ~/ulh && bash ulh.sh
 ```
 ### One-liner (Auto-install curl)
 ```bash
-curl -sSL https://raw.githubusercontent.com/sorglos-it/ULH/main/install.sh | bash && cd ~/ULH && bash ULH.sh
+curl -sSL https://raw.githubusercontent.com/sorglos-it/ulh/main/install.sh | bash && cd ~/ulh && bash ulh.sh
 ```
 
 ### Manual Install
 ```bash
-git clone https://github.com/sorglos-it/ULH.git
-cd ULH
-bash ULH.sh
+git clone https://github.com/sorglos-it/ulh.git
+cd ulh
+bash ulh.sh
 ```
 
 ## ✨ Features
