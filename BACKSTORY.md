@@ -1,4 +1,4 @@
-# The Legend of ULH — A Naming Odyssey
+# The Legend of ulh — A Naming Odyssey
 
 ## Chapter 1: The Homage That Hit Too Close
 
@@ -99,7 +99,7 @@ _"Unknown Linux Helper"_
 
 That's like... the mysterious guy who fixes everything in your data center at night. The mysterious man nobody sees, but whose work is everywhere. The Unknown. The Unnamed. The one who just makes it work.
 
-**ULH. The Mystery. The tool from the Unknown Man.**
+**ulh. The Mystery. The tool from the Unknown Man.**
 
 ### The Legend of the Unknown Man
 
@@ -112,7 +112,7 @@ Since then, in every data center:
 "Who configured the server?"
 "The Unknown Man, probably..."
 
-"Who wrote ULH?"
+"Who wrote ulh?"
 "...Unknown Linux Helper... from the Unknown Man."
 ```
 
@@ -120,7 +120,7 @@ Since then, in every data center:
 
 After hours of discussions, AI sessions, false starts, and a lot of laughter:
 
-**ULH — Unknown Linux Helper**
+**ulh — Unknown Linux Helper**
 
 The tool that the Unknown Man wrote. The mysterious thing that just works when you start it.
 

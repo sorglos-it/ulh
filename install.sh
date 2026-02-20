@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ULH Installation Script
+# ulh Installation Script
 # Works on all Linux distributions (Debian, Red Hat, Arch, SUSE, Alpine)
 
 set -euo pipefail
@@ -79,7 +79,7 @@ if ! $SUDO $PKG_INSTALL git; then
     exit 1
 fi
 
-echo "📥 Setting up ULH..."
+echo "📥 Setting up ulh..."
 cd ~
 
 # Check if ulh directory already exists
@@ -90,13 +90,13 @@ if [[ -d "ulh" ]]; then
 else
     echo "  Cloning from GitHub..."
     if ! git clone https://github.com/sorglos-it/ulh.git; then
-        echo "❌ Failed to clone ULH"
+        echo "❌ Failed to clone ulh"
         exit 1
     fi
     cd ulh
 fi
 
-echo "✅ ULH installed successfully!"
+echo "✅ ulh installed successfully!"
 echo ""
-echo "To start ULH, run:"
+echo "To start ulh, run:"
 echo "  cd ~/ulh && bash ulh.sh"

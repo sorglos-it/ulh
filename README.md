@@ -1,4 +1,4 @@
-# ULH - Unknown Linux Helper
+# ulh - Unknown Linux Helper
 
 **v0.5** | 45 system management scripts for all Linux distributions
 
@@ -15,7 +15,7 @@ curl -sSL https://raw.githubusercontent.com/sorglos-it/ulh/main/install.sh | bas
 
 ### Manual Install
 ```bash
-git clone https://github.com/sorglos-it/ULH.git
+git clone https://github.com/sorglos-it/ulh.git
 cd ulh
 bash ulh.sh
 ```
@@ -40,7 +40,7 @@ bash ulh.sh
 Menu flow:
 ```
 1. Repository Selector
-   ├─ ULH Scripts
+   ├─ ulh Scripts
    │  └─ Categories
    │     └─ Scripts
    │        └─ Actions
@@ -116,7 +116,7 @@ ulh/
 
 ## 🔐 Security
 
-- Scripts run **individually with sudo** (ULH stays unprivileged)
+- Scripts run **individually with sudo** (ulh stays unprivileged)
 - SSH keys stored in **custom/keys/** (protected by .gitignore)
 - No hardcoded credentials (use environment variables)
 - All scripts pass **syntax validation** (bash -n)
@@ -144,13 +144,13 @@ MIT License - Free for personal and commercial use
 
 **Questions?** Check **[DOCS.md](DOCS.md)** or open an issue on GitHub.
 
-## 💝 Support ULH
+## 💝 Support ulh
 
-If ULH helps you save time and reduces your Linux headaches, consider supporting the project:
+If ulh helps you save time and reduces your Linux headaches, consider supporting the project:
 
 [![Donate with PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/donate/?hosted_button_id=6CDEVZGJWTNQQ)
 
-## 📖 The Story Behind ULH
+## 📖 The Story Behind ulh
 
 Curious how "Unknown Linux Helper" came to be? Read **[BACKSTORY.md](BACKSTORY.md)** — the chaotic naming odyssey featuring Kevin, the Unknown Man, and why naming things is impossible.
 

@@ -1,4 +1,4 @@
-# ULH Scripts Reference
+# ulh Scripts Reference
 
 **v0.5** | Complete catalog of 45 system management scripts
 
@@ -8,7 +8,7 @@ All scripts support **install**, **update**, **uninstall**, and **config** actio
 
 ## Script Categories (8 Categories, 45 Scripts)
 
-ULH organizes scripts into 8 logical categories:
+ulh organizes scripts into 8 logical categories:
 
 1. **Essential Tools** (11)
 2. **Webservers** (2)
@@ -155,21 +155,21 @@ OS-level management and specialized appliances:
 ## Quick Start Examples
 
 ### Install Node.js
-From ULH menu:
+From ulh menu:
 1. Select **Programming Languages** category
 2. Select **nodejs** script
 3. Choose **install** action
 4. Follow configuration prompts
 
 ### Configure Linux Network
-From ULH menu:
+From ulh menu:
 1. Select **System Management** category
 2. Select **linux** script
 3. Choose **network** or **dns** action
 4. Enter interface name (eth0) and IP settings
 
 ### Install MariaDB
-From ULH menu:
+From ulh menu:
 1. Select **Databases** category
 2. Select **mariadb** script
 3. Choose **install** action

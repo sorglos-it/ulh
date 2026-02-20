@@ -1,6 +1,6 @@
 # Demo Scripts Repository
 
-This is a built-in demo repository showing how to structure custom ULH scripts.
+This is a built-in demo repository showing how to structure custom ulh scripts.
 
 ## Scripts Included
 
@@ -44,7 +44,7 @@ demo-scripts/
 
 ## How to Use
 
-1. Start ULH: `bash ulh.sh`
+1. Start ulh: `bash ulh.sh`
 2. Select: `2) Custom: Demo Scripts`
 3. Choose a script and action
 4. Fill in any prompts
@@ -79,11 +79,11 @@ To create your own custom repository:
      enabled: true
      auto_update: false
    ```
-5. Run ULH and test!
+5. Run ulh and test!
 
 ## Tips
 
-- Scripts don't need `chmod +x` - ULH handles permissions
+- Scripts don't need `chmod +x` - ulh handles permissions
 - Parse parameters from the comma-separated string: `ACTION="${1%%,*}"`
 - Use `exit 0` for success, `exit 1` for failure
 - Add descriptions and prompts in `custom.yaml` for user-friendly menus
