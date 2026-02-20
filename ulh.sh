@@ -5,7 +5,7 @@
 export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 
-ULH_VERSION="0.4"
+ULH_VERSION="0.5"
 ULH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export ULH_VERSION ULH_DIR
 

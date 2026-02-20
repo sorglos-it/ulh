@@ -1,6 +1,6 @@
 # ULH Documentation
 
-Complete guide to ULH v0.4+ architecture, configuration, and development.
+Complete guide to ULH v0.5 architecture, configuration, and development.
 
 ## Table of Contents
 
@@ -624,7 +624,7 @@ All menus use consistent 80-character box formatting:
 
 ```
 +==============================================================================+
-| ULH - Unknown Linux Helper                         VERSION: 0.4 |
+| ULH - Unknown Linux Helper                         VERSION: 0.5 |
 +==============================================================================+
 |
    [menu items here]

@@ -1,6 +1,6 @@
 # ULH Scripts Reference
 
-**v0.4+** | Complete catalog of 45 system management scripts
+**v0.5** | Complete catalog of 45 system management scripts
 
 All scripts support **install**, **update**, **uninstall**, and **config** actions (where applicable).
 
