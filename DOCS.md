@@ -72,10 +72,14 @@ ulh/
 
 ## Installation
 
-### Automatic (One-liner)
+### Automatic (One-liner wget)
 
 ```bash
 wget -qO - https://raw.githubusercontent.com/sorglos-it/ulh/main/install.sh | bash
+```
+
+### Automatic (One-liner curl)
+```bash
 curl -sSL https://raw.githubusercontent.com/sorglos-it/ulh/main/install.sh | bash
 ```
 
