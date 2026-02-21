@@ -250,8 +250,8 @@ install_remotely() {
     
     log_info "Extracting Remotely agent (this may take a moment)..."
     
-    # Extract with progress indicator
-    if $SUDO_PREFIX unzip -q -o "$TEMP_ZIP" -d "$INSTALL_DIR" 2>&1; then
+    # Extract with progress indicator (use -a to auto-convert backslashes to forward slashes)
+    if $SUDO_PREFIX unzip -q -a -o "$TEMP_ZIP" -d "$INSTALL_DIR" 2>&1; then
         log_info "✓ Extraction complete"
     else
         log_error "Failed to extract Remotely agent"
@@ -377,9 +377,9 @@ update_remotely() {
     log_info "Backing up current installation..."
     $SUDO_PREFIX cp -r "$INSTALL_DIR" "${INSTALL_DIR}.backup"
     
-    # Extract and update
+    # Extract and update (use -a to auto-convert backslashes to forward slashes)
     log_info "Extracting updated agent (this may take a moment)..."
-    $SUDO_PREFIX unzip -q -o "$TEMP_ZIP" -d "$INSTALL_DIR" || {
+    $SUDO_PREFIX unzip -q -a -o "$TEMP_ZIP" -d "$INSTALL_DIR" || {
         log_warn "Extraction failed, restoring backup..."
         $SUDO_PREFIX rm -rf "$INSTALL_DIR"
         $SUDO_PREFIX mv "${INSTALL_DIR}.backup" "$INSTALL_DIR"
