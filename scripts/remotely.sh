@@ -150,7 +150,9 @@ setup_microsoft_repo() {
         log_info "Downloading Microsoft repository package..."
         $SUDO_PREFIX curl -sSL "$MS_REPO_URL" -o /tmp/packages-microsoft-prod.deb
         
-        $SUDO_PREFIX dpkg -i /tmp/packages-microsoft-prod.deb || log_error "Failed to install Microsoft repository"
+        # Auto-answer 'Y' to config file dialogs
+        log_info "Installing Microsoft repository..."
+        echo "Y" | $SUDO_PREFIX dpkg -i /tmp/packages-microsoft-prod.deb 2>&1 | grep -v "Processing triggers" || true
         rm -f /tmp/packages-microsoft-prod.deb
         
     else
