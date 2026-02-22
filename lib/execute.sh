@@ -1,6 +1,9 @@
 #!/bin/bash
 # ulh - Script Execution Engine (prompts, validation, execution)
 
+# Load colors
+source "$(dirname "$0")/colors.sh"
+
 # Get correct yq binary for current architecture
 _get_yq() {
     if [[ -z "$_YQ_CACHE" ]]; then
@@ -222,12 +225,7 @@ execute_action() {
     if [[ "$needs_sudo" == "true" ]]; then
         # Execute with sudo - password cached by sudo itself
         # Script receives full parameter string and must parse it
-        # Only use sudo if not running as root
-        if [[ $EUID -ne 0 ]]; then
-            sudo bash "$script_path" "$param_string" || exit_code=$?
-        else
-            bash "$script_path" "$param_string" || exit_code=$?
-        fi
+        sudo bash "$script_path" "$param_string" || exit_code=$?
     else
         bash "$script_path" "$param_string" || exit_code=$?
     fi
@@ -349,12 +347,8 @@ execute_custom_repo_action() {
     
     local exit_code=0
     if [[ "$needs_sudo" == "true" ]]; then
-        # Only use sudo if not running as root
-        if [[ $EUID -ne 0 ]]; then
-            sudo bash "$script_path" "$param_string" || exit_code=$?
-        else
-            bash "$script_path" "$param_string" || exit_code=$?
-        fi
+        # Execute with sudo - password cached by sudo itself
+        sudo bash "$script_path" "$param_string" || exit_code=$?
     else
         bash "$script_path" "$param_string" || exit_code=$?
     fi
