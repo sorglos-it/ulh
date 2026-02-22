@@ -1,6 +1,9 @@
 #!/bin/bash
 # ulh - Menu Display & Navigation
 
+# Load colors from centralized library
+source "$(dirname "$0")/colors.sh"
+
 # Global context tracking
 CONTEXT_FROM="none"  # "none" or "repo"
 
