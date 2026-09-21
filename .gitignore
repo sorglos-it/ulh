@@ -1,5 +1,7 @@
 # Custom user scripts and configuration
-custom/
+# custom/* (not custom/): excluding the directory itself would make the
+# re-includes below impossible - git never re-includes inside an excluded dir.
+custom/*
 !custom/repo.yaml
 !custom/demo-scripts/
 custom.yaml

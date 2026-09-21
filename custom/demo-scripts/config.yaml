@@ -1,0 +1,50 @@
+# Demo Scripts - example custom repository for ulh
+#
+# Custom repos use the same layout as ulh's own config.yaml, with one
+# difference: the script is referenced by `path` (relative to this repo,
+# looked up in scripts/ as well), not by `file`.
+#
+# To try it: remove the # in front of `enabled:` for demo-scripts in
+# custom/repo.yaml, then start ulh and pick "Demo Scripts".
+
+scripts:
+  hello:
+    description: "Say hello to someone"
+    path: "hello.sh"
+    actions:
+      - name: "run"
+        parameter: "run"
+        description: "Print a greeting"
+        prompts:
+          - question: "Your name?"
+            variable: "NAME"
+            type: "text"
+            default: "World"
+
+  system-info:
+    description: "System information and disk usage"
+    path: "system-info.sh"
+    actions:
+      - name: "show"
+        parameter: "show"
+        description: "Hostname, OS, kernel, uptime"
+      - name: "disk"
+        parameter: "disk"
+        description: "Disk usage (df -h)"
+
+  file-backup:
+    description: "Timestamped copy of a file"
+    path: "file-backup.sh"
+    actions:
+      - name: "backup"
+        parameter: "backup"
+        description: "Back up a file"
+        prompts:
+          - question: "File to back up?"
+            variable: "SOURCE_FILE"
+            type: "text"
+            default: "/etc/hosts"
+          - question: "Backup directory?"
+            variable: "BACKUP_DIR"
+            type: "text"
+            default: "/tmp"

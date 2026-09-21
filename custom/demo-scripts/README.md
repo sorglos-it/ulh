@@ -35,7 +35,7 @@ Simple file backup utility.
 ```
 demo-scripts/
 ├── README.md              # This file
-├── custom.yaml            # Script definitions
+├── config.yaml            # Script definitions
 └── scripts/
     ├── hello.sh           # Hello world script
     ├── system-info.sh     # System info script
@@ -52,15 +52,21 @@ demo-scripts/
 
 ## Testing
 
-This demo repository is configured in `custom/repo.yaml` with:
+This demo repository is configured in `custom/repo.yaml`. It ships disabled;
+to turn it on, remove the `#` in front of `enabled:`:
 
 ```yaml
 demo-scripts:
   name: "Demo Scripts"
+  url: ""
   path: "demo-scripts"
-  enabled: true
-  auto_update: false
+  auth_method: "none"
+  enabled:
 ```
+
+Flags are **presence-based**: `enabled:` switches the repo on just by being
+there - its value is ignored. `auto_update: false` would therefore switch
+auto-update *on*. To keep something off, leave the line out.
 
 It's a local repository (no git needed) for easy testing of the custom repository system.
 
@@ -69,15 +75,14 @@ It's a local repository (no git needed) for easy testing of the custom repositor
 To create your own custom repository:
 
 1. Create a new directory: `custom/my-scripts/`
-2. Create `custom.yaml` with script definitions
+2. Create `config.yaml` with script definitions (scripts are referenced by `path`)
 3. Create `scripts/` directory with your scripts
 4. Add entry to `repo.yaml`:
    ```yaml
    my-scripts:
      name: "My Scripts"
      path: "my-scripts"
-     enabled: true
-     auto_update: false
+     enabled:
    ```
 5. Run ulh and test!
 
@@ -86,4 +91,4 @@ To create your own custom repository:
 - Scripts don't need `chmod +x` - ulh handles permissions
 - Parse parameters from the comma-separated string: `ACTION="${1%%,*}"`
 - Use `exit 0` for success, `exit 1` for failure
-- Add descriptions and prompts in `custom.yaml` for user-friendly menus
+- Add descriptions and prompts in `config.yaml` for user-friendly menus
