@@ -23,9 +23,22 @@ lang_valid() {
 }
 
 # The system language. ulh.sh switches to C.UTF-8 for its own output and keeps
-# what was set before in ULH_SYS_LOCALE (de_DE.UTF-8 -> de).
+# what was set before in ULH_SYS_LOCALE (de_DE.UTF-8 -> de). "C" or nothing is
+# no language: then the setting of the installation counts. That also covers
+# the restart after an update from a ulh that had already set C.UTF-8.
 lang_system() {
-    local l="${ULH_SYS_LOCALE:-}"
+    local l="${ULH_SYS_LOCALE:-}" f v
+    if [[ -z "$l" || "$l" == C || "$l" == C.* || "$l" == POSIX ]]; then
+        l=""
+        for f in /etc/default/locale /etc/locale.conf; do
+            [[ -r "$f" ]] || continue
+            for v in LC_ALL LC_MESSAGES LANG; do
+                l="$(grep -m1 -E "^[[:space:]]*${v}=" "$f" 2>/dev/null)"
+                l="${l#*=}"; l="${l//\"/}"; l="${l//\'/}"
+                [[ -n "$l" ]] && break 2
+            done
+        done
+    fi
     l="${l%%_*}"; l="${l%%.*}"; l="${l,,}"
     if lang_valid "$l"; then echo "$l"; else echo "en"; fi
 }

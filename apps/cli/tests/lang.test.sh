@@ -38,8 +38,10 @@ nocat="$("$YQ" '[.categories[] | select((has("nameDE") and has("nameES") and has
 check "catalog: every description, question and category in all languages" test "${missing}${nocat}" = "00"
 
 # System language, --lang, and --lang with a language ulh does not know
-out="$(cd "$ULH" && printf 'q\n' | LANG=de_DE.UTF-8 bash apps/cli/ulh.sh --no-update 2>&1)"
+out="$(cd "$ULH" && printf 'q\n' | ULH_SYS_LOCALE= LANG=de_DE.UTF-8 bash apps/cli/ulh.sh --no-update 2>&1)"
 check "system language German: German menu" grep -q 'Grundwerkzeuge' <<< "$out"
+sys="$(cd "${ULH}/apps/cli" && ulh_DIR="$PWD" ULH_SYS_LOCALE=fr_FR.UTF-8 bash -c 'source classes/lang.sh; lang_system')"
+check "fr_FR.UTF-8 -> fr" test "$sys" = fr
 out="$(start 'q\n' --lang fr)"
 check "--lang fr: French menu" grep -q 'Outils essentiels' <<< "$out"
 out="$(start '/curl\nb\nq\n' --lang de)"

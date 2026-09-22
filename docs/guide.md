@@ -938,7 +938,7 @@ userdata_init           # Create repo.yaml, settings.yaml, the demo repo and dat
 ```bash
 t key [arg...]          # Text of the current language, {0} {1} ... replaced by the args
 yq_l10n '.path.field'   # yq expression "fieldDE // field": current language, English fallback
-lang_init [xx]          # --lang, else config/settings.yaml, else $LANG, else English
+lang_init [xx]          # --lang, else config/settings.yaml, else $LANG (or /etc/default/locale), else English
 lang_switch             # Menu key l: next language, saved in config/settings.yaml
 lang_is_yes / lang_is_no  # yes/no typed in any of the five languages
 ```

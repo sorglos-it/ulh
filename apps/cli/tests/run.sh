@@ -36,8 +36,8 @@ chmod +x "$STUBS"/*
 export PATH="${STUBS}:${PATH}" TERM=dumb HOME="${TMP}/home"
 mkdir -p "$HOME"
 # English, whatever language the test machine speaks
-export LANG=C.UTF-8
-unset LC_ALL LC_MESSAGES ULH_SYS_LOCALE ULH_LANG
+export LANG=C.UTF-8 ULH_SYS_LOCALE=en_US.UTF-8
+unset LC_ALL LC_MESSAGES ULH_LANG
 export GIT_CONFIG_GLOBAL="${TMP}/gitconfig"
 printf '[user]\n\tname = ulh test\n\temail = test@example.invalid\n[init]\n\tdefaultBranch = main\n' > "$GIT_CONFIG_GLOBAL"
 
