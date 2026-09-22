@@ -8,12 +8,13 @@ Complete guide to ulh v0.5 architecture, configuration, and development.
 
 1. [Architecture](#architecture)
 2. [Installation](#installation)
-3. [Configuration](#configuration)
+3. [Catalog](#catalog)
 4. [Answer File (answer.yaml)](#answer-file-answeryaml)
 5. [Custom Repositories](#custom-repositories)
 6. [Script Development](#script-development)
 7. [Menu System](#menu-system)
 8. [Troubleshooting](#troubleshooting)
+9. [API Reference](#api-reference)
 
 ---
 
@@ -23,68 +24,125 @@ Complete guide to ulh v0.5 architecture, configuration, and development.
 
 ulh prioritizes simplicity, consistency, and maintainability:
 
-- **Single Entry Point** - `ulh.sh` orchestrates everything
-- **Focused Libraries** - Each file handles one responsibility
+- **Single Entry Point** - `apps/cli/ulh.sh` orchestrates everything
+- **Focused Libraries** - Each file in `classes/` handles one responsibility
 - **Explicit Parameters** - Comma-separated strings, no silent globals
 - **Cross-Platform** - All scripts work on 5+ distribution families
 - **Auto-Updating** - Transparent self-updates with `exec` restart
+- **Your files stay yours** - `config/` and `data/` are never touched by updates
 
 ### File Structure
 
 ```
-ulh/
-├── ulh.sh              # Main entry (auto-update + repo init)
-├── lib/                # 7 focused libraries
-│   ├── bootstrap.sh    # Parameter parsing, OS detection, logging, print_usage()
-│   ├── colors.sh       # Centralized ANSI color definitions
-│   ├── core.sh         # OS convenience functions
-│   ├── execute.sh      # Script execution engine with autoscript support
-│   ├── menu.sh         # Menu display + navigation
-│   ├── repos.sh        # Repository sync + management
-│   └── yaml.sh         # YAML parsing via yq binary
-├── scripts/            # 96 scripts, one file per program
-│   └── Multiple categories:
-│       ├── Essential Tools (10)
-│       ├── Text Editors (6)
-│       ├── Shells & Terminals (5)
-│       ├── Web Servers (2)
-│       ├── Databases (3)
-│       ├── Container & Virtualization (8)
-│       ├── Programming Languages (10)
-│       ├── Development Tools (4)
-│       ├── System Utilities (15)
-│       ├── Backup & Sync (2)
-│       ├── Monitoring & Logging (4)
-│       ├── Networking (11)
-│       ├── System Management (7)
-│       ├── Package Managers (4)
-│       ├── Security & Sandboxing (4)
-│       └── Multimedia (1)
-├── custom/             # User repositories (git-ignored except repo.yaml)
-│   ├── repo.yaml       # Repository configuration
-│   ├── answer.yaml     # Script defaults + automation config
-│   ├── keys/           # SSH keys (.gitignore protected)
-│   └── [custom-repos]/ # Cloned repositories
-├── config.yaml         # System scripts configuration (96 scripts)
-├── README.md           # Quick start guide
-├── SCRIPTS.md          # Script reference table (all 96 scripts)
-├── TREE.md             # File map: path, actions, sudo and distros per script
-└── DOCS.md             # This file
+ulh/                              # clone target, default: ~/ulh
+├── ulh.sh                        # old start command, forwards to apps/cli/ulh.sh
+├── install.sh                    # old one-liner target, forwards to tools/install.sh
+├── apps/cli/                     # the program
+│   ├── ulh.sh                    # entry point: auto-update, your files, menu
+│   ├── VERSION                   # version shown in the menu header
+│   ├── classes/                  # framework (sourced, never called directly)
+│   │   ├── bootstrap.sh          # sourced BY the scripts: parse_parameters, log_*, msg_*, detect_os
+│   │   ├── colors.sh             # ANSI colors (single source of truth)
+│   │   ├── core.sh               # msg_* helpers, OS detection for the menu
+│   │   ├── execute.sh            # prompts, answer.yaml/autoscript, runs the script
+│   │   ├── menu.sh               # menu rendering + navigation loops
+│   │   ├── repos.sh              # custom repo clone/pull/auth
+│   │   ├── update.sh             # self-update via git
+│   │   ├── userdata.sh           # config/ and data/, takes over the old custom/ folder
+│   │   └── yaml.sh               # yq wrappers (yaml_scripts, yaml_action_name, ...)
+│   ├── assets/
+│   │   ├── catalog.yaml          # menu + action definitions for ALL system scripts
+│   │   └── scripts/<name>.sh     # one file per program - THE place to look
+│   ├── templates/
+│   │   ├── script-template.sh    # copy this to start a new script
+│   │   └── demo-*                # the demo repository, copied to data/ on first start
+│   ├── config/                   # YOUR settings (git-ignored, only *.example in git)
+│   │   ├── repo.yaml.example     # template for repo.yaml
+│   │   ├── repo.yaml             # your custom repositories
+│   │   └── answer.yaml           # prompt defaults + autoscript flags (optional)
+│   ├── data/                     # YOUR runtime data (git-ignored)
+│   │   ├── keys/                 # SSH keys for private repos
+│   │   ├── repos/<path>/         # custom repos (own config.yaml + scripts/)
+│   │   └── lib/                  # generated, see Custom Repositories
+│   ├── vendor/yq/                # bundled yq binaries (amd64, arm64, arm, 386)
+│   └── tests/                    # run.sh + tests, manual test scripts
+├── tools/
+│   ├── install.sh                # installer (installs git if missing, clones/pulls ulh)
+│   └── gen-scripts-doc.sh        # writes docs/scripts.md from the catalog
+├── docs/
+│   ├── guide.md                  # this file
+│   ├── scripts.md                # all scripts: actions, sudo, distros (generated)
+│   └── backstory.md              # how the name happened
+├── README.md, CHANGELOG.md, LICENSE, THIRD-PARTY.md
+└── custom/                       # only in old installations - moved on first start
 ```
 
-**Looking for a specific script?** [TREE.md](TREE.md) lists every script with its
-file path, available actions, sudo requirement and supported distributions, plus a
-grep cheat sheet for finding things from the shell.
+**Looking for a specific script?** [scripts.md](scripts.md) lists every script with
+its actions, sudo requirement and supported distributions.
+
+### Where To Look For What
+
+| I want to ... | Look at |
+|---------------|---------|
+| find a script while ulh is running | press `s` in the menu, or type `/term` at the prompt |
+| find the code for program `X` | `apps/cli/assets/scripts/X.sh` |
+| change menu entry, category or prompts of `X` | `apps/cli/assets/catalog.yaml` -> `scripts.X` |
+| add a new program | `cp apps/cli/templates/script-template.sh apps/cli/assets/scripts/X.sh` + entry in the catalog |
+| run something without the menu | `sudo bash apps/cli/assets/scripts/X.sh "install"` |
+| see which actions `X` has | `bash apps/cli/assets/scripts/X.sh` (prints usage from the catalog) |
+| preset answers / automate | `apps/cli/config/answer.yaml` |
+| change how prompts behave | `apps/cli/classes/execute.sh` |
+| change the menu layout | `apps/cli/classes/menu.sh` |
+| add your own script repo | `apps/cli/config/repo.yaml` + `apps/cli/classes/repos.sh` |
+
+**Grep cheat sheet** (run from the ulh directory):
+
+```bash
+ls apps/cli/assets/scripts | grep -i spool                           # find a script file
+grep -n "^  spoolman:" -A 20 apps/cli/assets/catalog.yaml           # its catalog block
+grep -n "description:" apps/cli/assets/catalog.yaml | grep -i vnc   # search all descriptions
+```
 
 ### Execution Flow
 
-1. `ulh.sh` starts → sets UTF-8 locale, enables bash strict mode
+1. `ulh.sh` starts → sets UTF-8 locale, loads the libraries from `classes/`
 2. Auto-update check → git fetch + pull (if updates exist, `exec` restart)
-3. Load libraries → core, yaml, menu, execute, repos
-4. Initialize repositories → clone/sync custom repos
-5. Show menu → repository selector or ulh scripts directly
-6. Execute action → call script with parameters
-7. Return to menu
+3. Your files → moves an old `custom/` folder once, creates missing files in `config/` and `data/`
+4. Load the catalog → `assets/catalog.yaml`
+5. Initialize repositories → clone/sync custom repos
+6. Show menu → repository selector or ulh scripts directly
+7. Execute action → call script with parameters
+8. Return to menu
+
+**Call chain of one action:**
+
+```
+ulh.sh -> menu.sh (pick script + action, or search with s / /term)
+       -> execute.sh (prompts, answer.yaml, sudo)
+       -> assets/scripts/<name>.sh "action,VAR1=val1,VAR2=val2"
+          -> classes/bootstrap.sh (parse_parameters, detect_os, logging)
+```
+
+### Runtime Paths
+
+| Path | What |
+|------|------|
+| `~/ulh/` | default install location (`tools/install.sh` clones here) |
+| `~/ulh/apps/cli/config/repo.yaml` | your custom repositories, never overwritten by updates |
+| `~/ulh/apps/cli/config/answer.yaml` | your prompt defaults, never overwritten by updates |
+| `~/ulh/apps/cli/data/keys/` | SSH keys for private custom repos (`chmod 600`) |
+| `~/ulh/apps/cli/data/repos/<path>/` | custom repo with its own `config.yaml` and `scripts/` |
+| `~/ulh/apps/cli/vendor/yq/yq-<arch>` | bundled yq, picked automatically by architecture |
+
+Everything ulh itself needs lives under the clone directory - there is no state
+in `/etc` or `/var`. What the individual scripts install (packages, services,
+config files) is documented in the header comment of each script.
+
+**Installations from before 2026-09-22** kept these files in `custom/`
+(`custom/repo.yaml`, `custom/answer.yaml`, `custom/keys/`, `custom/<repo>/`).
+ulh moves them to the places above on its first start after the update. Nothing
+is overwritten: if a file already exists in the new place, the old one stays and
+ulh says so.
 
 ---
 
@@ -93,42 +151,43 @@ grep cheat sheet for finding things from the shell.
 ### Automatic (One-liner wget)
 
 ```bash
-wget -qO - https://raw.githubusercontent.com/sorglos-it/ulh/main/install.sh | bash
+wget -qO - https://raw.githubusercontent.com/sorglos-it/ulh/main/tools/install.sh | bash
 ```
 
 ### Automatic (One-liner curl)
 ```bash
-curl -sSL https://raw.githubusercontent.com/sorglos-it/ulh/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/sorglos-it/ulh/main/tools/install.sh | bash
 ```
 
 Then:
 ```bash
-cd ~/ulh && bash ulh.sh
+bash ~/ulh/apps/cli/ulh.sh
 ```
+
+The older one-liner with `.../main/install.sh | bash && cd ~/ulh && bash ulh.sh`
+still works: both files in the root forward to the new places.
 
 ### Manual Clone
 
 ```bash
 git clone https://github.com/sorglos-it/ulh.git
-cd ulh
-bash ulh.sh
+bash ulh/apps/cli/ulh.sh
 ```
 
 ### Platform-Specific
 
-**install.sh** automatically:
-- Detects OS (Debian, Red Hat, Arch, SUSE, Alpine)
-- Installs git (only dependency)
-- Clones/updates ulh
+**tools/install.sh** automatically:
+- Installs git if it is missing (the only dependency) - detects the OS
+  (Debian, Red Hat, Arch, SUSE, Alpine) for that
+- Clones ulh to `~/ulh`, or pulls the latest version if it is already there
 - Works with or without sudo (detects if running as root)
 
 ---
 
-## Configuration
+## Catalog
 
-### System Scripts (config.yaml)
-
-Controls built-in ulh scripts at repo root:
+`apps/cli/assets/catalog.yaml` controls the built-in ulh scripts. Updates replace
+it - put your own scripts into a [custom repository](#custom-repositories).
 
 ```yaml
 scripts:
@@ -161,7 +220,7 @@ scripts:
 
   mariadb:
     description: "MariaDB database server"
-    category: "Database"
+    category: "Databases"
     file: "mariadb.sh"
     sudo:
     os_family:
@@ -182,7 +241,7 @@ scripts:
 **Fields:**
 - `category` - Shown in menu
 - `description` - Brief info
-- `file` - Script path (relative to scripts/)
+- `file` - Script file in `apps/cli/assets/scripts/`
 - `sudo:` - Elevate with sudo (presence-based, optional)
 - `os_family` - Supported distributions (optional)
 - `os_only` - Single distro (optional, overrides os_family)
@@ -193,13 +252,15 @@ scripts:
 - `yes/no` - Boolean
 - `number` - Numeric input
 
+After changing the catalog, refresh the script reference: `bash tools/gen-scripts-doc.sh`.
+
 ---
 
 ## Answer File (answer.yaml)
 
 ### What It Does
 
-The `custom/answer.yaml` file provides **default values for prompts** and enables **per-action automation** via the `autoscript` flag.
+The `apps/cli/config/answer.yaml` file provides **default values for prompts** and enables **per-action automation** via the `autoscript` flag.
 
 **Two modes:**
 1. **Interactive mode** (default) - User sees all prompts, can press ENTER for defaults
@@ -286,11 +347,11 @@ scripts:
 
 ### Important Notes
 
-- **Script/action names:** Must match config.yaml exactly (case-sensitive)
-- **Action name:** Use the `parameter` value from config.yaml actions
+- **Script/action names:** Must match the catalog exactly (case-sensitive)
+- **Action name:** Use the `parameter` value from the catalog actions
 - **Quote values:** Always use `"quotes"` around defaults
 - **Empty default:** Use `default: ""` if user must type (no suggestion)
-- **Fallback:** If answer.yaml missing/invalid → uses config.yaml defaults
+- **Fallback:** If answer.yaml missing/invalid → uses the catalog defaults
 - **Graceful fallback:** If autoscript present but answers missing → shows prompts anyway
 - **Per-action:** Each action can have independent automation
 
@@ -340,9 +401,55 @@ scripts:
    - Then add `autoscript: true` once confident
    - Keep interactive for development/testing
 
+### Automation Logic
+
+1. **Check:** Is `autoscript: true` set for this action?
+2. **If yes:** Are all required answers present in `.answers[]`?
+   - **All present:** Skip prompts, run automatically
+   - **Any missing:** Show interactive prompts (graceful fallback)
+3. **If no:** Always show interactive prompts
+
+### Works With Custom Repos
+
+Custom repositories use the **same answer.yaml** as main ulh:
+
+```yaml
+scripts:
+  hello:                  # Custom repo script
+    run:
+      autoscript: true
+      answers:
+        - default: "World"
+```
+
+**Automatic:** Load answers → detect OS → execute script. Same as system scripts.
+
+### Troubleshooting answer.yaml
+
+**Defaults not loading?**
+- Check: `.scripts.${script}.${action}` path exists
+- Check: Script/action names match the catalog (case-sensitive)
+- Check: YAML valid: `apps/cli/vendor/yq/yq-amd64 eval 'keys' apps/cli/config/answer.yaml`
+
+**Autoscript not triggering?**
+- Check: `autoscript: true` (not just `autoscript:`)
+- Check: All answers present for all prompts
+- Check: Action name matches the catalog parameter value
+
+**Falls back to interactive?**
+- Expected: If answers are incomplete
+- Intentional: Graceful degradation instead of failure
+- Solution: Add missing answers to `answers:` array
+
 ---
 
 ## Custom Repositories
+
+Your own scripts live in repositories of their own - a folder, or a git
+repository ulh clones for you. Each one is `apps/cli/data/repos/<path>/` with a
+`config.yaml` (same layout as the catalog, scripts referenced by `path`) and a
+`scripts/` folder. The demo in `apps/cli/data/repos/demo-scripts/` shows it all;
+switch it on in `apps/cli/config/repo.yaml`.
 
 ### Setup
 
@@ -373,17 +480,17 @@ mkdir -p scripts
 cat > scripts/backup.sh << 'EOF'
 #!/bin/bash
 # Your backup script here
+ACTION="${1%%,*}"
 BACKUP_DIR="${BACKUP_DIR:-/backups}"
 echo "Backing up to: $BACKUP_DIR"
 EOF
 
-chmod +x scripts/backup.sh
 git init
 git add .
 git commit -m "Initial commit"
 ```
 
-2. **Edit ulh's custom/repo.yaml:**
+2. **Edit ulh's apps/cli/config/repo.yaml:**
 
 ```yaml
 repositories:
@@ -396,9 +503,25 @@ repositories:
     auto_update:          # Auto-pull on startup (optional)
 ```
 
-3. **ulh handles the rest** - Auto-clone, sync, execute
+3. **ulh handles the rest** - Auto-clone into `apps/cli/data/repos/my-scripts/`, sync, execute
 
-**Note:** Custom repos use `config.yaml` (not custom.yaml), same as main ulh structure.
+Without git: leave `url: ""` and put the folder into `apps/cli/data/repos/` yourself.
+
+**Note:** Custom repos use `config.yaml` (not custom.yaml), same layout as ulh's catalog.
+
+### ulh's helpers in your scripts
+
+A script in `data/repos/<repo>/scripts/` can load ulh's helpers
+(`parse_parameters`, `log_info`, `msg_ok`, `detect_os`, the `PKG_*` variables):
+
+```bash
+source "$(dirname "$0")/../../../lib/bootstrap.sh"
+parse_parameters "$1"
+```
+
+That path is the same as in old installations (`custom/<repo>/scripts/`): ulh
+generates `apps/cli/data/lib/` with small forwarders to `classes/`, so existing
+scripts keep working unchanged.
 
 ### Authentication Methods
 
@@ -412,7 +535,7 @@ repositories:
 ```
 
 SSH key resolution:
-1. `custom/keys/id_rsa` ← Recommended (protected by .gitignore)
+1. `apps/cli/data/keys/id_rsa` ← Recommended (git-ignored)
 2. `~/.ssh/id_rsa` ← Fallback
 
 **HTTPS Token**
@@ -458,10 +581,10 @@ repositories:
 ### Using the Template
 
 ```bash
-cp scripts/_template.sh scripts/my-script.sh
+cp apps/cli/templates/script-template.sh apps/cli/assets/scripts/my-script.sh
 ```
 
-**_template.sh** provides:
+**script-template.sh** provides:
 - Parameter parsing (`action,VAR1=val1,VAR2=val2`)
 - Modern logging functions
 - `detect_os()` for all 5 distributions
@@ -470,9 +593,10 @@ cp scripts/_template.sh scripts/my-script.sh
 
 ### Complete Example
 
-Every script in `scripts/` follows this shape. `bootstrap.sh` supplies
-`parse_parameters`, the `log_*` helpers, `detect_os` with the `PKG_*` variables,
-`command_exists` and `print_usage` - never reimplement those locally.
+Every script in `apps/cli/assets/scripts/` follows this shape. `bootstrap.sh`
+supplies `parse_parameters`, the `log_*` and `msg_*` helpers, `detect_os` with the
+`PKG_*` variables, `command_exists` and `print_usage` - never reimplement those
+locally.
 
 ```bash
 #!/bin/bash
@@ -481,7 +605,7 @@ Every script in `scripts/` follows this shape. `bootstrap.sh` supplies
 # Install, update, uninstall and configure it on all Linux distributions
 
 set -e
-source "$(dirname "$0")/../lib/bootstrap.sh"
+source "$(dirname "$0")/../../classes/bootstrap.sh"
 parse_parameters "$1"
 
 install_web_server() {
@@ -522,7 +646,7 @@ uninstall_web_server() {
 configure_web_server() {
     log_info "Configuring web server..."
 
-    # variables come from the prompts defined in config.yaml
+    # variables come from the prompts defined in the catalog
     PORT="${PORT:-80}"
     log_info "Port: $PORT"
 
@@ -539,7 +663,7 @@ case "$ACTION" in
 esac
 ```
 
-**Note on `sudo`:** scripts with `sudo:` in config.yaml already run as root, so
+**Note on `sudo`:** scripts with `sudo:` in the catalog already run as root, so
 call `systemctl` and the package manager directly - no `sudo` prefix inside the
 script.
 
@@ -558,15 +682,18 @@ exactly how `ufw.sh` and `docker-compose.sh` lost half their code in 0668654.
 4. **Proper error handling** - Use `log_error` to exit cleanly
 5. **Service management** - Enable and start services where applicable
 6. **Unknown action** - End the dispatcher with `print_usage <name> && exit 1`
-7. **Keep config.yaml in sync** - Every action in the script needs an entry, and
-   every entry needs a matching branch in the `case`
+7. **Keep the catalog in sync** - Every action in the script needs an entry in
+   `apps/cli/assets/catalog.yaml`, and every entry needs a matching branch in the `case`
 8. **Clean formatting** - Indent properly, use descriptive variable names
-9. **Test syntax** - Run `bash -n script.sh` before committing
+9. **Test** - Run `bash apps/cli/tests/run.sh` before committing (Linux)
 
-Quick check that every script still dispatches what config.yaml advertises:
+`tests/run.sh` checks the syntax of every script, that catalog and script files
+match, that every script answers an unknown action with its usage, and runs the
+menu, the move of old `custom/` folders and the demo repository - without
+installing anything. Quick syntax check on its own:
 
 ```bash
-for f in scripts/*.sh; do bash -n "$f" || echo "BROKEN: $f"; done
+for f in apps/cli/assets/scripts/*.sh; do bash -n "$f" || echo "BROKEN: $f"; done
 ```
 
 ---
@@ -609,7 +736,7 @@ All menus use consistent 80-character box formatting:
 - Implementation: `get_search_results()` zips the three yq lists
   (`yaml_scripts`, `yaml_all_descriptions`, `yaml_all_categories`) and filters in
   bash - no per-script yq calls, the OS check runs only for hits
-- Scope: system scripts from config.yaml (custom repo scripts are not indexed)
+- Scope: system scripts from the catalog (custom repo scripts are not indexed)
 
 **Script Menu**
 - Shows: Scripts in selected category with descriptions
@@ -635,25 +762,23 @@ machine from a Windows working copy (SMB, SCP, rsync) instead of being cloned.
 find ~/ulh -type f \( -name '*.sh' -o -name '*.yaml' -o -name '*.md' \) \
     -exec sed -i 's/\r$//' {} +
 ```
-Leaves `lib/yq/` alone - those are binaries and must not be touched. Better:
-re-clone, which also restores the `.git` directory the auto-update needs.
+Leaves `apps/cli/vendor/yq/` alone - those are binaries and must not be touched.
+Better: re-clone, which also restores the `.git` directory the auto-update needs.
 
 ### Scripts fail to run
 
 **Check:**
-- Syntax: `bash -n scripts/my-script.sh`
-- Permissions: `ls -la scripts/*.sh` (should be executable)
+- Syntax: `bash -n apps/cli/assets/scripts/my-script.sh`
 - Dependencies: `which git` (git required)
 
-**Solution:**
-ulh auto-chmods scripts, but verify manually if needed.
+ulh runs every script with `bash`, so scripts don't need the executable bit.
 
 ### Custom repo not cloning
 
 **Check:**
 - URL is valid: `git clone [URL] /tmp/test`
-- SSH key exists: `ls -la custom/keys/id_rsa`
-- SSH key permissions: `chmod 600 custom/keys/id_rsa`
+- SSH key exists: `ls -la apps/cli/data/keys/id_rsa`
+- SSH key permissions: `chmod 600 apps/cli/data/keys/id_rsa`
 
 **Solution:**
 - Test git access manually
@@ -682,23 +807,32 @@ ulh auto-chmods scripts, but verify manually if needed.
 - Resize terminal or use screen multiplexer
 - Set TERM: `export TERM=xterm-256color`
 
+### Update stops with an error
+
+ulh updates itself with `git pull` and only fast-forward. If you changed files
+that ulh ships (for example the catalog), the pull stops and ulh keeps running
+the old version. Check with `git -C ~/ulh status`; your own files belong into
+`apps/cli/config/` and `apps/cli/data/`, which updates never touch.
+
 ---
 
 ## API Reference
 
-### Core Functions (lib/core.sh)
+### Core Functions (classes/core.sh)
 
 ```bash
 # Logging
-msg_info "message"      # Green ✓
+msg_info "message"      # Cyan ℹ
+msg_ok "message"        # Green ✓
 msg_warn "message"      # Yellow ⚠
-msg_err "message"       # Red ✗ + exit 1
+msg_err "message"       # Red ✗ (does not exit)
+die "message"           # Red ✗ + exit 1
 
 # OS Detection
-detect_os()            # Sets OS_DISTRO, PKG_* variables
+detect_os()            # Sets OS_DISTRO, OS_FAMILY, OS_VERSION
 ```
 
-### Menu Functions (lib/menu.sh)
+### Menu Functions (classes/menu.sh)
 
 ```bash
 menu_header "Title"                # Unified 80-char header
@@ -709,7 +843,7 @@ menu_ask_search                    # Prompts for a term, then menu_search
 get_search_results results "term"  # Fills array with "name|description|category"
 ```
 
-### Repository Functions (lib/repos.sh)
+### Repository Functions (classes/repos.sh)
 
 ```bash
 repo_init               # Initialize all custom repos on startup
@@ -718,51 +852,12 @@ repo_list_enabled       # Get list of enabled repo names
 repo_get_name           # Get display name for repo
 ```
 
-### Execution (lib/execute.sh)
+### Execution (classes/execute.sh)
 
 ```bash
 execute_action          # Run script with parameters
 execute_custom_repo_action  # Run custom repo script
 ```
-
----
-
-## Support
-
-- **GitHub Issues**: https://github.com/sorglos-it/ulh/issues
-- **Documentation**: See README.md + SCRIPTS.md + TREE.md
-- **Script Examples**: Check scripts/ directory
-
----
-
-## Answer.yaml + Autoscript Details
-
-### Per-Action Autoscript (v0.5)
-
-Autoscript is now **per-action**, not per-script. Each action can be independently automated:
-
-```yaml
-scripts:
-  ubuntu:
-    install:                     # Interactive action
-      - default: "no"
-    pro:                         # Automated action
-      autoscript: true
-      answers:
-        - default: "token123"
-```
-
-**Key:** `autoscript: true` on the **action level**, not the script level.
-
-### Automation Logic
-
-1. **Check:** Is `autoscript: true` set for this action?
-2. **If yes:** Are all required answers present in `.answers[]`?
-   - **All present:** Skip prompts, run automatically
-   - **Any missing:** Show interactive prompts (graceful fallback)
-3. **If no:** Always show interactive prompts
-
-### Function Reference
 
 **`load_answers()`**
 - Loads answer.yaml once per session (cached)
@@ -792,38 +887,38 @@ scripts:
 - Validates: yes/no, number, text, required/optional
 - Returns user input or default
 
-### Works With Custom Repos
+### Update and your files (classes/update.sh, classes/userdata.sh)
 
-Custom repositories use the **same answer.yaml** as main ulh:
-
-```yaml
-scripts:
-  hello:                  # Custom repo script
-    run:
-      autoscript: true
-      answers:
-        - default: "World"
+```bash
+update_auto             # On start: pull if behind, then restart ulh
+update_check            # --check-update
+update_apply            # --update
+userdata_migrate        # Move an old custom/ folder to config/ and data/
+userdata_init           # Create repo.yaml, the demo repo and data/lib/ if missing
 ```
 
-**Automatic:** Load answers → detect OS → execute script. Same as system scripts.
+### Library Map
 
-### Troubleshooting
-
-**Defaults not loading?**
-- Check: `.scripts.${script}.${action}` path exists
-- Check: Script/action names match config.yaml (case-sensitive)
-- Check: YAML valid: `yq eval 'keys' custom/answer.yaml`
-
-**Autoscript not triggering?**
-- Check: `autoscript: true` (not just `autoscript:`)
-- Check: All answers present for all prompts
-- Check: Action name matches config.yaml parameter value
-
-**Falls back to interactive?**
-- Expected: If answers are incomplete
-- Intentional: Graceful degradation instead of failure
-- Solution: Add missing answers to `answers:` array
+| File | Responsibility | Key functions |
+|------|----------------|---------------|
+| `classes/bootstrap.sh` | sourced by every script in `assets/scripts/` | `parse_parameters`, `log_*`, `msg_*`, `detect_os`, `command_exists`, `print_usage` |
+| `classes/colors.sh` | ANSI color codes | `$RED`, `$GREEN`, `$C_CYAN`, `separator`, `separator_dots` |
+| `classes/core.sh` | menu-side OS detection and messages | `detect_os`, `msg_info`, `msg_ok`, `msg_warn`, `msg_err` |
+| `classes/yaml.sh` | reads the catalog through yq | `yaml_load`, `yaml_scripts`, `yaml_scripts_by_cat`, `yaml_all_descriptions`, `yaml_action_*`, `yaml_prompt_*` |
+| `classes/menu.sh` | renders and navigates the menus | `menu_main`, `menu_category`, `menu_actions`, `menu_search`, `menu_header/footer` |
+| `classes/execute.sh` | collects answers and runs the script | `execute_action`, `prompt_by_type`, `get_answer_default`, `has_all_answers` |
+| `classes/repos.sh` | custom repositories | `repo_init`, `repo_sync_all`, `repo_list_enabled`, `repo_get_path` |
+| `classes/update.sh` | self-update via git | `update_auto`, `update_check`, `update_apply` |
+| `classes/userdata.sh` | your files in `config/` and `data/` | `userdata_migrate`, `userdata_init` |
 
 ---
 
-**Last Updated:** 2026-08-11 | **Version:** 0.5
+## Support
+
+- **GitHub Issues**: https://github.com/sorglos-it/ulh/issues
+- **Documentation**: See [README](../README.md) + [scripts.md](scripts.md)
+- **Script Examples**: Check `apps/cli/assets/scripts/`
+
+---
+
+**Last Updated:** 2026-09-22 | **Version:** 0.5
