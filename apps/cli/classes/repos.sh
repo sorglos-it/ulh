@@ -55,7 +55,7 @@ repo_sync_one() {
     # Get config
     url=$(yq_eval ".repositories.$repo_name.url" "$repo_config" 2>/dev/null)
     path=$(yq_eval ".repositories.$repo_name.path" "$repo_config" 2>/dev/null)
-    auth_method=$(yq_eval ".repositories.$repo_name.auth_method // none" "$repo_config" 2>/dev/null)
+    auth_method=$(yq_eval ".repositories.$repo_name.auth_method // \"none\"" "$repo_config" 2>/dev/null)
     
     # Skip if no path defined
     if [[ -z "$path" ]]; then
@@ -178,7 +178,9 @@ repo_pull() {
             fi
         fi
         
-        if git pull origin main 2>/dev/null || git pull origin master 2>/dev/null; then
+        # core.fileMode=false: a chmod on a script must never block the pull
+        if git -c core.fileMode=false pull origin main 2>/dev/null ||
+           git -c core.fileMode=false pull origin master 2>/dev/null; then
             msg_info "Successfully updated '$repo_name'"
             unset GIT_SSH_COMMAND
             cd - > /dev/null

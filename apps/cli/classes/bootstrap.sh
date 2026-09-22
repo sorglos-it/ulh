@@ -52,6 +52,13 @@ log_section() {
     printf "\n${BLUE}▶${NC} %s\n" "$1"
 }
 
+# Same names as on the menu side (core.sh) - many scripts use these.
+# Unlike log_error, msg_err does not exit.
+msg_ok()   { printf "${GREEN}✓${NC} %s\n" "$*"; }
+msg_info() { printf "${CYAN}ℹ${NC} %s\n" "$*"; }
+msg_warn() { printf "${YELLOW}⚠${NC} %s\n" "$*"; }
+msg_err()  { printf "${RED}✗${NC} %s\n" "$*" >&2; }
+
 # ============================================================
 # OS DETECTION & PACKAGE MANAGER
 # ============================================================

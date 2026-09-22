@@ -140,7 +140,6 @@ execute_action() {
     local aname=$(yaml_action_name "$script" "$action_index")
 
     [[ ! -f "$script_path" ]] && { menu_error "Script not found: $script_path"; return 1; }
-    [[ ! -x "$script_path" ]] && chmod +x "$script_path" 2>/dev/null
 
     # Determine autoscript mode for this action (using parameter as action key)
     local autoscript_mode="false"
@@ -267,7 +266,6 @@ execute_custom_repo_action() {
     fi
     
     [[ ! -f "$script_path" ]] && { menu_error "Script not found: $repo_path/$script_file or $repo_path/scripts/$script_file"; return 1; }
-    [[ ! -x "$script_path" ]] && chmod +x "$script_path" 2>/dev/null
     
     # Get action details
     local aname=$(yq_eval ".scripts.$script_name.actions[$action_index].name" "$custom_yaml" 2>/dev/null)
