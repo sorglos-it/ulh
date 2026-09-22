@@ -1,0 +1,65 @@
+# Custom Repository Configuration for ulh
+#
+# ulh copies this template to apps/cli/config/repo.yaml on the first start.
+# Edit repo.yaml, not this file. config/ and data/ belong to you: updates
+# never touch them.
+#
+# Each repository is a folder in apps/cli/data/repos/<path> with its own
+# config.yaml and scripts/. See docs/guide.md > "Custom Repositories" for
+# setup, authentication options and troubleshooting.
+#
+# Flag Logic (presence-based; independent):
+#   enabled     (present)   → show in menu
+#   enabled     (absent)    → hide from menu, ignore completely
+#   auto_update (present)   → git pull on startup (if it's a git repo)
+#   auto_update (absent)    → don't pull on startup
+#
+# Examples:
+#   enabled: + auto_update:     → show in menu + auto-pull at startup
+#   enabled: (no auto_update)   → show in menu, no auto-pull
+#   auto_update: (no enabled)   → hidden from menu, but auto-pull at startup
+#   (neither present)           → completely ignored
+#
+# Never write passwords or tokens into this file - use ${ENV_VARIABLES}.
+# SSH keys go into apps/cli/data/keys/.
+
+repositories:
+  # Demo Repository - Built-in example scripts
+  # Already exists locally in apps/cli/data/repos/demo-scripts/
+  # To try it: remove the # in front of enabled:
+  demo-scripts:
+    name: "Demo Scripts"
+    url: ""  # Leave empty for local-only; set to git URL to enable cloning/pulling
+    path: "demo-scripts"
+    auth_method: "none"
+    #enabled:
+  # Example 1: SSH with apps/cli/data/keys/ (recommended)
+  # enabled: + auto_update: = show in menu + auto-pull at startup
+  # See docs/guide.md for SSH setup instructions
+  custom-scripts:
+    name: "My Custom Scripts"
+    url: "git@github.com:your-org/ulh-custom.git"
+    path: "custom-scripts"
+    auth_method: "ssh"
+    ssh_key: "id_rsa"
+
+  # Example 2: HTTPS with Personal Access Token
+  # See docs/guide.md for GitHub token setup
+  company-tools:
+    name: "Company Tools & Scripts"
+    url: "https://github.com/your-company/company-tools.git"
+    path: "company-tools"
+    auth_method: "https_token"
+    token: "${COMPANY_TOKEN}"
+
+  # Example 3: Public repository (no authentication)
+  community-addons:
+    name: "Community Addons"
+    url: "https://github.com/public-org/ulh-addons.git"
+    path: "community-addons"
+    auth_method: "none"
+
+update_settings:
+  auto_update_on_start:
+  retry_on_failure: 3
+  retry_delay_seconds: 5

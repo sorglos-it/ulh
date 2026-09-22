@@ -1,10 +1,26 @@
-# Custom user scripts and configuration
-# custom/* (not custom/): excluding the directory itself would make the
-# re-includes below impossible - git never re-includes inside an excluded dir.
+# Erzeugtes
+dist/
+bin/
+obj/
+.pio/
+
+# Laufzeitdaten - Ausnahme: Firmware-Dateisystem
+apps/*/data/
+!apps/firmware*/data/
+
+# Echte Konfiguration und Secrets - nur *.example kommt ins Repo
+apps/*/config/*
+!apps/*/config/*.example
+apps/firmware*/include/config.h
+
+# Fremdcode per Paketmanager
+apps/*/vendor/
+# ... except yq: copied by hand, belongs in the repo (see THIRD-PARTY.md)
+!apps/cli/vendor/
+
+# Old place of your own files (before 2026-09-22). ulh moves them to
+# apps/cli/config/ and apps/cli/data/ on its next start.
 custom/*
-!custom/repo.yaml
-!custom/demo-scripts/
-custom.yaml
 
 # Logs
 logs/
@@ -12,10 +28,14 @@ logs/
 
 # Temporary files
 .DS_Store
+Thumbs.db
 *.swp
 *.swo
 *~
-
-# Node modules (if ever needed)
-node_modules/
 FETCH_HEAD
+custom.yaml
+node_modules/
+
+# Tool output, never part of ulh
+receipts/
+review-receipts/

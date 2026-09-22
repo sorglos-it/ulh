@@ -3,11 +3,13 @@
 # "/bin/bash^M: bad interpreter" on the target machine.
 * text=auto eol=lf
 
-*.sh    text eol=lf
-*.yaml  text eol=lf
-*.yml   text eol=lf
-*.md    text eol=lf
-LICENSE text eol=lf
+*.sh      text eol=lf
+*.yaml    text eol=lf
+*.yml     text eol=lf
+*.md      text eol=lf
+*.example text eol=lf
+LICENSE   text eol=lf
+VERSION   text eol=lf
 
 # bundled yq binaries - never touch these
-lib/yq/* binary
+apps/cli/vendor/yq/* binary

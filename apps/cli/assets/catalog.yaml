@@ -1,0 +1,2680 @@
+# ulh catalog - every entry of the ulh menu. Paths below are from the ulh folder.
+#
+# Each entry runs apps/cli/assets/scripts/<file> with one parameter:
+# "action,VAR1=value1,VAR2=value2". New script: copy
+# apps/cli/templates/script-template.sh. Fields and prompt types: docs/guide.md.
+#
+# Your own scripts do not belong here: updates replace this file. Put them into
+# a repository of your own, see apps/cli/config/repo.yaml.
+
+categories:
+  Essential Tools:
+    description: Core utilities for system administration
+  Text Editors:
+    description: Text editors and code editors
+  Shells & Terminals:
+    description: Shell environments and terminal tools
+  Web Servers:
+    description: HTTP/HTTPS web servers
+  Databases:
+    description: Database management systems
+  Container & Virtualization:
+    description: Container and VM technologies
+  Programming Languages:
+    description: Language runtimes and environments
+  Development Tools:
+    description: Development and debugging tools
+  System Utilities:
+    description: System information and file tools
+  Backup & Sync:
+    description: Backup and file synchronization
+  Monitoring & Logging:
+    description: System monitoring and log management
+  Networking:
+    description: Network tools and utilities
+  System Management:
+    description: System configuration and management
+  Package Managers:
+    description: Package and dependency managers
+  Security & Sandboxing:
+    description: Security and sandboxing tools
+  Multimedia:
+    description: Media processing and conversion
+scripts:
+  curl:
+    description: HTTP requests utility
+    category: Essential Tools
+    file: curl.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install curl
+    - name: update
+      parameter: update
+      description: Update curl
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall curl
+  wget:
+    description: HTTP/FTP download utility
+    category: Essential Tools
+    file: wget.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install wget
+    - name: update
+      parameter: update
+      description: Update wget
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall wget
+  git:
+    description: Version control system
+    category: Essential Tools
+    file: git.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install git
+    - name: update
+      parameter: update
+      description: Update git
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall git
+    - name: config
+      parameter: config
+      description: Configure git user
+      prompts:
+      - question: Git username?
+        variable: GIT_USER
+        type: text
+        default: ''
+      - question: Git email?
+        variable: GIT_EMAIL
+        type: text
+        default: ''
+  vim:
+    description: Advanced text editor
+    category: Text Editors
+    file: vim.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install vim
+    - name: update
+      parameter: update
+      description: Update vim
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall vim
+    - name: config
+      parameter: config
+      description: Configure vim
+  nano:
+    description: Simple text editor
+    category: Text Editors
+    file: nano.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install nano
+    - name: update
+      parameter: update
+      description: Update nano
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall nano
+  htop:
+    description: System resource monitor
+    category: Essential Tools
+    file: htop.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install htop
+    - name: update
+      parameter: update
+      description: Update htop
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall htop
+  tmux:
+    description: Terminal multiplexer
+    category: Essential Tools
+    file: tmux.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install tmux
+    - name: update
+      parameter: update
+      description: Update tmux
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall tmux
+    - name: config
+      parameter: config
+      description: Configure tmux
+  screen:
+    description: Terminal multiplexer
+    category: Essential Tools
+    file: screen.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install screen
+    - name: update
+      parameter: update
+      description: Update screen
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall screen
+  openssh:
+    description: SSH server and client
+    category: Networking
+    file: openssh.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install and enable SSH
+    - name: update
+      parameter: update
+      description: Update SSH
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall SSH
+    - name: config
+      parameter: config
+      description: Configure SSH daemon with comprehensive options
+      prompts:
+      - question: '[NETWORK] SSH listening port? (default: 22)'
+        variable: SSH_PORT
+        type: number
+        default: '22'
+      - question: '[NETWORK] Listen on IPv4 address? (0.0.0.0 for all, or specific
+          IP)'
+        variable: LISTEN_IPv4
+        type: text
+        default: 0.0.0.0
+      - question: '[NETWORK] Listen on IPv6 address? (:: for all, or specific IP,
+          empty to disable)'
+        variable: LISTEN_IPv6
+        type: text
+        default: '::'
+      - question: '[NETWORK] SSH Protocol version? (2 or 1,2, default: 2)'
+        variable: SSH_PROTOCOL
+        type: text
+        default: '2'
+      - question: '[NETWORK] TCP Keep Alive? (yes/no, default: yes)'
+        variable: TCP_KEEPALIVE
+        type: yes/no
+        default: 'yes'
+      - question: '[NETWORK] Address family? (inet/inet6/any, default: any)'
+        variable: ADDRESS_FAMILY
+        type: text
+        default: any
+      - question: '[AUTH] Password Authentication? (yes/no, default: yes)'
+        variable: PASS_AUTH
+        type: yes/no
+        default: 'yes'
+      - question: '[AUTH] Public Key Authentication? (yes/no, default: yes)'
+        variable: PUBKEY_AUTH
+        type: yes/no
+        default: 'yes'
+      - question: '[AUTH] Kerberos Authentication? (yes/no, default: no)'
+        variable: KERBEROS_AUTH
+        type: yes/no
+        default: 'no'
+      - question: '[AUTH] GSSAPI Authentication? (yes/no, default: no)'
+        variable: GSSAPI_AUTH
+        type: yes/no
+        default: 'no'
+      - question: '[AUTH] Use PAM? (yes/no, default: yes)'
+        variable: USE_PAM
+        type: yes/no
+        default: 'yes'
+      - question: '[AUTH] Authentication methods? (password/publickey/etc, empty for
+          default)'
+        variable: AUTH_METHODS
+        type: text
+        default: ''
+      - question: '[AUTH] Max authentication attempts? (default: 6)'
+        variable: MAX_AUTH_TRIES
+        type: number
+        default: '6'
+      - question: '[USERS] Permit Root Login? (yes/no/prohibit-password/without-password/forced-commands-only,
+          default: prohibit-password)'
+        variable: PERMIT_ROOT
+        type: text
+        default: prohibit-password
+      - question: '[USERS] Allow Users? (comma-separated list, empty for none)'
+        variable: ALLOW_USERS
+        type: text
+        default: ''
+      - question: '[USERS] Allow Groups? (comma-separated list, empty for none)'
+        variable: ALLOW_GROUPS
+        type: text
+        default: ''
+      - question: '[USERS] Deny Users? (comma-separated list, empty for none)'
+        variable: DENY_USERS
+        type: text
+        default: ''
+      - question: '[USERS] Deny Groups? (comma-separated list, empty for none)'
+        variable: DENY_GROUPS
+        type: text
+        default: ''
+      - question: '[SECURITY] Strict Modes? (yes/no, default: yes)'
+        variable: STRICT_MODES
+        type: yes/no
+        default: 'yes'
+      - question: '[SECURITY] Permit User Environment? (yes/no, default: no)'
+        variable: PERMIT_USER_ENV
+        type: yes/no
+        default: 'no'
+      - question: '[SECURITY] Permit Empty Passwords? (yes/no, default: no)'
+        variable: PERMIT_EMPTY_PASS
+        type: yes/no
+        default: 'no'
+      - question: '[SECURITY] Permit Tunnel? (yes/no, default: no)'
+        variable: PERMIT_TUNNEL
+        type: yes/no
+        default: 'no'
+      - question: '[SECURITY] Compression? (yes/no/delayed, default: delayed)'
+        variable: COMPRESSION
+        type: text
+        default: delayed
+      - question: '[SECURITY] Client Alive Interval (seconds, 0=disabled, default:
+          300)'
+        variable: CLIENT_ALIVE_INTERVAL
+        type: number
+        default: '300'
+      - question: '[SECURITY] Client Alive Count Max? (default: 3)'
+        variable: CLIENT_ALIVE_COUNTMAX
+        type: number
+        default: '3'
+      - question: '[SECURITY] Login Grace Time (seconds, default: 120)'
+        variable: LOGIN_GRACE_TIME
+        type: number
+        default: '120'
+      - question: '[FORWARDING] X11 Forwarding? (yes/no, default: no)'
+        variable: X11_FORWARDING
+        type: yes/no
+        default: 'no'
+      - question: '[FORWARDING] X11 Use Localhost? (yes/no, default: yes)'
+        variable: X11_USE_LOCALHOST
+        type: yes/no
+        default: 'yes'
+      - question: '[FORWARDING] Allow Agent Forwarding? (yes/no, default: yes)'
+        variable: ALLOW_AGENT_FORWARD
+        type: yes/no
+        default: 'yes'
+      - question: '[FORWARDING] Allow TCP Forwarding? (yes/no/local/remote, default:
+          yes)'
+        variable: ALLOW_TCP_FORWARD
+        type: text
+        default: 'yes'
+      - question: '[FORWARDING] Gateway Ports? (yes/no, default: no)'
+        variable: GATEWAY_PORTS
+        type: yes/no
+        default: 'no'
+      - question: '[LOGGING] Print MOTD? (yes/no, default: yes)'
+        variable: PRINT_MOTD
+        type: yes/no
+        default: 'yes'
+      - question: '[LOGGING] Print Last Log? (yes/no, default: yes)'
+        variable: PRINT_LASTLOG
+        type: yes/no
+        default: 'yes'
+      - question: '[LOGGING] Log Level? (QUIET/FATAL/ERROR/INFO/VERBOSE/DEBUG/DEBUG1/DEBUG2/DEBUG3,
+          default: INFO)'
+        variable: LOG_LEVEL
+        type: text
+        default: INFO
+      - question: '[LOGGING] Banner file path? (empty for none, e.g., /etc/ssh/banner)'
+        variable: BANNER
+        type: text
+        default: ''
+      - question: '[LOGGING] Syslog Facility? (AUTH/AUTHPRIV/DAEMON/LOCAL0-7, default:
+          AUTH)'
+        variable: SYSLOG_FACILITY
+        type: text
+        default: AUTH
+      - question: '[CRYPTO] Host Key Algorithms? (comma-separated list, empty for
+          defaults)'
+        variable: HOST_KEY_ALGORITHMS
+        type: text
+        default: ''
+      - question: '[CRYPTO] Ciphers? (comma-separated list, empty for defaults)'
+        variable: CIPHERS
+        type: text
+        default: ''
+      - question: '[CRYPTO] MACs (Message Authentication Codes)? (comma-separated
+          list, empty for defaults)'
+        variable: MACS
+        type: text
+        default: ''
+      - question: '[CRYPTO] Key Exchange Algorithms? (comma-separated list, empty
+          for defaults)'
+        variable: KEY_EXCHANGE_ALGOS
+        type: text
+        default: ''
+      - question: '[CRYPTO] Rekey Limit (bytes and time, e.g., ''1G 1h'', empty for
+          defaults)'
+        variable: REKEY_LIMIT
+        type: text
+        default: ''
+      - question: '[CRYPTO] Authorized Keys File? (default: .ssh/authorized_keys)'
+        variable: AUTHORIZED_KEYS_FILE
+        type: text
+        default: .ssh/authorized_keys
+      - question: '[SUBSYSTEM] SFTP subsystem path? (e.g., /usr/lib/openssh/sftp-server
+          or internal-sftp)'
+        variable: SFTP_SUBSYSTEM
+        type: text
+        default: /usr/lib/openssh/sftp-server
+    - name: fix-xauthority
+      parameter: fix-xauthority
+      description: Fix X11 Xauthority permissions and generate trust
+  net-tools:
+    description: Network utilities (ifconfig, netstat)
+    category: Networking
+    file: net-tools.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install net-tools
+    - name: update
+      parameter: update
+      description: Update net-tools
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall net-tools
+  build-essential:
+    description: Development tools and compilers
+    category: Essential Tools
+    file: build-essential.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install build tools
+    - name: update
+      parameter: update
+      description: Update build tools
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall build tools
+  jq:
+    description: JSON query processor
+    category: Essential Tools
+    file: jq.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install jq
+    - name: update
+      parameter: update
+      description: Update jq
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall jq
+  locate:
+    description: Fast file search using indexed database
+    category: Essential Tools
+    file: locate.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install locate
+    - name: update
+      parameter: update
+      description: Update locate database
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall locate
+      prompts:
+      - question: Remove locate database files? (y/n)
+        variable: CONFIRM
+        type: yes/no
+        default: 'no'
+    - name: config
+      parameter: config
+      description: Show locate configuration info
+  apache:
+    description: Apache HTTP Server
+    category: Web Servers
+    file: apache.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Apache
+    - name: update
+      parameter: update
+      description: Update Apache
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Apache
+      prompts:
+      - question: Delete config files?
+        variable: DELETE_CONFIG
+        type: yes/no
+        default: 'no'
+    - name: vhosts
+      parameter: vhosts
+      description: Configure virtual hosts
+      prompts:
+      - question: Virtual host name?
+        variable: VHOST_NAME
+        type: text
+        default: www.example.com
+      - question: Document root?
+        variable: VHOST_ROOT
+        type: text
+        default: /var/www/html
+  nginx:
+    description: Nginx HTTP Server
+    category: Web Servers
+    file: nginx.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Nginx
+    - name: update
+      parameter: update
+      description: Update Nginx
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Nginx
+      prompts:
+      - question: Delete config files?
+        variable: DELETE_CONFIG
+        type: yes/no
+        default: 'no'
+    - name: vhosts
+      parameter: vhosts
+      description: Configure server blocks
+      prompts:
+      - question: Server name?
+        variable: SERVER_NAME
+        type: text
+        default: ''
+      - question: Root path?
+        variable: ROOT_PATH
+        type: text
+        default: /var/www/html
+  mariadb:
+    description: MariaDB database server
+    category: Databases
+    file: mariadb.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    actions:
+    - name: install
+      parameter: install
+      description: Install MariaDB
+    - name: update
+      parameter: update
+      description: Update MariaDB
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall MariaDB
+      prompts:
+      - question: Delete data?
+        variable: DELETE_DATA
+        type: yes/no
+        default: 'no'
+      - question: Delete config?
+        variable: DELETE_CONFIG
+        type: yes/no
+        default: 'no'
+    - name: config
+      parameter: config
+      description: Configure MariaDB
+      prompts:
+      - question: Max connections?
+        variable: MAX_CONNECTIONS
+        type: number
+        default: '100'
+      - question: InnoDB buffer pool (e.g., 512M)?
+        variable: INNODB_BUFFER
+        type: text
+        default: 512M
+      - question: Bind address?
+        variable: BIND_ADDRESS
+        type: text
+        default: 127.0.0.1
+  postgres:
+    description: PostgreSQL database server
+    category: Databases
+    file: postgres.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install PostgreSQL
+    - name: update
+      parameter: update
+      description: Update PostgreSQL
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall PostgreSQL
+    - name: config
+      parameter: config
+      description: Configure PostgreSQL
+  mysql:
+    description: MySQL database server
+    category: Databases
+    file: mysql.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install MySQL
+    - name: update
+      parameter: update
+      description: Update MySQL
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall MySQL
+    - name: config
+      parameter: config
+      description: Configure MySQL
+  docker:
+    description: Docker container runtime
+    category: Container & Virtualization
+    file: docker.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Docker
+    - name: update
+      parameter: update
+      description: Update Docker
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Docker
+      prompts:
+      - question: Delete container images?
+        variable: DELETE_IMAGES
+        type: yes/no
+        default: 'no'
+    - name: config
+      parameter: config
+      description: Configure Docker
+      prompts:
+      - question: Storage driver (overlay2, etc)?
+        variable: STORAGE_DRIVER
+        type: text
+        default: overlay2
+      - question: Log driver (json-file, etc)?
+        variable: LOG_DRIVER
+        type: text
+        default: json-file
+  portainer:
+    description: Portainer container management UI
+    category: Container & Virtualization
+    file: portainer.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Portainer
+    - name: update
+      parameter: update
+      description: Update Portainer
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Portainer
+  proxmox:
+    description: Proxmox guest agent and container management
+    category: Container & Virtualization
+    file: proxmox.sh
+    sudo:
+    os_only: proxmox
+    actions:
+    - name: install
+      parameter: install
+      description: Install qemu-guest-agent (multi-distro)
+    - name: update
+      parameter: update
+      description: Update qemu-guest-agent
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall qemu-guest-agent
+      prompts:
+      - question: Are you sure? (yes/no)
+        variable: CONFIRM
+        type: yes/no
+        default: 'no'
+    - name: make-lxc-to-template
+      parameter: make-lxc-to-template
+      description: Convert LXC container to template
+      prompts:
+      - question: Container ID (CTID)?
+        variable: CTID
+        type: number
+        default: ''
+    - name: make-template-to-lxc
+      parameter: make-template-to-lxc
+      description: Convert template back to normal LXC container
+      prompts:
+      - question: Container ID (CTID)?
+        variable: CTID
+        type: number
+        default: ''
+    - name: unlock-vm
+      parameter: unlock-vm
+      description: Unlock a locked VM or container
+      prompts:
+      - question: Container/VM ID (CTID)?
+        variable: CTID
+        type: number
+        default: ''
+    - name: stop-all
+      parameter: stop-all
+      description: Stop all VMs and LXC containers
+    - name: list-lxc
+      parameter: list-lxc
+      description: List all LXC containers (running and offline) with VMID, Hostname,
+        IP, Status
+    - name: list-lxc-running
+      parameter: list-lxc-running
+      description: List only running LXC containers with VMID, Hostname, and live
+        IP (from eth0)
+    - name: start-vm
+      parameter: start-vm
+      description: Start a specific VM by VMID
+      prompts:
+      - question: VM ID (VMID)?
+        variable: VMID
+        type: number
+        default: ''
+    - name: stop-vm
+      parameter: stop-vm
+      description: Stop a specific VM by VMID
+      prompts:
+      - question: VM ID (VMID)?
+        variable: VMID
+        type: number
+        default: ''
+    - name: start-lxc
+      parameter: start-lxc
+      description: Start a specific LXC container by CTID
+      prompts:
+      - question: Container ID (CTID)?
+        variable: CTID
+        type: number
+        default: ''
+    - name: stop-lxc
+      parameter: stop-lxc
+      description: Stop a specific LXC container by CTID
+      prompts:
+      - question: Container ID (CTID)?
+        variable: CTID
+        type: number
+        default: ''
+  docker-compose:
+    description: Docker Compose multi-container orchestration
+    category: Container & Virtualization
+    file: docker-compose.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Docker Compose
+    - name: update
+      parameter: update
+      description: Update Docker Compose
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Docker Compose
+      prompts:
+      - question: Are you sure you want to uninstall Docker Compose? (yes/no)
+        variable: CONFIRM
+        type: yes/no
+        default: 'no'
+    - name: config
+      parameter: config
+      description: Show Docker Compose info
+  nodejs:
+    description: Node.js runtime and npm
+    category: Programming Languages
+    file: nodejs.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Node.js
+    - name: update
+      parameter: update
+      description: Update Node.js
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Node.js
+  python:
+    description: Python 3 runtime and pip
+    category: Programming Languages
+    file: python.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Python
+    - name: update
+      parameter: update
+      description: Update Python
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Python
+  ruby:
+    description: Ruby runtime and gem
+    category: Programming Languages
+    file: ruby.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Ruby
+    - name: update
+      parameter: update
+      description: Update Ruby
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Ruby
+  golang:
+    description: Go programming language
+    category: Programming Languages
+    file: golang.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Go
+    - name: update
+      parameter: update
+      description: Update Go
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Go
+  php:
+    description: PHP runtime and CLI
+    category: Programming Languages
+    file: php.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install PHP
+    - name: update
+      parameter: update
+      description: Update PHP
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall PHP
+  perl:
+    description: Perl runtime and modules
+    category: Programming Languages
+    file: perl.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Perl
+    - name: update
+      parameter: update
+      description: Update Perl
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Perl
+  rsyslog:
+    description: System logging daemon
+    category: Monitoring & Logging
+    file: rsyslog.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install rsyslog
+    - name: update
+      parameter: update
+      description: Update rsyslog
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall rsyslog
+    - name: config
+      parameter: config
+      description: Configure rsyslog
+  syslog-ng:
+    description: Advanced system logging
+    category: Monitoring & Logging
+    file: syslog-ng.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install syslog-ng
+    - name: update
+      parameter: update
+      description: Update syslog-ng
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall syslog-ng
+    - name: config
+      parameter: config
+      description: Configure syslog-ng
+  fail2ban:
+    description: Brute-force attack protection
+    category: Monitoring & Logging
+    file: fail2ban.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install fail2ban
+    - name: update
+      parameter: update
+      description: Update fail2ban
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall fail2ban
+    - name: config
+      parameter: config
+      description: Configure fail2ban
+  logrotate:
+    description: Log rotation utility
+    category: Monitoring & Logging
+    file: logrotate.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install logrotate
+    - name: update
+      parameter: update
+      description: Update logrotate
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall logrotate
+    - name: config
+      parameter: config
+      description: Configure logrotate
+  bind-utils:
+    description: DNS tools (dig, nslookup, host)
+    category: Networking
+    file: bind-utils.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install bind-utils
+    - name: update
+      parameter: update
+      description: Update bind-utils
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall bind-utils
+    - name: config
+      parameter: config
+      description: DNS tools info
+  wireguard:
+    description: Modern VPN protocol
+    category: Networking
+    file: wireguard.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install WireGuard
+    - name: update
+      parameter: update
+      description: Update WireGuard
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall WireGuard
+    - name: config
+      parameter: config
+      description: Configure WireGuard
+  openvpn:
+    description: OpenVPN tunneling protocol
+    category: Networking
+    file: openvpn.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install OpenVPN
+    - name: update
+      parameter: update
+      description: Update OpenVPN
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall OpenVPN
+    - name: config
+      parameter: config
+      description: Configure OpenVPN
+  ufw:
+    description: Uncomplicated Firewall
+    category: Networking
+    file: ufw.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install firewall
+    - name: update
+      parameter: update
+      description: Update firewall
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall firewall
+    - name: enable
+      parameter: enable
+      description: Enable firewall
+    - name: disable
+      parameter: disable
+      description: Disable firewall
+    - name: config
+      parameter: config
+      description: Manage firewall rules interactively
+    - name: status
+      parameter: status
+      description: Show firewall status
+    - name: reset
+      parameter: reset
+      description: Reset firewall to defaults
+      prompts:
+      - question: Are you sure? This will reset all UFW rules (yes/no)
+        variable: CONFIRM
+        type: yes/no
+        default: 'no'
+  pihole:
+    description: Pi-hole DNS ad-blocking service
+    category: Networking
+    file: pihole.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Pi-hole
+    - name: update
+      parameter: update
+      description: Update Pi-hole
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Pi-hole
+      prompts:
+      - question: Are you sure you want to uninstall Pi-hole? (yes/no)
+        variable: CONFIRM
+        type: yes/no
+        default: 'no'
+      - question: Keep Pi-hole configuration and data? (yes/no)
+        variable: KEEP_CONFIG
+        type: yes/no
+        default: 'yes'
+    - name: config
+      parameter: config
+      description: Show Pi-hole configuration info
+  adguard-home:
+    description: AdGuard Home DNS ad-blocking service
+    category: Networking
+    file: adguard-home.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install AdGuard Home
+    - name: update
+      parameter: update
+      description: Update AdGuard Home
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall AdGuard Home
+      prompts:
+      - question: Are you sure you want to uninstall AdGuard Home? (yes/no)
+        variable: CONFIRM
+        type: yes/no
+        default: 'no'
+      - question: Keep AdGuard Home configuration? (yes/no)
+        variable: KEEP_CONFIG
+        type: yes/no
+        default: 'yes'
+    - name: config
+      parameter: config
+      description: Show AdGuard Home configuration info
+    - name: dns-check
+      parameter: dns-check
+      description: Trace hostname through all AGH DNS sources (hosts, rewrites, user_rules, live)
+      prompts:
+      - question: Hostname to trace? (e.g. ca.mein.lan)
+        variable: HOSTNAME
+        type: text
+        default: ''
+  samba:
+    description: Network file sharing with Samba/SMB
+    category: Networking
+    file: samba.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Samba
+    - name: update
+      parameter: update
+      description: Update Samba
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Samba
+    - name: config
+      parameter: config
+      description: Configure Samba globally (smb.conf)
+      prompts:
+      - question: Workgroup name
+        variable: WORKGROUP
+        type: text
+        default: WORKGROUP
+      - question: Server description
+        variable: SERVER_DESC
+        type: text
+        default: Samba Server
+      - question: Security mode (user/share/domain)
+        variable: SECURITY
+        type: text
+        default: user
+      - question: Map to guest (Never/Bad User/Bad Password)
+        variable: MAP_GUEST
+        type: text
+        default: Never
+      - question: Guest account
+        variable: GUEST_ACCT
+        type: text
+        default: nobody
+      - question: Enable WINS support? (yes/no)
+        variable: WINS
+        type: yes/no
+        default: 'no'
+      - question: Enable hosts lookup? (yes/no)
+        variable: HOSTS
+        type: yes/no
+        default: 'yes'
+      - question: Logging level (0-10)
+        variable: LOG_LEVEL
+        type: text
+        default: '1'
+    - name: add-share
+      parameter: add-share
+      description: Add new Samba share
+    - name: smbuser
+      parameter: smbuser
+      description: Manage Samba users
+  cifs-utils:
+    description: Mount and manage SMB/CIFS network shares
+    category: Networking
+    file: cifs-utils.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install cifs-utils
+    - name: update
+      parameter: update
+      description: Update cifs-utils
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall cifs-utils
+    - name: mountSMB
+      parameter: mountSMB
+      description: Mount SMB/CIFS network share
+  linux:
+    description: Network, DNS, users, groups configuration
+    category: System Management
+    file: linux.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: network
+      parameter: network
+      description: Configure network interface
+      prompts:
+      - question: Interface name (eth0, etc)?
+        variable: INTERFACE
+        type: text
+        default: eth0
+      - question: Use DHCP? (yes/no)
+        variable: DHCP_MODE
+        type: yes/no
+        default: 'yes'
+      - question: IP address (if static)?
+        variable: IP_ADDRESS
+        type: text
+        default: ''
+      - question: Gateway (if static)?
+        variable: GATEWAY
+        type: text
+        default: ''
+    - name: dns
+      parameter: dns
+      description: Configure DNS
+      prompts:
+      - question: DNS server? (e.g., 8.8.8.8)
+        variable: DNS_SERVER
+        type: text
+        default: 8.8.8.8
+    - name: hostname
+      parameter: hostname
+      description: Set hostname
+      prompts:
+      - question: New hostname?
+        variable: HOSTNAME
+        type: text
+        default: ''
+    - name: user-add
+      parameter: user-add
+      description: Add user account
+      prompts:
+      - question: Username?
+        variable: USERNAME
+        type: text
+        default: ''
+      - question: Shell? (/bin/bash, /bin/sh, etc)
+        variable: SHELL
+        type: text
+        default: /bin/bash
+    - name: user-delete
+      parameter: user-delete
+      description: Delete user account
+      prompts:
+      - question: Username to delete?
+        variable: USERNAME
+        type: text
+        default: ''
+    - name: user-password
+      parameter: user-password
+      description: Change user password
+      prompts:
+      - question: Username?
+        variable: USERNAME
+        type: text
+        default: ''
+      - question: New password?
+        variable: PASSWORD
+        type: text
+        default: ''
+    - name: group-create
+      parameter: group-create
+      description: Create user group
+      prompts:
+      - question: Group name?
+        variable: GROUPNAME
+        type: text
+        default: ''
+    - name: user-to-group
+      parameter: user-to-group
+      description: Add user to group
+      prompts:
+      - question: Username?
+        variable: USERNAME
+        type: text
+        default: ''
+      - question: Group name?
+        variable: GROUPNAME
+        type: text
+        default: ''
+    - name: ca-cert
+      parameter: ca-cert
+      description: Install CA certificate
+      prompts:
+      - question: CA server hostname? (e.g., cert.my.lan)
+        variable: SERVER
+        type: text
+        default: cert.my.lan
+    - name: install-zip
+      parameter: install-zip
+      description: Install zip and unzip
+    - name: uninstall-zip
+      parameter: uninstall-zip
+      description: Uninstall zip and unzip
+  ubuntu:
+    description: Ubuntu system management
+    category: System Management
+    file: ubuntu.sh
+    sudo:
+    os_only: ubuntu
+    actions:
+    - name: update
+      parameter: update
+      description: Update Ubuntu system
+    - name: pro
+      parameter: pro
+      description: Attach Ubuntu Pro
+      prompts:
+      - question: Ubuntu Pro key?
+        variable: KEY
+        type: text
+        default: ''
+    - name: detach
+      parameter: detach
+      description: Detach Ubuntu Pro
+  debian:
+    description: Debian system management
+    category: System Management
+    file: debian.sh
+    sudo:
+    os_only: debian
+    actions:
+    - name: update
+      parameter: update
+      description: Update Debian system
+    - name: dist-upgrade
+      parameter: dist-upgrade
+      description: Distribution upgrade
+  pikvm-v3:
+    description: PiKVM v3 appliance management
+    category: System Management
+    file: pikvm-v3.sh
+    sudo:
+    os_only: arch
+    actions:
+    - name: update
+      parameter: update
+      description: Update PiKVM v3
+    - name: mount-iso
+      parameter: mount-iso
+      description: Mount ISO directory (rw)
+    - name: dismount-iso
+      parameter: dismount-iso
+      description: Dismount ISO directory (ro)
+    - name: oled-enable
+      parameter: oled-enable
+      description: Enable OLED display
+    - name: vnc-enable
+      parameter: vnc-enable
+      description: Enable VNC server
+  remotely:
+    description: Remotely - open-source remote desktop and support software
+    category: System Management
+    file: remotely.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    actions:
+    - name: install
+      parameter: install
+      description: Install Remotely
+      prompts:
+      - question: Remotely Server URL (e.g., http://remotely.example.com:5000)
+        variable: REMOTELY_SERVER
+        type: text
+        default: ''
+      - question: OrganizationID (UUID format)
+        variable: ORGANIZATION_ID
+        type: text
+        default: ''
+    - name: update
+      parameter: update
+      description: Update Remotely
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Remotely
+      prompts:
+      - question: Are you sure you want to uninstall Remotely? (yes/no)
+        variable: CONFIRM
+        type: yes/no
+        default: 'no'
+      - question: Keep configuration files? (yes/no)
+        variable: KEEP_CONFIG
+        type: yes/no
+        default: 'yes'
+      - question: Remove Microsoft package repository? (yes/no)
+        variable: REMOVE_REPO
+        type: yes/no
+        default: 'no'
+    - name: config
+      parameter: config
+      description: Reconfigure Remotely connection settings
+      prompts:
+      - question: New Remotely Server URL (press Enter to keep current)
+        variable: NEW_REMOTELY_SERVER
+        type: text
+        default: ''
+      - question: New OrganizationID (press Enter to keep current)
+        variable: NEW_ORG
+        type: text
+        default: ''
+  spoolman:
+    description: Spoolman filament spool management (standalone or Docker)
+    category: System Management
+    file: spoolman.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Spoolman
+      prompts:
+      - question: Install method (standalone or docker)
+        variable: INSTALL_METHOD
+        type: text
+        default: standalone
+      - question: Target user (owner of the installation, empty = current user)
+        variable: TARGET_USER
+        type: text
+        default: ''
+      - question: Web UI port
+        variable: SPOOLMAN_PORT
+        type: number
+        default: '7912'
+      - question: Timezone for the Docker container (empty = detect from system)
+        variable: SPOOLMAN_TZ
+        type: text
+        default: ''
+    - name: update
+      parameter: update
+      description: Update Spoolman to the latest release
+      prompts:
+      - question: Target user (owner of the installation, empty = current user)
+        variable: TARGET_USER
+        type: text
+        default: ''
+      - question: Create a backup before updating? (yes/no)
+        variable: DO_BACKUP
+        type: yes/no
+        default: 'yes'
+    - name: detect
+      parameter: detect
+      description: Detect an existing installation (read-only)
+      prompts:
+      - question: Target user (owner of the installation, empty = current user)
+        variable: TARGET_USER
+        type: text
+        default: ''
+    - name: backup
+      parameter: backup
+      description: Back up database, .env, units and compose files
+      prompts:
+      - question: Target user (owner of the installation, empty = current user)
+        variable: TARGET_USER
+        type: text
+        default: ''
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Spoolman (standalone, /opt and Docker)
+      prompts:
+      - question: Target user (owner of the installation, empty = current user)
+        variable: TARGET_USER
+        type: text
+        default: ''
+      - question: Create a backup before removing? (yes/no)
+        variable: DO_BACKUP
+        type: yes/no
+        default: 'yes'
+      - question: Also delete database and data directories? (yes/no)
+        variable: PURGE
+        type: yes/no
+        default: 'no'
+      - question: Comment out [spoolman] sections in moonraker.conf? (yes/no)
+        variable: CLEAN_MOONRAKER
+        type: yes/no
+        default: 'no'
+  tigervnc:
+    description: TigerVNC remote desktop server
+    category: System Management
+    file: tigervnc.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install TigerVNC
+    - name: update
+      parameter: update
+      description: Update TigerVNC
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall TigerVNC
+    - name: config
+      parameter: config
+      description: Configure TigerVNC server
+      prompts:
+      - question: VNC display number (e.g., 1 for :1, default 1)
+        variable: VNC_DISPLAY
+        type: number
+        default: '1'
+      - question: VNC username (which user runs the server)
+        variable: VNC_USER
+        type: text
+        default: ''
+      - question: Screen resolution (e.g., 1920x1080)
+        variable: VNC_GEOMETRY
+        type: text
+        default: '1920x1080'
+      - question: Desktop session (lxde, kde, gnome, xfce, etc., empty for default)
+        variable: VNC_SESSION
+        type: text
+        default: ''
+  borgbackup:
+    description: Backup and archival tool
+    category: Backup & Sync
+    file: borgbackup.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install BorgBackup
+    - name: update
+      parameter: update
+      description: Update BorgBackup
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall BorgBackup
+  bun:
+    description: JavaScript runtime and package manager
+    category: Programming Languages
+    file: bun.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Bun
+    - name: update
+      parameter: update
+      description: Update Bun
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Bun
+  cmake:
+    description: Build system generator
+    category: Development Tools
+    file: cmake.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install CMake
+    - name: update
+      parameter: update
+      description: Update CMake
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall CMake
+  clamav:
+    description: Antivirus engine
+    category: System Utilities
+    file: clamav.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install ClamAV
+    - name: update
+      parameter: update
+      description: Update ClamAV
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall ClamAV
+  deno:
+    description: JavaScript/TypeScript runtime
+    category: Programming Languages
+    file: deno.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Deno
+    - name: update
+      parameter: update
+      description: Update Deno
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Deno
+  emacs:
+    description: Advanced text editor
+    category: Text Editors
+    file: emacs.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Emacs
+    - name: update
+      parameter: update
+      description: Update Emacs
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Emacs
+  ffmpeg:
+    description: Multimedia framework
+    category: Multimedia
+    file: ffmpeg.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install FFmpeg
+    - name: update
+      parameter: update
+      description: Update FFmpeg
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall FFmpeg
+  firejail:
+    description: Application sandboxing
+    category: Security & Sandboxing
+    file: firejail.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Firejail
+    - name: update
+      parameter: update
+      description: Update Firejail
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Firejail
+  fish:
+    description: User-friendly shell
+    category: Shells & Terminals
+    file: fish.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Fish
+    - name: update
+      parameter: update
+      description: Update Fish
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Fish
+  flatpak:
+    description: Application containerization
+    category: Container & Virtualization
+    file: flatpak.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Flatpak
+    - name: update
+      parameter: update
+      description: Update Flatpak
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Flatpak
+  gamemode:
+    description: Performance optimizer
+    category: Security & Sandboxing
+    file: gamemode.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install GameMode
+    - name: update
+      parameter: update
+      description: Update GameMode
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall GameMode
+  git-lfs:
+    description: Git Large File Storage
+    category: Development Tools
+    file: git-lfs.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Git LFS
+    - name: update
+      parameter: update
+      description: Update Git LFS
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Git LFS
+  step-ca:
+    description: Private Certificate Authority
+    category: Security & Sandboxing
+    file: step-ca.sh
+    sudo:
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install step-ca and step-cli
+    - name: update
+      parameter: update
+      description: Update step-ca and step-cli
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall step-ca and step-cli
+  gnupg:
+    description: Encryption and signing
+    category: Security & Sandboxing
+    file: gnupg.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install GnuPG
+    - name: update
+      parameter: update
+      description: Update GnuPG
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall GnuPG
+  helix:
+    description: Post-modern text editor
+    category: Text Editors
+    file: helix.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Helix
+    - name: update
+      parameter: update
+      description: Update Helix
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Helix
+  imhex:
+    description: Hex editor and analyzer
+    category: Development Tools
+    file: imhex.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install ImHex
+    - name: update
+      parameter: update
+      description: Update ImHex
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall ImHex
+  lazygit:
+    description: Simple git UI
+    category: Development Tools
+    file: lazygit.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install LazyGit
+    - name: update
+      parameter: update
+      description: Update LazyGit
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall LazyGit
+  micro:
+    description: Terminal text editor
+    category: Text Editors
+    file: micro.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Micro
+    - name: update
+      parameter: update
+      description: Update Micro
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Micro
+  neovim:
+    description: Vim-based editor
+    category: Text Editors
+    file: neovim.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Neovim
+    - name: update
+      parameter: update
+      description: Update Neovim
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Neovim
+  nmap:
+    description: Network scanner
+    category: Networking
+    file: nmap.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Nmap
+    - name: update
+      parameter: update
+      description: Update Nmap
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Nmap
+  oh-my-zsh:
+    description: Zsh framework
+    category: Shells & Terminals
+    file: oh-my-zsh.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Oh My Zsh
+    - name: update
+      parameter: update
+      description: Update Oh My Zsh
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Oh My Zsh
+  openjdk:
+    description: Java platform
+    category: Programming Languages
+    file: openjdk.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install OpenJDK
+    - name: update
+      parameter: update
+      description: Update OpenJDK
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall OpenJDK
+  podman:
+    description: Container runtime
+    category: Container & Virtualization
+    file: podman.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Podman
+    - name: update
+      parameter: update
+      description: Update Podman
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Podman
+  restic:
+    description: Backup program
+    category: Backup & Sync
+    file: restic.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Restic
+    - name: update
+      parameter: update
+      description: Update Restic
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Restic
+  rust:
+    description: Systems programming language
+    category: Programming Languages
+    file: rust.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Rust
+    - name: update
+      parameter: update
+      description: Update Rust
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Rust
+  starship:
+    description: Shell prompt
+    category: Shells & Terminals
+    file: starship.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Starship
+    - name: update
+      parameter: update
+      description: Update Starship
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Starship
+  superfile:
+    description: Terminal file manager
+    category: System Utilities
+    file: superfile.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Superfile
+    - name: update
+      parameter: update
+      description: Update Superfile
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Superfile
+  vagrant:
+    description: Infrastructure automation
+    category: Container & Virtualization
+    file: vagrant.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Vagrant
+    - name: update
+      parameter: update
+      description: Update Vagrant
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Vagrant
+  zellij:
+    description: Terminal multiplexer
+    category: Shells & Terminals
+    file: zellij.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Zellij
+    - name: update
+      parameter: update
+      description: Update Zellij
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Zellij
+  zsh:
+    description: Z shell
+    category: Shells & Terminals
+    file: zsh.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install Zsh
+    - name: update
+      parameter: update
+      description: Update Zsh
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall Zsh
+  aria2:
+    description: Download utility
+    category: System Utilities
+    file: aria2.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install aria2
+    - name: update
+      parameter: update
+      description: Update aria2
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall aria2
+  bat:
+    description: Cat with syntax highlighting
+    category: System Utilities
+    file: bat.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install bat
+    - name: update
+      parameter: update
+      description: Update bat
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall bat
+  btop:
+    description: System monitor
+    category: System Utilities
+    file: btop.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install btop
+    - name: update
+      parameter: update
+      description: Update btop
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall btop
+  eza:
+    description: Modern ls replacement
+    category: System Utilities
+    file: eza.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install eza
+    - name: update
+      parameter: update
+      description: Update eza
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall eza
+  fastfetch:
+    description: System information tool
+    category: System Utilities
+    file: fastfetch.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install fastfetch
+    - name: update
+      parameter: update
+      description: Update fastfetch
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall fastfetch
+  fd:
+    description: Find alternative
+    category: System Utilities
+    file: fd.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install fd
+    - name: update
+      parameter: update
+      description: Update fd
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall fd
+  fzf:
+    description: Fuzzy finder
+    category: System Utilities
+    file: fzf.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install fzf
+    - name: update
+      parameter: update
+      description: Update fzf
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall fzf
+  kubectl:
+    description: Kubernetes CLI
+    category: Container & Virtualization
+    file: kubectl.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install kubectl
+    - name: update
+      parameter: update
+      description: Update kubectl
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall kubectl
+  ncdu:
+    description: Disk usage analyzer
+    category: System Utilities
+    file: ncdu.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install ncdu
+    - name: update
+      parameter: update
+      description: Update ncdu
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall ncdu
+  npm:
+    description: Node Package Manager
+    category: Package Managers
+    file: npm.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install npm
+    - name: update
+      parameter: update
+      description: Update npm
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall npm
+  pnpm:
+    description: Fast npm alternative
+    category: Package Managers
+    file: pnpm.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install pnpm
+    - name: update
+      parameter: update
+      description: Update pnpm
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall pnpm
+  ranger:
+    description: Terminal file manager
+    category: System Utilities
+    file: ranger.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install ranger
+    - name: update
+      parameter: update
+      description: Update ranger
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall ranger
+  ripgrep:
+    description: Fast grep alternative
+    category: System Utilities
+    file: ripgrep.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install ripgrep
+    - name: update
+      parameter: update
+      description: Update ripgrep
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall ripgrep
+  rsync:
+    description: File transfer utility
+    category: Essential Tools
+    file: rsync.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install rsync
+    - name: update
+      parameter: update
+      description: Update rsync
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall rsync
+  tldr:
+    description: Simplified man pages
+    category: System Utilities
+    file: tldr.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install tldr
+    - name: update
+      parameter: update
+      description: Update tldr
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall tldr
+  uv:
+    description: Fast Python installer
+    category: Package Managers
+    file: uv.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install uv
+    - name: update
+      parameter: update
+      description: Update uv
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall uv
+  yarn:
+    description: JavaScript package manager
+    category: Package Managers
+    file: yarn.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install yarn
+    - name: update
+      parameter: update
+      description: Update yarn
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall yarn
+  yazi:
+    description: Terminal file manager
+    category: System Utilities
+    file: yazi.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install yazi
+    - name: update
+      parameter: update
+      description: Update yazi
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall yazi
+  zoxide:
+    description: Smart cd command
+    category: System Utilities
+    file: zoxide.sh
+    os_family:
+    - debian
+    - redhat
+    - arch
+    - suse
+    - alpine
+    actions:
+    - name: install
+      parameter: install
+      description: Install zoxide
+    - name: update
+      parameter: update
+      description: Update zoxide
+    - name: uninstall
+      parameter: uninstall
+      description: Uninstall zoxide
