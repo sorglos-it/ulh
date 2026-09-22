@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing deno..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL deno || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL deno || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "deno installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating deno..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL deno || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL deno || { msg_err "Update failed"; exit 1; }
     
     msg_ok "deno updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling deno..."
     detect_os
     
-    sudo $PKG_UNINSTALL deno || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL deno || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "deno uninstalled successfully!"
 }

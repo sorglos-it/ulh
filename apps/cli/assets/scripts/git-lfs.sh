@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing git-lfs..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL git-lfs || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL git-lfs || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "git-lfs installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating git-lfs..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL git-lfs || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL git-lfs || { msg_err "Update failed"; exit 1; }
     
     msg_ok "git-lfs updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling git-lfs..."
     detect_os
     
-    sudo $PKG_UNINSTALL git-lfs || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL git-lfs || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "git-lfs uninstalled successfully!"
 }

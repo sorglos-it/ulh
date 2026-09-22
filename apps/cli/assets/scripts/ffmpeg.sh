@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing ffmpeg..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL ffmpeg || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL ffmpeg || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "ffmpeg installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating ffmpeg..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL ffmpeg || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL ffmpeg || { msg_err "Update failed"; exit 1; }
     
     msg_ok "ffmpeg updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling ffmpeg..."
     detect_os
     
-    sudo $PKG_UNINSTALL ffmpeg || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL ffmpeg || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "ffmpeg uninstalled successfully!"
 }

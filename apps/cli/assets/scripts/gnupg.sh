@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing gnupg..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL gnupg || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL gnupg || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "gnupg installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating gnupg..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL gnupg || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL gnupg || { msg_err "Update failed"; exit 1; }
     
     msg_ok "gnupg updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling gnupg..."
     detect_os
     
-    sudo $PKG_UNINSTALL gnupg || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL gnupg || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "gnupg uninstalled successfully!"
 }

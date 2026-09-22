@@ -753,7 +753,6 @@ scripts:
     category: Container & Virtualization
     file: proxmox.sh
     sudo:
-    os_only: proxmox
     actions:
     - name: install
       parameter: install
@@ -1507,7 +1506,9 @@ scripts:
     category: System Management
     file: pikvm-v3.sh
     sudo:
-    os_only: arch
+    os_only:
+    - arch
+    - archarm
     actions:
     - name: update
       parameter: update

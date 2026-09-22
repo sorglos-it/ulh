@@ -59,6 +59,13 @@ msg_info() { printf "${CYAN}ℹ${NC} %s\n" "$*"; }
 msg_warn() { printf "${YELLOW}⚠${NC} %s\n" "$*"; }
 msg_err()  { printf "${RED}✗${NC} %s\n" "$*" >&2; }
 
+# Root rights for the package manager: nothing as root, else sudo.
+if (( EUID == 0 )); then SUDO=""
+elif command -v sudo &>/dev/null; then SUDO="sudo"
+else SUDO="no_root"
+fi
+no_root() { log_error "Needs root rights: install sudo, or start ulh as root."; }
+
 # ============================================================
 # OS DETECTION & PACKAGE MANAGER
 # ============================================================
@@ -74,39 +81,39 @@ detect_os() {
     case "$OS_DISTRO" in
         ubuntu|debian|raspbian|linuxmint|pop)
             PKG_TYPE="deb"
-            PKG_UPDATE="apt-get update"
-            PKG_INSTALL="apt-get install -y"
-            PKG_UNINSTALL="apt-get remove -y"
+            PKG_UPDATE="$SUDO apt-get update"
+            PKG_INSTALL="$SUDO apt-get install -y"
+            PKG_UNINSTALL="$SUDO apt-get remove -y"
             ;;
         fedora|rhel|centos|rocky|alma)
             PKG_TYPE="rpm"
-            PKG_UPDATE="dnf check-update || true"
-            PKG_INSTALL="dnf install -y"
-            PKG_UNINSTALL="dnf remove -y"
+            PKG_UPDATE="$SUDO dnf check-update || true"
+            PKG_INSTALL="$SUDO dnf install -y"
+            PKG_UNINSTALL="$SUDO dnf remove -y"
             ;;
         arch|archarm|manjaro|endeavouros)
             PKG_TYPE="pacman"
-            PKG_UPDATE="pacman -Sy"
-            PKG_INSTALL="pacman -S --noconfirm"
-            PKG_UNINSTALL="pacman -R --noconfirm"
+            PKG_UPDATE="$SUDO pacman -Sy"
+            PKG_INSTALL="$SUDO pacman -S --noconfirm"
+            PKG_UNINSTALL="$SUDO pacman -R --noconfirm"
             ;;
         opensuse*|sles)
             PKG_TYPE="zypper"
-            PKG_UPDATE="zypper refresh"
-            PKG_INSTALL="zypper install -y"
-            PKG_UNINSTALL="zypper remove -y"
+            PKG_UPDATE="$SUDO zypper refresh"
+            PKG_INSTALL="$SUDO zypper install -y"
+            PKG_UNINSTALL="$SUDO zypper remove -y"
             ;;
         alpine)
             PKG_TYPE="apk"
-            PKG_UPDATE="apk update"
-            PKG_INSTALL="apk add"
-            PKG_UNINSTALL="apk del"
+            PKG_UPDATE="$SUDO apk update"
+            PKG_INSTALL="$SUDO apk add"
+            PKG_UNINSTALL="$SUDO apk del"
             ;;
         proxmox)
             PKG_TYPE="deb"
-            PKG_UPDATE="apt-get update"
-            PKG_INSTALL="apt-get install -y"
-            PKG_UNINSTALL="apt-get remove -y"
+            PKG_UPDATE="$SUDO apt-get update"
+            PKG_INSTALL="$SUDO apt-get install -y"
+            PKG_UNINSTALL="$SUDO apt-get remove -y"
             ;;
         *)
             log_error "Unsupported distribution: $OS_DISTRO"

@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing rust..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL rust || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL rust || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "rust installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating rust..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL rust || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL rust || { msg_err "Update failed"; exit 1; }
     
     msg_ok "rust updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling rust..."
     detect_os
     
-    sudo $PKG_UNINSTALL rust || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL rust || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "rust uninstalled successfully!"
 }

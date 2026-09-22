@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing lazygit..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL lazygit || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL lazygit || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "lazygit installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating lazygit..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL lazygit || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL lazygit || { msg_err "Update failed"; exit 1; }
     
     msg_ok "lazygit updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling lazygit..."
     detect_os
     
-    sudo $PKG_UNINSTALL lazygit || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL lazygit || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "lazygit uninstalled successfully!"
 }

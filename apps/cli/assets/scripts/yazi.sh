@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing yazi..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL yazi || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL yazi || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "yazi installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating yazi..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL yazi || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL yazi || { msg_err "Update failed"; exit 1; }
     
     msg_ok "yazi updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling yazi..."
     detect_os
     
-    sudo $PKG_UNINSTALL yazi || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL yazi || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "yazi uninstalled successfully!"
 }

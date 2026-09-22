@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing neovim..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL neovim || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL neovim || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "neovim installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating neovim..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL neovim || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL neovim || { msg_err "Update failed"; exit 1; }
     
     msg_ok "neovim updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling neovim..."
     detect_os
     
-    sudo $PKG_UNINSTALL neovim || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL neovim || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "neovim uninstalled successfully!"
 }

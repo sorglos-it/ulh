@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing zoxide..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL zoxide || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL zoxide || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "zoxide installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating zoxide..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL zoxide || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL zoxide || { msg_err "Update failed"; exit 1; }
     
     msg_ok "zoxide updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling zoxide..."
     detect_os
     
-    sudo $PKG_UNINSTALL zoxide || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL zoxide || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "zoxide uninstalled successfully!"
 }

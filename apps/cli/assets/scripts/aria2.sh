@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing aria2..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL aria2 || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL aria2 || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "aria2 installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating aria2..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL aria2 || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL aria2 || { msg_err "Update failed"; exit 1; }
     
     msg_ok "aria2 updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling aria2..."
     detect_os
     
-    sudo $PKG_UNINSTALL aria2 || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL aria2 || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "aria2 uninstalled successfully!"
 }

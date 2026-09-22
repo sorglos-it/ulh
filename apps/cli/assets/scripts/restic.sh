@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing restic..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL restic || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL restic || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "restic installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating restic..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL restic || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL restic || { msg_err "Update failed"; exit 1; }
     
     msg_ok "restic updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling restic..."
     detect_os
     
-    sudo $PKG_UNINSTALL restic || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL restic || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "restic uninstalled successfully!"
 }

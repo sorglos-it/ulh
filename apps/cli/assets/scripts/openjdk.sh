@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing openjdk-bin..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL openjdk-bin || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL openjdk-bin || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "openjdk-bin installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating openjdk-bin..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL openjdk-bin || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL openjdk-bin || { msg_err "Update failed"; exit 1; }
     
     msg_ok "openjdk-bin updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling openjdk-bin..."
     detect_os
     
-    sudo $PKG_UNINSTALL openjdk-bin || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL openjdk-bin || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "openjdk-bin uninstalled successfully!"
 }

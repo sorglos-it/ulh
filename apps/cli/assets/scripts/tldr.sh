@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing tldr..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL tldr || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL tldr || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "tldr installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating tldr..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL tldr || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL tldr || { msg_err "Update failed"; exit 1; }
     
     msg_ok "tldr updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling tldr..."
     detect_os
     
-    sudo $PKG_UNINSTALL tldr || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL tldr || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "tldr uninstalled successfully!"
 }

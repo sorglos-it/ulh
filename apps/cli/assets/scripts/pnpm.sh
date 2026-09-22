@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing pnpm..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL pnpm || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL pnpm || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "pnpm installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating pnpm..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL pnpm || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL pnpm || { msg_err "Update failed"; exit 1; }
     
     msg_ok "pnpm updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling pnpm..."
     detect_os
     
-    sudo $PKG_UNINSTALL pnpm || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL pnpm || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "pnpm uninstalled successfully!"
 }

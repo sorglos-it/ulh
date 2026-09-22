@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing ranger..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL ranger || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL ranger || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "ranger installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating ranger..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL ranger || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL ranger || { msg_err "Update failed"; exit 1; }
     
     msg_ok "ranger updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling ranger..."
     detect_os
     
-    sudo $PKG_UNINSTALL ranger || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL ranger || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "ranger uninstalled successfully!"
 }

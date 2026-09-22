@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing flatpak..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL flatpak || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL flatpak || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "flatpak installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating flatpak..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL flatpak || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL flatpak || { msg_err "Update failed"; exit 1; }
     
     msg_ok "flatpak updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling flatpak..."
     detect_os
     
-    sudo $PKG_UNINSTALL flatpak || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL flatpak || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "flatpak uninstalled successfully!"
 }

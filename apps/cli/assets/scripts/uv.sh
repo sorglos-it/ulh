@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing uv..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL uv || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL uv || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "uv installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating uv..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL uv || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL uv || { msg_err "Update failed"; exit 1; }
     
     msg_ok "uv updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling uv..."
     detect_os
     
-    sudo $PKG_UNINSTALL uv || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL uv || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "uv uninstalled successfully!"
 }

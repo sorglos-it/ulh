@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing superfile..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL superfile || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL superfile || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "superfile installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating superfile..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL superfile || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL superfile || { msg_err "Update failed"; exit 1; }
     
     msg_ok "superfile updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling superfile..."
     detect_os
     
-    sudo $PKG_UNINSTALL superfile || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL superfile || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "superfile uninstalled successfully!"
 }

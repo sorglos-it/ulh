@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing eza..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL eza || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL eza || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "eza installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating eza..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL eza || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL eza || { msg_err "Update failed"; exit 1; }
     
     msg_ok "eza updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling eza..."
     detect_os
     
-    sudo $PKG_UNINSTALL eza || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL eza || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "eza uninstalled successfully!"
 }

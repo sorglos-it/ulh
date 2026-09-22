@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing nmap..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL nmap || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL nmap || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "nmap installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating nmap..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL nmap || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL nmap || { msg_err "Update failed"; exit 1; }
     
     msg_ok "nmap updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling nmap..."
     detect_os
     
-    sudo $PKG_UNINSTALL nmap || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL nmap || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "nmap uninstalled successfully!"
 }

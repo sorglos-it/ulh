@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing gamemode..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL gamemode || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL gamemode || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "gamemode installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating gamemode..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL gamemode || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL gamemode || { msg_err "Update failed"; exit 1; }
     
     msg_ok "gamemode updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling gamemode..."
     detect_os
     
-    sudo $PKG_UNINSTALL gamemode || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL gamemode || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "gamemode uninstalled successfully!"
 }

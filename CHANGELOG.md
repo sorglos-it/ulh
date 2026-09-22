@@ -2,6 +2,14 @@
 
 ## Unreleased – 2026-09-22
 
+- Fixed: as root without sudo (Proxmox VE, LXC, containers) 79 of 96 scripts
+  failed, as a normal user with sudo 17. The menu and `bootstrap.sh` now run
+  root commands directly as root and with sudo otherwise (`as_root`, `$SUDO`);
+  without both there is a clear message. Tested: 84 of 96 run both as root and
+  as a normal user, the rest needs network or Docker in the test.
+- Fixed: entries meant for one distribution (`os_only: ubuntu`) showed up on
+  every one - a single value was only read as a list. The Proxmox entry (guest
+  agent) stays visible everywhere, PiKVM counts as `arch` and `archarm`.
 - New folder layout following the project standard: the program is in
   `apps/cli/` (start: `bash ~/ulh/apps/cli/ulh.sh`), the installer in
   `tools/install.sh`, the documentation in `docs/`.

@@ -66,7 +66,7 @@ yaml_script_path() {
 # OS compatibility (priority: os_only > os_family > os_exclude)
 yaml_get_script_os_family()  { yq_list ".scripts.${1}.os_family // [] | .[]"; }
 yaml_get_script_os_exclude() { yq_list ".scripts.${1}.os_exclude // [] | .[]"; }
-yaml_get_script_os_only()    { yq_list ".scripts.${1}.os_only // [] | .[]"; }
+yaml_get_script_os_only()    { yq_list ".scripts.${1}.os_only // [] | [.] | flatten | .[]"; }
 
 yaml_os_compatible() {
     local script="$1" distro="$2" family="$3"

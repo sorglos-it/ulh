@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing micro..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL micro || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL micro || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "micro installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating micro..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL micro || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL micro || { msg_err "Update failed"; exit 1; }
     
     msg_ok "micro updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling micro..."
     detect_os
     
-    sudo $PKG_UNINSTALL micro || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL micro || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "micro uninstalled successfully!"
 }

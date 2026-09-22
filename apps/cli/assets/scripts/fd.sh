@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing fd..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL fd || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL fd || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "fd installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating fd..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL fd || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL fd || { msg_err "Update failed"; exit 1; }
     
     msg_ok "fd updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling fd..."
     detect_os
     
-    sudo $PKG_UNINSTALL fd || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL fd || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "fd uninstalled successfully!"
 }

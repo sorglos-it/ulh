@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing clamav..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL clamav || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL clamav || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "clamav installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating clamav..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL clamav || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL clamav || { msg_err "Update failed"; exit 1; }
     
     msg_ok "clamav updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling clamav..."
     detect_os
     
-    sudo $PKG_UNINSTALL clamav || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL clamav || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "clamav uninstalled successfully!"
 }

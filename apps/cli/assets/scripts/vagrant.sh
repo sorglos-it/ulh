@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing vagrant..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL vagrant || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL vagrant || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "vagrant installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating vagrant..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL vagrant || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL vagrant || { msg_err "Update failed"; exit 1; }
     
     msg_ok "vagrant updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling vagrant..."
     detect_os
     
-    sudo $PKG_UNINSTALL vagrant || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL vagrant || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "vagrant uninstalled successfully!"
 }

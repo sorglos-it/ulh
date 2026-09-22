@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing zellij..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL zellij || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL zellij || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "zellij installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating zellij..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL zellij || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL zellij || { msg_err "Update failed"; exit 1; }
     
     msg_ok "zellij updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling zellij..."
     detect_os
     
-    sudo $PKG_UNINSTALL zellij || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL zellij || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "zellij uninstalled successfully!"
 }

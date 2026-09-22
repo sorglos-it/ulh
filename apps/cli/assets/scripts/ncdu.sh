@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing ncdu..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL ncdu || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL ncdu || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "ncdu installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating ncdu..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL ncdu || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL ncdu || { msg_err "Update failed"; exit 1; }
     
     msg_ok "ncdu updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling ncdu..."
     detect_os
     
-    sudo $PKG_UNINSTALL ncdu || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL ncdu || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "ncdu uninstalled successfully!"
 }

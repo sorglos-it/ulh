@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing rsync..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL rsync || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL rsync || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "rsync installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating rsync..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL rsync || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL rsync || { msg_err "Update failed"; exit 1; }
     
     msg_ok "rsync updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling rsync..."
     detect_os
     
-    sudo $PKG_UNINSTALL rsync || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL rsync || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "rsync uninstalled successfully!"
 }

@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing fzf..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL fzf || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL fzf || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "fzf installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating fzf..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL fzf || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL fzf || { msg_err "Update failed"; exit 1; }
     
     msg_ok "fzf updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling fzf..."
     detect_os
     
-    sudo $PKG_UNINSTALL fzf || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL fzf || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "fzf uninstalled successfully!"
 }

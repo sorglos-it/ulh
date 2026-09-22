@@ -104,3 +104,12 @@ check_sudo() {
 }
 
 has_sudo_access() { check_sudo; }
+
+# Run a command as root: directly when ulh runs as root (Proxmox VE, LXC),
+# otherwise with sudo. Without both: a clear message.
+as_root() {
+    if (( EUID == 0 )); then "$@"
+    elif command -v sudo &>/dev/null; then sudo "$@"
+    else msg_err "Needs root rights: install sudo, or start ulh as root."; return 1
+    fi
+}

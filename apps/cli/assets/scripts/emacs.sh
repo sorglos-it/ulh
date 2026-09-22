@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing emacs..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL emacs || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL emacs || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "emacs installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating emacs..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL emacs || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL emacs || { msg_err "Update failed"; exit 1; }
     
     msg_ok "emacs updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling emacs..."
     detect_os
     
-    sudo $PKG_UNINSTALL emacs || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL emacs || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "emacs uninstalled successfully!"
 }

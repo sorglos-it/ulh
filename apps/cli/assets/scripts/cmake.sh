@@ -56,8 +56,8 @@ install_pkg() {
     msg_info "Installing cmake..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL cmake || { msg_err "Installation failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL cmake || { msg_err "Installation failed"; exit 1; }
     
     msg_ok "cmake installed successfully!"
 }
@@ -66,8 +66,8 @@ update_pkg() {
     msg_info "Updating cmake..."
     detect_os
     
-    sudo $PKG_UPDATE || true
-    sudo $PKG_INSTALL cmake || { msg_err "Update failed"; exit 1; }
+    $SUDO $PKG_UPDATE || true
+    $SUDO $PKG_INSTALL cmake || { msg_err "Update failed"; exit 1; }
     
     msg_ok "cmake updated successfully!"
 }
@@ -76,7 +76,7 @@ uninstall_pkg() {
     msg_info "Uninstalling cmake..."
     detect_os
     
-    sudo $PKG_UNINSTALL cmake || { msg_err "Uninstallation failed"; exit 1; }
+    $SUDO $PKG_UNINSTALL cmake || { msg_err "Uninstallation failed"; exit 1; }
     
     msg_ok "cmake uninstalled successfully!"
 }
