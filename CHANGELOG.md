@@ -2,6 +2,9 @@
 
 ## Unreleased – 2026-09-22
 
+- Fixed: `build-essential` and `locate` ran the package manager without a package
+  name (`apt-get install -y`) and reported success. They now name the package for
+  each distribution; locate on openSUSE and Alpine stops with a clear message.
 - Fixed: as root without sudo (Proxmox VE, LXC, containers) 79 of 96 scripts
   failed, as a normal user with sudo 17. The menu and `bootstrap.sh` now run
   root commands directly as root and with sudo otherwise (`as_root`, `$SUDO`);

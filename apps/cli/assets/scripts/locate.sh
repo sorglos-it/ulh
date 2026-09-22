@@ -8,9 +8,26 @@ source "$(dirname "$0")/../../classes/bootstrap.sh"
 # Script entscheidet selbst wann geparst werden soll:
 parse_parameters "$1"
 
+# Package that provides locate on this distribution (sets LOCATE_PKG)
+get_pkg_names() {
+    detect_os
+    case "$PKG_TYPE" in
+        deb|pacman)
+            LOCATE_PKG="plocate"
+            ;;
+        rpm)
+            # Fedora uses plocate, RHEL/CentOS/Rocky/Alma 8 and 9 use mlocate
+            if is_os fedora; then LOCATE_PKG="plocate"; else LOCATE_PKG="mlocate"; fi
+            ;;
+        *)
+            log_error "Unsupported distribution for locate: $OS_DISTRO"
+            ;;
+    esac
+}
+
 install_locate() {
     log_info "Installing locate package..."
-    detect_os
+    get_pkg_names
     
     $PKG_UPDATE || true
     $PKG_INSTALL $LOCATE_PKG || log_error "Failed to install $LOCATE_PKG"
@@ -42,7 +59,7 @@ update_locate() {
 
 uninstall_locate() {
     log_info "Uninstalling locate..."
-    detect_os
+    get_pkg_names
     
     # Confirm (from CONFIRM parameter)
     CONFIRM="${CONFIRM:-no}"
