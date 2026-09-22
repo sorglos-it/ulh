@@ -1,0 +1,94 @@
+# ulh - testi: italiano
+#
+# Se qui manca un testo, ulh usa quello di en.yaml. Stesse chiavi in tutti e
+# cinque i file; {0}, {1} ... devono comparire in ogni traduzione.
+# Valori sempre tra virgolette doppie.
+
+lang.name: "Italiano"
+
+# Avvio e riga di comando
+main.linux_only: "Solo per Linux"
+main.unknown_lang: "Lingua sconosciuta: {0} (disponibili: {1})"
+main.unknown_option: "Opzione sconosciuta: {0}"
+main.no_catalog: "Catalogo non trovato: {0}"
+help.usage: "Uso: bash apps/cli/ulh.sh [OPZIONI]"
+help.options: "Opzioni:"
+help.debug: "Messaggi aggiuntivi per trovare gli errori"
+help.no_update: "Non aggiornare all'avvio"
+help.check_update: "Controllare se ci sono aggiornamenti"
+help.update: "Installare subito gli aggiornamenti"
+help.lang: "Lingua del menu (predefinita: quella del sistema)"
+help.help: "Mostrare questo aiuto"
+
+# Menu - righe dei tasti al massimo 70 caratteri
+menu.version: "VERSION: {0}"
+menu.key_search: "s) Cerca  (o /parola)"
+menu.key_back: "b) Indietro"
+menu.key_lang: "l) Lingua: {0}"
+menu.key_quit: "q) Esci"
+menu.choose: "Scelta:"
+menu.goodbye: "Arrivederci!"
+menu.invalid_range: "Non valido (1-{0})"
+menu.invalid: "Inserimento non valido"
+menu.press_enter: "Premere Invio per continuare..."
+menu.category: "Categoria: {0}"
+menu.no_scripts: "Nessuno script disponibile."
+menu.no_actions: "Nessuna azione."
+menu.search_ask: "Cerca (nome, descrizione, categoria):"
+menu.search_again: "Cerca:"
+menu.search_title: "Ricerca: {0}"
+menu.search_none: "Nessun risultato per \"{0}\"."
+menu.search_where: "Ricerca in: nome dello script, descrizione e categoria."
+menu.custom: "Repo personale: {0}"
+menu.custom_none: "Nessuno script disponibile in questo repo."
+menu.custom_noconfig: "Nessun config.yaml trovato in {0}"
+
+# Domande. Le risposte valgono in ogni lingua: s, y, j, o = sì.
+ask.yes_hint: "[S/n]"
+ask.no_hint: "[s/N]"
+ask.yesno_hint: "[s/n]"
+ask.yesno_again: "Rispondere con s o n"
+ask.number_again: "Inserire un numero valido"
+
+# Esecuzione degli script
+run.no_script: "Script non trovato: {0}"
+run.auto_missing: "Modalità automatica attiva, ma mancano delle risposte - ulh le chiederà"
+run.config_for: "Impostazioni per: {0}"
+run.confirm: "Eseguire '{0}' ora?"
+run.auto: "Modalità automatica: esecuzione di '{0}' senza conferma"
+run.executing: "Esecuzione: {0} → {1}"
+run.ok: "✅ Completato con successo"
+run.failed: "❌ Non riuscito (codice di uscita: {0})"
+run.needs_root: "Servono i diritti di root: installare sudo o avviare ulh come root."
+
+# Aggiornamento automatico
+update.not_git: "Non è un repo git"
+update.available: "Aggiornamenti disponibili! Per installarli: bash apps/cli/ulh.sh --update"
+update.current: "ulh è aggiornato."
+update.pulling: "Download dell'ultima versione..."
+update.ok: "Aggiornamento riuscito!"
+update.failed: "Aggiornamento non riuscito. Controllare con git status."
+update.auto: "Aggiornamento di ulh ({0} commit di ritardo)..."
+update.restart: "ulh aggiornato - riavvio..."
+update.auto_failed: "Aggiornamento automatico non riuscito - ulh continua comunque"
+
+# Spostamento dei file personali dalla vecchia cartella custom/
+data.moved: "File personali spostati da custom/ in apps/cli/config/ e apps/cli/data/"
+data.not_moved: "Non spostato, già presente: {0} (vecchia copia: {1})"
+data.move_failed: "Impossibile spostare {0}"
+
+# Repo personali
+repo.init: "Preparazione dei repo personali..."
+repo.auto_off: "Aggiornamento automatico dei repo personali disattivato"
+repo.placeholder: "Il repo '{0}' non ha un URL (solo cartella locale)"
+repo.cloning: "Scaricamento di '{0}' in {1}..."
+repo.cloned: "'{0}' scaricato correttamente"
+repo.clone_retry: "Scaricamento di '{0}' non riuscito, nuovo tentativo... ({1}/{2})"
+repo.clone_failed: "Impossibile scaricare '{0}' dopo {1} tentativi"
+repo.updating: "Aggiornamento di '{0}'..."
+repo.updated: "'{0}' aggiornato correttamente"
+repo.pull_retry: "Aggiornamento di '{0}' non riuscito, nuovo tentativo... ({1}/{2})"
+repo.pull_failed: "Impossibile aggiornare '{0}' dopo {1} tentativi"
+repo.no_token: "Token mancante per '{0}'"
+repo.no_user: "Nome utente mancante per '{0}'"
+repo.bad_auth: "Valore sconosciuto per auth_method: {0}"

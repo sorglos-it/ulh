@@ -2,6 +2,16 @@
 
 ## Unreleased – 2026-09-22
 
+- New: five languages - English, German, French, Italian and Spanish. The menu,
+  the messages and the descriptions and questions of all 96 scripts. ulh starts in
+  the language of the system; the key `l` switches and remembers it
+  (`apps/cli/config/settings.yaml`), `--lang de` works for one start. Yes/no
+  answers count in every language (y, j, o, s = yes). What the scripts themselves
+  print stays English.
+- Catalog: the translations sit right below the English text (`descriptionDE`,
+  `questionFR`, category names `nameIT` ...). Custom repositories can do the same
+  in their `config.yaml`. The tests fail when a translation is missing.
+- The search also finds the English words when another language is shown.
 - Fixed: `build-essential` and `locate` ran the package manager without a package
   name (`apt-get install -y`) and reported success. They now name the package for
   each distribution; locate on openSUSE and Alpine stops with a clear message.

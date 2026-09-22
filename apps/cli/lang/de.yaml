@@ -1,0 +1,94 @@
+# ulh - Texte: Deutsch
+#
+# Fehlt hier ein Text, nimmt ulh den aus en.yaml. Gleiche Schlüssel in allen
+# fünf Dateien; {0}, {1} ... müssen in jeder Übersetzung stehen. Werte immer
+# in doppelten Anführungszeichen.
+
+lang.name: "Deutsch"
+
+# Start und Kommandozeile
+main.linux_only: "Nur für Linux"
+main.unknown_lang: "Unbekannte Sprache: {0} (möglich: {1})"
+main.unknown_option: "Unbekannte Option: {0}"
+main.no_catalog: "Katalog nicht gefunden: {0}"
+help.usage: "Aufruf: bash apps/cli/ulh.sh [OPTIONEN]"
+help.options: "Optionen:"
+help.debug: "Zusätzliche Ausgaben zur Fehlersuche"
+help.no_update: "Beim Start nicht aktualisieren"
+help.check_update: "Prüfen, ob es Updates gibt"
+help.update: "Updates jetzt einspielen"
+help.lang: "Sprache des Menüs (Standard: wie das System)"
+help.help: "Diese Hilfe zeigen"
+
+# Menü - die Tastenzeilen höchstens 70 Zeichen breit
+menu.version: "VERSION: {0}"
+menu.key_search: "s) Suchen  (oder /Begriff)"
+menu.key_back: "b) Zurück"
+menu.key_lang: "l) Sprache: {0}"
+menu.key_quit: "q) Beenden"
+menu.choose: "Auswahl:"
+menu.goodbye: "Tschüss!"
+menu.invalid_range: "Ungültig (1-{0})"
+menu.invalid: "Ungültige Eingabe"
+menu.press_enter: "Weiter mit Enter..."
+menu.category: "Kategorie: {0}"
+menu.no_scripts: "Keine Skripte vorhanden."
+menu.no_actions: "Keine Aktionen."
+menu.search_ask: "Suche (Name, Beschreibung, Kategorie):"
+menu.search_again: "Suche:"
+menu.search_title: "Suche: {0}"
+menu.search_none: "Keine Treffer für \"{0}\"."
+menu.search_where: "Durchsucht: Skriptname, Beschreibung und Kategorie."
+menu.custom: "Eigene: {0}"
+menu.custom_none: "Keine Skripte in diesem Repository."
+menu.custom_noconfig: "Keine config.yaml in {0}"
+
+# Fragen. Antworten gelten in jeder Sprache: j, y, o, s = ja.
+ask.yes_hint: "[J/n]"
+ask.no_hint: "[j/N]"
+ask.yesno_hint: "[j/n]"
+ask.yesno_again: "Bitte mit j oder n antworten"
+ask.number_again: "Bitte eine gültige Zahl eingeben"
+
+# Skripte ausführen
+run.no_script: "Skript nicht gefunden: {0}"
+run.auto_missing: "Automatik an, aber Antworten fehlen - ulh fragt nach"
+run.config_for: "Einstellungen für: {0}"
+run.confirm: "'{0}' jetzt ausführen?"
+run.auto: "Automatik: '{0}' läuft ohne Rückfrage"
+run.executing: "Ausführen: {0} → {1}"
+run.ok: "✅ Erfolgreich abgeschlossen"
+run.failed: "❌ Fehlgeschlagen (Exit-Code: {0})"
+run.needs_root: "Braucht Root-Rechte: sudo installieren oder ulh als root starten."
+
+# Selbst-Update
+update.not_git: "Kein Git-Repository"
+update.available: "Updates verfügbar! Einspielen: bash apps/cli/ulh.sh --update"
+update.current: "ulh ist aktuell."
+update.pulling: "Neueste Version wird geholt..."
+update.ok: "Update erfolgreich!"
+update.failed: "Update fehlgeschlagen. Bitte git status prüfen."
+update.auto: "ulh wird aktualisiert ({0} Commit(s) im Rückstand)..."
+update.restart: "ulh aktualisiert - Neustart..."
+update.auto_failed: "Automatisches Update fehlgeschlagen - es geht trotzdem weiter"
+
+# Eigene Dateien aus dem alten Ordner custom/ umziehen
+data.moved: "Eigene Dateien von custom/ nach apps/cli/config/ und apps/cli/data/ umgezogen"
+data.not_moved: "Nicht verschoben, schon vorhanden: {0} (alte Kopie: {1})"
+data.move_failed: "Konnte {0} nicht verschieben"
+
+# Eigene Repositories
+repo.init: "Eigene Repositories werden vorbereitet..."
+repo.auto_off: "Automatisches Update eigener Repositories ist aus"
+repo.placeholder: "Repository '{0}' hat keine URL (lokaler Platzhalter)"
+repo.cloning: "'{0}' wird nach {1} geklont..."
+repo.cloned: "'{0}' erfolgreich geklont"
+repo.clone_retry: "Klonen von '{0}' fehlgeschlagen, neuer Versuch... ({1}/{2})"
+repo.clone_failed: "'{0}' ließ sich nach {1} Versuchen nicht klonen"
+repo.updating: "'{0}' wird aktualisiert..."
+repo.updated: "'{0}' erfolgreich aktualisiert"
+repo.pull_retry: "Aktualisieren von '{0}' fehlgeschlagen, neuer Versuch... ({1}/{2})"
+repo.pull_failed: "'{0}' ließ sich nach {1} Versuchen nicht aktualisieren"
+repo.no_token: "Kein Token für '{0}' eingetragen"
+repo.no_user: "Kein Benutzername für '{0}' eingetragen"
+repo.bad_auth: "Unbekannte auth_method: {0}"

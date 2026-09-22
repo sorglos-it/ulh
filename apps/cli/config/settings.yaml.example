@@ -1,0 +1,10 @@
+# Settings for ulh
+#
+# ulh copies this template to apps/cli/config/settings.yaml on the first
+# start. Edit settings.yaml, not this file: updates never touch it.
+#
+# language   de, en, fr, it or es. Empty = like the system ($LANG).
+#            In the menu, the key l switches the language and saves it here.
+#            On the command line: --lang de
+
+language:

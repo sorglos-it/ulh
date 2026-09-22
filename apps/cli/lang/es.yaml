@@ -1,0 +1,94 @@
+# ulh - textos: español
+#
+# Si aquí falta un texto, ulh usa el de en.yaml. Las mismas claves en los
+# cinco archivos; {0}, {1} ... deben aparecer en cada traducción.
+# Valores siempre entre comillas dobles.
+
+lang.name: "Español"
+
+# Inicio y línea de comandos
+main.linux_only: "Solo para Linux"
+main.unknown_lang: "Idioma desconocido: {0} (disponibles: {1})"
+main.unknown_option: "Opción desconocida: {0}"
+main.no_catalog: "No se encontró el catálogo: {0}"
+help.usage: "Uso: bash apps/cli/ulh.sh [OPCIONES]"
+help.options: "Opciones:"
+help.debug: "Mensajes adicionales para encontrar errores"
+help.no_update: "No actualizar al iniciar"
+help.check_update: "Comprobar si hay actualizaciones"
+help.update: "Instalar ahora las actualizaciones"
+help.lang: "Idioma del menú (por defecto: el del sistema)"
+help.help: "Mostrar esta ayuda"
+
+# Menú - líneas de teclas de 70 caracteres como máximo
+menu.version: "VERSION: {0}"
+menu.key_search: "s) Buscar  (o /palabra)"
+menu.key_back: "b) Volver"
+menu.key_lang: "l) Idioma: {0}"
+menu.key_quit: "q) Salir"
+menu.choose: "Opción:"
+menu.goodbye: "¡Hasta luego!"
+menu.invalid_range: "No válido (1-{0})"
+menu.invalid: "Entrada no válida"
+menu.press_enter: "Pulsar Intro para continuar..."
+menu.category: "Categoría: {0}"
+menu.no_scripts: "No hay scripts disponibles."
+menu.no_actions: "Sin acciones."
+menu.search_ask: "Buscar (nombre, descripción, categoría):"
+menu.search_again: "Buscar:"
+menu.search_title: "Búsqueda: {0}"
+menu.search_none: "Sin resultados para \"{0}\"."
+menu.search_where: "Búsqueda en: nombre del script, descripción y categoría."
+menu.custom: "Repo propio: {0}"
+menu.custom_none: "No hay scripts disponibles en este repo."
+menu.custom_noconfig: "No se encontró config.yaml en {0}"
+
+# Preguntas. Las respuestas valen en cualquier idioma: s, y, j, o = sí.
+ask.yes_hint: "[S/n]"
+ask.no_hint: "[s/N]"
+ask.yesno_hint: "[s/n]"
+ask.yesno_again: "Responder con s o n"
+ask.number_again: "Introducir un número válido"
+
+# Ejecución de scripts
+run.no_script: "No se encontró el script: {0}"
+run.auto_missing: "Modo automático activado, pero faltan respuestas - ulh las preguntará"
+run.config_for: "Configuración para: {0}"
+run.confirm: "¿Ejecutar '{0}' ahora?"
+run.auto: "Modo automático: '{0}' se ejecuta sin confirmación"
+run.executing: "Ejecutando: {0} → {1}"
+run.ok: "✅ Completado correctamente"
+run.failed: "❌ Falló (código de salida: {0})"
+run.needs_root: "Hacen falta permisos de root: instalar sudo o iniciar ulh como root."
+
+# Actualización automática
+update.not_git: "No es un repo git"
+update.available: "¡Hay actualizaciones! Para instalarlas: bash apps/cli/ulh.sh --update"
+update.current: "ulh está actualizado."
+update.pulling: "Descargando la última versión..."
+update.ok: "¡Actualización completada!"
+update.failed: "La actualización falló. Comprobar con git status."
+update.auto: "Actualizando ulh ({0} commit(s) de retraso)..."
+update.restart: "ulh actualizado - reiniciando..."
+update.auto_failed: "La actualización automática falló - ulh sigue de todos modos"
+
+# Traslado de los archivos propios desde la antigua carpeta custom/
+data.moved: "Archivos propios movidos de custom/ a apps/cli/config/ y apps/cli/data/"
+data.not_moved: "No se ha movido, ya existe: {0} (copia antigua: {1})"
+data.move_failed: "No se pudo mover {0}"
+
+# Repos propios
+repo.init: "Preparando los repos propios..."
+repo.auto_off: "Actualización automática de los repos propios desactivada"
+repo.placeholder: "El repo '{0}' no tiene URL (solo carpeta local)"
+repo.cloning: "Descargando '{0}' en {1}..."
+repo.cloned: "'{0}' descargado correctamente"
+repo.clone_retry: "No se pudo descargar '{0}', reintentando... ({1}/{2})"
+repo.clone_failed: "No se pudo descargar '{0}' tras {1} intentos"
+repo.updating: "Actualizando '{0}'..."
+repo.updated: "'{0}' actualizado correctamente"
+repo.pull_retry: "No se pudo actualizar '{0}', reintentando... ({1}/{2})"
+repo.pull_failed: "No se pudo actualizar '{0}' tras {1} intentos"
+repo.no_token: "Falta el token para '{0}'"
+repo.no_user: "Falta el nombre de usuario para '{0}'"
+repo.bad_auth: "Valor desconocido para auth_method: {0}"

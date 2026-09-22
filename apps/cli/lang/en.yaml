@@ -1,0 +1,94 @@
+# ulh - texts: English
+#
+# English is the fallback: a text missing in another language is taken from
+# here. Same keys in all five files; {0}, {1} ... must appear in every
+# translation. Values always in double quotes.
+
+lang.name: "English"
+
+# Start and command line
+main.linux_only: "Linux only"
+main.unknown_lang: "Unknown language: {0} (possible: {1})"
+main.unknown_option: "Unknown option: {0}"
+main.no_catalog: "Catalog not found: {0}"
+help.usage: "Usage: bash apps/cli/ulh.sh [OPTIONS]"
+help.options: "Options:"
+help.debug: "Enable debug output"
+help.no_update: "Skip auto-update on startup"
+help.check_update: "Check if updates are available"
+help.update: "Apply updates manually"
+help.lang: "Language of the menu (default: like the system)"
+help.help: "Show this help"
+
+# Menu - the key lines at most 70 characters wide
+menu.version: "VERSION: {0}"
+menu.key_search: "s) Search  (or /term)"
+menu.key_back: "b) Back"
+menu.key_lang: "l) Language: {0}"
+menu.key_quit: "q) Quit"
+menu.choose: "Choose:"
+menu.goodbye: "Goodbye!"
+menu.invalid_range: "Invalid (1-{0})"
+menu.invalid: "Invalid input"
+menu.press_enter: "Press Enter..."
+menu.category: "Category: {0}"
+menu.no_scripts: "No scripts available."
+menu.no_actions: "No actions."
+menu.search_ask: "Search (name, description, category):"
+menu.search_again: "Search:"
+menu.search_title: "Search: {0}"
+menu.search_none: "No matches for \"{0}\"."
+menu.search_where: "Searched: script name, description and category."
+menu.custom: "Custom: {0}"
+menu.custom_none: "No scripts available in this repository."
+menu.custom_noconfig: "No config.yaml found in {0}"
+
+# Questions. Answers count in every language: y, j, o, s = yes.
+ask.yes_hint: "[Y/n]"
+ask.no_hint: "[y/N]"
+ask.yesno_hint: "[y/n]"
+ask.yesno_again: "Please answer y or n"
+ask.number_again: "Please enter a valid number"
+
+# Running scripts
+run.no_script: "Script not found: {0}"
+run.auto_missing: "Autoscript mode enabled but missing answers, falling back to interactive mode"
+run.config_for: "Configuration for: {0}"
+run.confirm: "Execute '{0}' now?"
+run.auto: "Autoscript mode: executing '{0}' automatically"
+run.executing: "Executing: {0} → {1}"
+run.ok: "✅ Completed successfully"
+run.failed: "❌ Failed (exit code: {0})"
+run.needs_root: "Needs root rights: install sudo, or start ulh as root."
+
+# Self-update
+update.not_git: "Not a git repository"
+update.available: "Updates available! Run: bash apps/cli/ulh.sh --update"
+update.current: "You are up to date."
+update.pulling: "Pulling latest version..."
+update.ok: "Update successful!"
+update.failed: "Update failed. Check git status."
+update.auto: "Updating ulh ({0} commit(s) behind)..."
+update.restart: "ulh updated successfully - restarting..."
+update.auto_failed: "Auto-update failed - proceeding anyway"
+
+# Moving your own files from the old custom/ folder
+data.moved: "Your files moved from custom/ to apps/cli/config/ and apps/cli/data/"
+data.not_moved: "Not moved, already there: {0} (old copy: {1})"
+data.move_failed: "Could not move {0}"
+
+# Custom repositories
+repo.init: "Initializing custom repositories..."
+repo.auto_off: "Custom repo auto-update disabled"
+repo.placeholder: "Repository '{0}' has no URL (local placeholder)"
+repo.cloning: "Cloning '{0}' to {1}..."
+repo.cloned: "Successfully cloned '{0}'"
+repo.clone_retry: "Clone failed for '{0}', retrying... (attempt {1}/{2})"
+repo.clone_failed: "Failed to clone '{0}' after {1} attempts"
+repo.updating: "Updating '{0}'..."
+repo.updated: "Successfully updated '{0}'"
+repo.pull_retry: "Pull failed for '{0}', retrying... (attempt {1}/{2})"
+repo.pull_failed: "Failed to update '{0}' after {1} attempts"
+repo.no_token: "Token not set for '{0}'"
+repo.no_user: "Username not set for '{0}'"
+repo.bad_auth: "Unknown auth_method: {0}"

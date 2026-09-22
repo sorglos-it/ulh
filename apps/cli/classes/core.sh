@@ -45,7 +45,7 @@ separator() { printf "%78s\n" | tr ' ' '-'; }
 declare -g OS_FAMILY="" OS_DISTRO="" OS_VERSION=""
 
 detect_os() {
-    [[ "$(uname -s)" != "Linux" ]] && { msg_err "Linux only"; return 1; }
+    [[ "$(uname -s)" != "Linux" ]] && { msg_err "$(t main.linux_only)"; return 1; }
     
     if [[ -f /etc/os-release ]]; then
         source /etc/os-release
@@ -110,6 +110,6 @@ has_sudo_access() { check_sudo; }
 as_root() {
     if (( EUID == 0 )); then "$@"
     elif command -v sudo &>/dev/null; then sudo "$@"
-    else msg_err "Needs root rights: install sudo, or start ulh as root."; return 1
+    else msg_err "$(t run.needs_root)"; return 1
     fi
 }

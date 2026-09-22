@@ -20,7 +20,7 @@ update_pull() {
 
 update_is_clone() {
     [[ -d "$ULH_ROOT/.git" ]] && return 0
-    msg_warn "Not a git repository"
+    msg_warn "$(t update.not_git)"
     return 1
 }
 
@@ -30,9 +30,9 @@ update_check() {
     git -C "$ULH_ROOT" fetch origin &>/dev/null
     local behind; behind=$(update_behind)
     if (( behind > 0 )); then
-        msg_info "Updates available! Run: bash apps/cli/ulh.sh --update"
+        msg_info "$(t update.available)"
     else
-        msg_ok "You are up to date."
+        msg_ok "$(t update.current)"
     fi
     return 0
 }
@@ -40,12 +40,12 @@ update_check() {
 # --update
 update_apply() {
     update_is_clone || return 1
-    msg_info "Pulling latest version..."
+    msg_info "$(t update.pulling)"
     if update_pull 2>/dev/null; then
-        msg_ok "Update successful!"
+        msg_ok "$(t update.ok)"
         return 0
     fi
-    msg_err "Update failed. Check git status."
+    msg_err "$(t update.failed)"
     return 1
 }
 
@@ -58,13 +58,13 @@ update_auto() {
     local behind; behind=$(update_behind)
     (( behind > 0 )) || return 0
 
-    msg_info "Updating ulh ($behind commit(s) behind)..."
+    msg_info "$(t update.auto "$behind")"
     if update_pull &>/dev/null; then
-        msg_ok "ulh updated successfully - restarting..."
+        msg_ok "$(t update.restart)"
         echo ""
         export ULH_UPDATED=1
         exec bash "${ulh_DIR}/ulh.sh" "${ULH_ARGS[@]}"
     fi
-    msg_warn "Auto-update failed - proceeding anyway"
+    msg_warn "$(t update.auto_failed)"
     return 1
 }

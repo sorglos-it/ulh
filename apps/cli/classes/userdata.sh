@@ -3,6 +3,7 @@
 #
 #   config/repo.yaml     your repositories (created from repo.yaml.example)
 #   config/answer.yaml   preset answers and autoscript (optional)
+#   config/settings.yaml the language (created from settings.yaml.example)
 #   data/keys/           SSH keys for private repositories
 #   data/repos/<path>/   your repositories: own config.yaml + scripts/
 #   data/lib/            generated: scripts in your repositories load ulh's
@@ -54,7 +55,7 @@ userdata_migrate() {
 
     rmdir "$old" 2>/dev/null
     if (( moved )); then
-        msg_info "Your files moved from custom/ to apps/cli/config/ and apps/cli/data/"
+        msg_info "$(t data.moved)"
     fi
     return 0
 }
@@ -78,13 +79,13 @@ _userdata_move() {
     local src="$1" dest="$2"
     [[ -e "$src" || -L "$src" ]] || return 1
     if [[ -e "$dest" || -L "$dest" ]]; then
-        msg_warn "Not moved, already there: ${dest#"$ULH_ROOT"/} (old copy: ${src#"$ULH_ROOT"/})"
+        msg_warn "$(t data.not_moved "${dest#"$ULH_ROOT"/}" "${src#"$ULH_ROOT"/}")"
         return 1
     fi
     if mkdir -p "$(dirname "$dest")" && mv "$src" "$dest"; then
         return 0
     fi
-    msg_warn "Could not move ${src#"$ULH_ROOT"/}"
+    msg_warn "$(t data.move_failed "${src#"$ULH_ROOT"/}")"
     return 1
 }
 
@@ -100,6 +101,7 @@ userdata_init() {
     chmod 700 "$data/keys" 2>/dev/null
 
     _userdata_copy "$cfg/repo.yaml.example" "$cfg/repo.yaml"
+    _userdata_copy "$cfg/settings.yaml.example" "$cfg/settings.yaml"
 
     # The demo repository (switched off in repo.yaml)
     local demo="$data/repos/demo-scripts"

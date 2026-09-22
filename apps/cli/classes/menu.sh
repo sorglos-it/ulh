@@ -20,7 +20,7 @@ menu_header() {
     if [[ -n "$version" ]]; then
         # With version: | title[padding] VERSION: version |
         # Box width: 80 = | (1) + space (1) + title + padding + space (1) + VERSION: ... + space (1) + | (1)
-        local version_str="VERSION: ${version}"
+        local version_str; version_str="$(t menu.version "$version")"
         local padding=$(( 80 - 1 - 1 - ${#title} - 1 - ${#version_str} - 1 - 1 ))
         printf "| %s%*s %s |\n" "$title" $padding "" "$version_str"
     else
@@ -32,6 +32,21 @@ menu_header() {
     echo "|"
 }
 
+# One line of the frame: |  text<padding>|  (80 wide; longer text is not cut)
+menu_line() {
+    local text="$1" pad=$(( 76 - ${#1} ))
+    (( pad < 0 )) && pad=0
+    printf "|  %s%*s|\n" "$text" $pad ""
+}
+
+# Pad text to a width in characters into the variable named by $1.
+# printf "%-20s" counts bytes: "Überwachung" would come out one short.
+menu_pad() {
+    local n=$(( $3 - ${#2} ))
+    (( n < 0 )) && n=0
+    printf -v "$1" '%s%*s' "$2" "$n" ""
+}
+
 menu_footer() {
     local show_back=$1
     local show_search=${2:-0}
@@ -40,27 +55,27 @@ menu_footer() {
     echo "|"
     separator_dots
 
-    if [[ $show_search -eq 1 ]]; then
-        # Search button: |  s) Search  (or /term) (24 chars) + padding + | = 80
-        printf "|  s) Search  (or /term)%*s|\n" 55 ""
-    fi
+    (( show_search == 1 )) && menu_line "$(t menu.key_search)"
+    (( show_back == 1 )) && menu_line "$(t menu.key_back)"
+    menu_line "$(t menu.key_lang "$(t lang.name)")"
 
-    if [[ $show_back -eq 1 ]]; then
-        # Back button: |  b) Back (10 chars) + padding + | = 80
-        printf "|  b) Back%*s|\n" 69 ""
-    fi
-    
-    # Calculate padding for quit + system info
-    # Total width: 80 = | (1) + 2 spaces (2) + "q) Quit" (7) + padding + system_info + space (1) + | (1)
-    local len=$(( ${#system_info} + 13 ))
-    local padding=$(( 80 - len ))
-    printf "|  q) Quit%*s %s |\n" $padding "" "$system_info"
-    
+    # Quit on the left, system info on the right
+    local quit; quit="$(t menu.key_quit)"
+    local padding=$(( 80 - 3 - ${#quit} - 1 - ${#system_info} - 2 ))
+    (( padding < 1 )) && padding=1
+    printf "|  %s%*s %s |\n" "$quit" $padding "" "$system_info"
+
     separator_dots
 }
 
-menu_error() { echo ""; echo "  ❌ $1"; echo ""; read -rp "  Press Enter..."; }
-menu_confirm() { local r; read -rp "  $1 (y/N): " r; [[ "${r,,}" == "y" ]]; }
+menu_error() { echo ""; echo "  ❌ $1"; echo ""; read -rp "  $(t menu.press_enter)"; }
+
+# Yes/no before running something: Enter means no
+menu_confirm() {
+    local r
+    read -rp "  $1 $(t ask.no_hint): " r
+    lang_is_yes "$r"
+}
 menu_valid_num() { [[ "$1" =~ ^[0-9]+$ ]] && (( $1 >= 1 && $1 <= $2 )); }
 
 # Prompt helpers
@@ -69,22 +84,27 @@ menu_prompt_input() {
     [[ -z "$a" ]] && a="${2:-}"; echo "$a"
 }
 
+# Answers are always "yes" or "no" for the scripts, whatever language was typed
 menu_prompt_yesno() {
-    local a; while true; do
-        echo -n "  $1 [${2:-y}]: "; read -r a
+    local a hint; hint="$(t ask.yes_hint)"; [[ "${2:-y}" == n* ]] && hint="$(t ask.no_hint)"
+    while true; do
+        echo -n "  $1 ${hint}: "; read -r a
         [[ -z "$a" ]] && a="${2:-y}"
-        [[ "$a" =~ ^[yYnN] ]] && break; echo "  Please answer y/n"
+        { lang_is_yes "$a" || lang_is_no "$a"; } && break
+        echo "  $(t ask.yesno_again)"
     done
-    [[ "$a" =~ ^[yY] ]] && echo "yes" || echo "no"
+    lang_is_yes "$a" && echo "yes" || echo "no"
 }
 
 # ============================================================================
 # Helper Functions
 # ============================================================================
 
+# Category keys, sorted by the name shown in the current language
 get_categories() {
     local -n ref=$1; ref=()
-    while IFS= read -r c; do [[ -n "$c" ]] && ref+=("$c"); done <<< "$(yaml_categories | sort)"
+    local k n d
+    while IFS=$'\t' read -r k n d; do [[ -n "$k" ]] && ref+=("$k"); done < <(yaml_category_rows)
 }
 
 get_scripts() {
@@ -100,10 +120,12 @@ get_scripts() {
 # Fills the array named by $1 with "name|description|category" entries.
 get_search_results() {
     local -n ref=$1; ref=(); local term="$2"
-    local -a names descs cats
+    local -a names descs cats base
     mapfile -t names < <(yaml_scripts)
     mapfile -t descs < <(yaml_all_descriptions)
     mapfile -t cats  < <(yaml_all_categories)
+    # the English base text as well: "browser" finds it in every language
+    mapfile -t base  < <(yaml_all_descriptions_base)
 
     local i n d c hay
     local needle="${term,,}"
@@ -114,7 +136,7 @@ get_search_results() {
         c="${cats[$i]}";  [[ "$c" == "null" ]] && c=""
         # substring match without forking (case-insensitive, no regex surprises),
         # the expensive OS check runs only for hits
-        hay="${n} ${d} ${c}"
+        hay="${n} ${d} ${c} ${base[$i]:-}"
         [[ "${hay,,}" == *"$needle"* ]] || continue
         yaml_os_compatible "$n" "$OS_DISTRO" "$OS_FAMILY" || continue
         [[ -f "$(yaml_script_path "$n")" ]] && ref+=("${n}|${d}|${c}")
@@ -147,17 +169,25 @@ menu_show_repositories() {
     menu_footer 0 1
 }
 
-# Show ulh system scripts (categories)
+# Show ulh system scripts (categories), names and descriptions in the current language
 menu_show_main() {
     menu_clear
     menu_header "ulh - unknown linux helper" "${ulh_VERSION}"
-    local -a cats; get_categories cats
-    local i=1; for c in "${cats[@]}"; do 
-        local desc=$(yaml_info "$c" description)
-        if [[ -n "$desc" && "$desc" != "null" ]]; then
-            printf "|  %2d) %-20s - %s\n" $i "$c" "$desc"
+    local -a rows=()
+    local k n d w=20
+    while IFS=$'\t' read -r k n d; do
+        [[ -n "$k" ]] || continue
+        rows+=("${n}"$'\t'"${d}")
+        (( ${#n} > w && ${#n} <= 30 )) && w=${#n}
+    done < <(yaml_category_rows)
+    local i=1 r col
+    for r in "${rows[@]}"; do
+        n="${r%%$'\t'*}"; d="${r#*$'\t'}"
+        if [[ -n "$d" && "$d" != "null" ]]; then
+            menu_pad col "$n" "$w"
+            printf "|  %2d) %s - %s\n" $i "$col" "$d"
         else
-            printf "|  %2d) %s\n" $i "$c"
+            printf "|  %2d) %s\n" $i "$n"
         fi
         ((i++))
     done
@@ -172,13 +202,13 @@ menu_show_main() {
 
 menu_show_category() {
     menu_clear
-    menu_header "Category: $1"
+    menu_header "$(t menu.category "$(yaml_category_name "$1")")"
     local -a scripts; get_scripts scripts "$(yaml_scripts_by_cat "$1")"
     if (( ${#scripts[@]} == 0 )); then 
-        echo "|  No scripts available."
+        echo "|  $(t menu.no_scripts)"
     else 
         local i=1; for s in "${scripts[@]}"; do 
-            printf "|  %2d) %-20s - %s\n" $i "$s" "$(yaml_info "$s" description)"
+            printf "|  %2d) %-20s - %s\n" $i "$s" "$(yaml_desc "$s")"
             ((i++))
         done
     fi
@@ -188,11 +218,11 @@ menu_show_category() {
 menu_show_search() {
     local term="$1"; shift
     menu_clear
-    menu_header "Search: $term"
+    menu_header "$(t menu.search_title "$term")"
     if (( $# == 0 )); then
-        echo "|  No matches for \"$term\"."
+        echo "|  $(t menu.search_none "$term")"
         echo "|"
-        echo "|  Searched: script name, description and category."
+        echo "|  $(t menu.search_where)"
     else
         # columns: 2 + 16 + 26 + 28 = 78 chars, so the box stays at 80
         local i=1 e n d c
@@ -201,7 +231,8 @@ menu_show_search() {
             if (( ${#n} > 16 )); then n="${n:0:14}.."; fi
             if (( ${#c} > 26 )); then c="${c:0:24}.."; fi
             if (( ${#d} > 28 )); then d="${d:0:26}.."; fi
-            printf "|  %2d) %-16s %-26s %s\n" $i "$n" "$c" "$d"
+            menu_pad n "$n" 16; menu_pad c "$c" 26
+            printf "|  %2d) %s %s %s\n" $i "$n" "$c" "$d"
             ((i++))
         done
     fi
@@ -210,10 +241,10 @@ menu_show_search() {
 
 menu_show_actions() {
     menu_clear
-    menu_header "$1 - $(yaml_info "$1" description)"
+    menu_header "$1 - $(yaml_desc "$1")"
     local count=$(yaml_action_count "$1"); [[ -z "$count" || "$count" == "null" ]] && count=0
     if (( count == 0 )); then 
-        echo "|  No actions."
+        echo "|  $(t menu.no_actions)"
     else 
         for ((i=0; i<count; i++)); do
             local n=$(yaml_action_name "$1" $i) d=$(yaml_action_description "$1" $i)
@@ -234,11 +265,11 @@ menu_show_custom_repo() {
     local repo_display_name=$(repo_get_name "${ulh_DIR}/config/repo.yaml" "$repo_name")
     
     menu_clear
-    menu_header "Custom: $repo_display_name"
+    menu_header "$(t menu.custom "$repo_display_name")"
     
     # Load config.yaml from repo (custom repos have their own config.yaml)
     if [[ ! -f "$repo_path/config.yaml" ]]; then
-        echo "|  No config.yaml found in $repo_path"
+        echo "|  $(t menu.custom_noconfig "$repo_path")"
         menu_footer 1
         return 1
     fi
@@ -250,10 +281,10 @@ menu_show_custom_repo() {
     done <<< "$(yq_eval ".scripts | keys | .[]" "$repo_path/config.yaml" 2>/dev/null)"
     
     if (( ${#scripts[@]} == 0 )); then
-        echo "|  No scripts available in this repository."
+        echo "|  $(t menu.custom_none)"
     else
         local i=1; for s in "${scripts[@]}"; do 
-            local desc=$(yq_eval ".scripts.$s.description" "$repo_path/config.yaml" 2>/dev/null)
+            local desc=$(yq_eval "$(yq_l10n ".scripts.$s.description")" "$repo_path/config.yaml" 2>/dev/null)
             printf "|  %2d) %-20s - %s\n" $i "$s" "$desc"
             ((i++))
         done
@@ -269,7 +300,7 @@ menu_show_custom_repo_actions() {
     local repo_display_name=$(repo_get_name "${ulh_DIR}/config/repo.yaml" "$repo_name")
     
     menu_clear
-    menu_header "Custom: $repo_display_name - $script_name"
+    menu_header "$(t menu.custom "$repo_display_name - $script_name")"
     
     # Get actions from repo's config.yaml
     local count
@@ -277,11 +308,11 @@ menu_show_custom_repo_actions() {
     [[ -z "$count" || "$count" == "null" ]] && count=0
     
     if (( count == 0 )); then 
-        echo "  No actions."
+        echo "|  $(t menu.no_actions)"
     else 
         for ((i=0; i<count; i++)); do
             local n=$(yq_eval ".scripts.$script_name.actions[$i].name" "$repo_path/config.yaml" 2>/dev/null)
-            local d=$(yq_eval ".scripts.$script_name.actions[$i].description" "$repo_path/config.yaml" 2>/dev/null)
+            local d=$(yq_eval "$(yq_l10n ".scripts.$script_name.actions[$i].description")" "$repo_path/config.yaml" 2>/dev/null)
             [[ -n "$d" && "$d" != "null" ]] && printf "|  %2d) %-20s - %s\n" $((i+1)) "$n" "$d" || printf "|  %2d) %s\n" $((i+1)) "$n"
         done
     fi
@@ -323,9 +354,10 @@ menu_repositories() {
         
         local max=$((i-1))
         
-        echo ""; local input; read -rp "  Choose: " input || exit 0
+        echo ""; local input; read -rp "  $(t menu.choose) " input || exit 0
         case "$input" in
-            q|Q) echo "  Goodbye!"; exit 0 ;;
+            q|Q) echo "  $(t menu.goodbye)"; exit 0 ;;
+            l|L) lang_switch ;;
             s|S) menu_ask_search ;;
             /*) menu_search "${input#/}" ;;
             [0-9]*)
@@ -338,8 +370,8 @@ menu_repositories() {
                         local repo_path=$(repo_get_path "${ulh_DIR}/config/repo.yaml" "$choice")
                         menu_custom_repo_scripts "$choice" "$repo_path"
                     fi
-                else menu_error "Invalid (1-$max)" ; fi ;;
-            "") ;; *) menu_error "Invalid input" ;;
+                else menu_error "$(t menu.invalid_range "$max")" ; fi ;;
+            "") ;; *) menu_error "$(t menu.invalid)" ;;
         esac
     done
 }
@@ -348,14 +380,15 @@ menu_ulh_scripts() {
     while true; do
         menu_show_main
         local -a cats; get_categories cats; local max=${#cats[@]}
-        echo ""; local input; read -rp "  Choose: " input || return
+        echo ""; local input; read -rp "  $(t menu.choose) " input || return
         case "$input" in
             q|Q) exit 0 ;;
+            l|L) lang_switch ;;
             b|B) CONTEXT_FROM="none"; return ;;
             s|S) menu_ask_search ;;
             /*) menu_search "${input#/}" ;;
-            [0-9]*) menu_valid_num "$input" $max && menu_category "${cats[$((input-1))]}" || menu_error "Invalid (1-$max)" ;;
-            "") ;; *) menu_error "Invalid input" ;;
+            [0-9]*) menu_valid_num "$input" $max && menu_category "${cats[$((input-1))]}" || menu_error "$(t menu.invalid_range "$max")" ;;
+            "") ;; *) menu_error "$(t menu.invalid)" ;;
         esac
     done
 }
@@ -364,13 +397,14 @@ menu_category() {
     while true; do
         menu_show_category "$1"
         local -a scripts; get_scripts scripts "$(yaml_scripts_by_cat "$1")"; local max=${#scripts[@]}
-        echo ""; local input; read -rp "  Choose: " input || return
+        echo ""; local input; read -rp "  $(t menu.choose) " input || return
         case "$input" in
             q|Q) exit 0 ;; b|B) return ;;
+            l|L) lang_switch ;;
             s|S) menu_ask_search ;;
             /*) menu_search "${input#/}" ;;
-            [0-9]*) menu_valid_num "$input" $max && menu_actions "${scripts[$((input-1))]}" || menu_error "Invalid (1-$max)" ;;
-            "") ;; *) menu_error "Invalid input" ;;
+            [0-9]*) menu_valid_num "$input" $max && menu_actions "${scripts[$((input-1))]}" || menu_error "$(t menu.invalid_range "$max")" ;;
+            "") ;; *) menu_error "$(t menu.invalid)" ;;
         esac
     done
 }
@@ -380,7 +414,7 @@ menu_category() {
 menu_ask_search() {
     local term
     echo ""
-    read -rp "  Search (name, description, category): " term || return 0
+    read -rp "  $(t menu.search_ask) " term || return 0
     [[ -n "$term" ]] || return 0
     menu_search "$term"
 }
@@ -395,13 +429,14 @@ menu_search() {
         menu_show_search "$term" "${results[@]}"
         local max=${#results[@]}
 
-        echo ""; local input; read -rp "  Choose: " input || return
+        echo ""; local input; read -rp "  $(t menu.choose) " input || return
         case "$input" in
             q|Q) exit 0 ;;
+            l|L) lang_switch ;;
             b|B) return ;;
             s|S)
                 local new_term
-                echo ""; read -rp "  Search: " new_term || return
+                echo ""; read -rp "  $(t menu.search_again) " new_term || return
                 [[ -n "$new_term" ]] && term="$new_term"
                 ;;
             /*)
@@ -411,8 +446,8 @@ menu_search() {
                 if (( max > 0 )) && menu_valid_num "$input" $max; then
                     local entry="${results[$((input-1))]}"
                     menu_actions "${entry%%|*}"
-                else menu_error "Invalid (1-$max)"; fi ;;
-            "") ;; *) menu_error "Invalid input" ;;
+                else menu_error "$(t menu.invalid_range "$max")"; fi ;;
+            "") ;; *) menu_error "$(t menu.invalid)" ;;
         esac
     done
 }
@@ -421,15 +456,16 @@ menu_actions() {
     while true; do
         menu_show_actions "$1"
         local count=$(yaml_action_count "$1"); [[ -z "$count" || "$count" == "null" ]] && count=0
-        echo ""; local input; read -rp "  Choose: " input || return
+        echo ""; local input; read -rp "  $(t menu.choose) " input || return
         case "$input" in
             q|Q) exit 0 ;; b|B) return ;;
+            l|L) lang_switch ;;
             [0-9]*)
                 if (( count > 0 )) && menu_valid_num "$input" $count; then
                     local idx=$((input-1))
                     execute_action "$1" $idx
-                else menu_error "Invalid (1-$count)"; fi ;;
-            "") ;; *) menu_error "Invalid input" ;;
+                else menu_error "$(t menu.invalid_range "$count")"; fi ;;
+            "") ;; *) menu_error "$(t menu.invalid)" ;;
         esac
     done
 }
@@ -448,15 +484,16 @@ menu_custom_repo_scripts() {
         done <<< "$(yq_eval ".scripts | keys | .[]" "$repo_path/config.yaml" 2>/dev/null)"
         
         local max=${#scripts[@]}
-        echo ""; local input; read -rp "  Choose: " input || return
+        echo ""; local input; read -rp "  $(t menu.choose) " input || return
         case "$input" in
             q|Q) exit 0 ;;
+            l|L) lang_switch ;;
             b|B) return ;;
             [0-9]*)
                 if menu_valid_num "$input" $max; then
                     menu_custom_repo_actions "$repo_name" "$repo_path" "${scripts[$((input-1))]}"
-                else menu_error "Invalid (1-$max)"; fi ;;
-            "") ;; *) menu_error "Invalid input" ;;
+                else menu_error "$(t menu.invalid_range "$max")"; fi ;;
+            "") ;; *) menu_error "$(t menu.invalid)" ;;
         esac
     done
 }
@@ -474,15 +511,16 @@ menu_custom_repo_actions() {
         count=$(yq_eval ".scripts.$script_name.actions | length" "$repo_path/config.yaml" 2>/dev/null)
         [[ -z "$count" || "$count" == "null" ]] && count=0
         
-        echo ""; local input; read -rp "  Choose: " input || return
+        echo ""; local input; read -rp "  $(t menu.choose) " input || return
         case "$input" in
             q|Q) exit 0 ;;
+            l|L) lang_switch ;;
             b|B) return ;;
             [0-9]*)
                 if (( count > 0 )) && menu_valid_num "$input" $count; then
                     execute_custom_repo_action "$repo_name" "$repo_path" "$script_name" $((input-1))
-                else menu_error "Invalid (1-$count)"; fi ;;
-            "") ;; *) menu_error "Invalid input" ;;
+                else menu_error "$(t menu.invalid_range "$count")"; fi ;;
+            "") ;; *) menu_error "$(t menu.invalid)" ;;
         esac
     done
 }

@@ -96,10 +96,23 @@ prompt_by_type() {
         return 0
     fi
 
+    # Yes/no in the current language: [J/n] instead of [yes]. The script
+    # always gets "yes" or "no", whatever language was typed.
+    local shown="$default"
+    if [[ "$type" == "yes/no" || "$type" == "yesno" ]]; then
+        if lang_is_yes "$default"; then shown="$(t ask.yes_hint)"
+        elif lang_is_no "$default"; then shown="$(t ask.no_hint)"
+        else shown="$(t ask.yesno_hint)"; fi
+        shown="${shown#\[}"; shown="${shown%\]}"
+        # "(yes/no, default: no)" at the end of the question says the same
+        local re=' *\((yes/no|y/n)[^)]*\)$'
+        [[ "$question" =~ $re ]] && question="${question%"${BASH_REMATCH[0]}"}"
+    fi
+
     # Interactive mode: show prompt and allow user override
     while true; do
-        if [[ -n "$default" ]]; then
-            printf "  %b%s%b [%b%s%b]: " "$C_CYAN" "$question" "$C_RESET" "$C_GREEN" "$default" "$C_RESET" >&2
+        if [[ -n "$shown" ]]; then
+            printf "  %b%s%b [%b%s%b]: " "$C_CYAN" "$question" "$C_RESET" "$C_GREEN" "$shown" "$C_RESET" >&2
         else
             printf "  %b%s%b: " "$C_CYAN" "$question" "$C_RESET" >&2
         fi
@@ -108,15 +121,15 @@ prompt_by_type() {
 
         case "$type" in
             yes/no|yesno)
-                if [[ "${answer,,}" =~ ^(y|yes|n|no)$ ]]; then
-                    [[ "${answer,,}" =~ ^(y|yes)$ ]] && answer="yes" || answer="no"
+                if lang_is_yes "$answer" || lang_is_no "$answer"; then
+                    lang_is_yes "$answer" && answer="yes" || answer="no"
                     break
                 fi
-                printf "  %b%s%b\n" "$C_RED" "Please answer yes/no" "$C_RESET" >&2
+                printf "  %b%s%b\n" "$C_RED" "$(t ask.yesno_again)" "$C_RESET" >&2
                 ;;
             number)
                 if [[ "$answer" =~ ^[0-9]+$ ]]; then break; fi
-                printf "  %b%s%b\n" "$C_RED" "Please enter a valid number" "$C_RESET" >&2
+                printf "  %b%s%b\n" "$C_RED" "$(t ask.number_again)" "$C_RESET" >&2
                 ;;
             *)
                 # Text type: accept answer as-is (empty is allowed if default was empty)
@@ -139,7 +152,7 @@ execute_action() {
     local parameter=$(yaml_action_param "$script" "$action_index")
     local aname=$(yaml_action_name "$script" "$action_index")
 
-    [[ ! -f "$script_path" ]] && { menu_error "Script not found: $script_path"; return 1; }
+    [[ ! -f "$script_path" ]] && { menu_error "$(t run.no_script "$script_path")"; return 1; }
 
     # Determine autoscript mode for this action (using parameter as action key)
     local autoscript_mode="false"
@@ -158,7 +171,7 @@ execute_action() {
         if [[ "$autoscript_mode" == "true" ]]; then
             if ! has_all_answers "$script" "$parameter" "$prompt_count"; then
                 # Graceful fallback: missing answers, show interactive prompts
-                msg_warn "Autoscript mode enabled but missing answers, falling back to interactive mode"
+                msg_warn "$(t run.auto_missing)"
                 autoscript_mode="false"
             fi
         fi
@@ -167,7 +180,7 @@ execute_action() {
         if [[ "$autoscript_mode" == "false" ]]; then
             echo ""
             separator
-            echo "  Configuration for: ${aname}"
+            echo "  $(t run.config_for "$aname")"
             separator
             echo ""
         fi
@@ -199,17 +212,17 @@ execute_action() {
     # Skip confirmation in pure autoscript mode
     if [[ "$autoscript_mode" != "true" ]]; then
         # Confirm before execution
-        menu_confirm "Execute '${aname}' now?" || {
+        menu_confirm "$(t run.confirm "$aname")" || {
             return 1
         }
     else
-        msg_info "Autoscript mode: executing '${aname}' automatically"
+        msg_info "$(t run.auto "$aname")"
     fi
 
     # Execute
     echo ""
     separator
-    echo "  Executing: ${script} → ${aname}"
+    echo "  $(t run.executing "$script" "$aname")"
     separator
     echo ""
 
@@ -232,12 +245,12 @@ execute_action() {
 
     echo ""
     separator
-    (( exit_code == 0 )) && echo "  ✅ Completed successfully" || echo "  ❌ Failed (exit code: $exit_code)"
+    (( exit_code == 0 )) && echo "  $(t run.ok)" || echo "  $(t run.failed "$exit_code")"
     echo ""
     
     # Skip pause in pure autoscript mode
     if [[ "$autoscript_mode" != "true" ]]; then
-        read -rp "  Press Enter..."
+        read -rp "  $(t menu.press_enter)"
     fi
     
     return $exit_code
@@ -254,7 +267,7 @@ execute_custom_repo_action() {
     # Custom repos have their own config.yaml (not custom.yaml)
     local custom_yaml="$repo_path/config.yaml"
     
-    [[ ! -f "$custom_yaml" ]] && { menu_error "config.yaml not found in $repo_path"; return 1; }
+    [[ ! -f "$custom_yaml" ]] && { menu_error "$(t menu.custom_noconfig "$repo_path")"; return 1; }
     
     # Get script path from repo
     local script_file=$(yq_eval ".scripts.$script_name.path" "$custom_yaml" 2>/dev/null)
@@ -265,7 +278,7 @@ execute_custom_repo_action() {
         script_path="$repo_path/scripts/$script_file"
     fi
     
-    [[ ! -f "$script_path" ]] && { menu_error "Script not found: $repo_path/$script_file or $repo_path/scripts/$script_file"; return 1; }
+    [[ ! -f "$script_path" ]] && { menu_error "$(t run.no_script "$repo_path/scripts/$script_file")"; return 1; }
     
     # Get action details
     local aname=$(yq_eval ".scripts.$script_name.actions[$action_index].name" "$custom_yaml" 2>/dev/null)
@@ -290,7 +303,7 @@ execute_custom_repo_action() {
         if [[ "$autoscript_mode" == "true" ]]; then
             if ! has_all_answers "$script_name" "$parameter" "$prompt_count"; then
                 # Graceful fallback: missing answers, show interactive prompts
-                msg_warn "Autoscript mode enabled but missing answers, falling back to interactive mode"
+                msg_warn "$(t run.auto_missing)"
                 autoscript_mode="false"
             fi
         fi
@@ -299,13 +312,13 @@ execute_custom_repo_action() {
         if [[ "$autoscript_mode" == "false" ]]; then
             echo ""
             separator
-            echo "  Configuration for: ${aname}"
+            echo "  $(t run.config_for "$aname")"
             separator
             echo ""
         fi
         
         for ((i=0; i<prompt_count; i++)); do
-            local question=$(yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].question" "$custom_yaml" 2>/dev/null)
+            local question=$(yq_eval "$(yq_l10n ".scripts.$script_name.actions[$action_index].prompts[$i].question")" "$custom_yaml" 2>/dev/null)
             local ptype=$(yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].type" "$custom_yaml" 2>/dev/null)
             local config_default=$(yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].default" "$custom_yaml" 2>/dev/null)
             local varname=$(yq_eval ".scripts.$script_name.actions[$action_index].prompts[$i].variable" "$custom_yaml" 2>/dev/null)
@@ -331,17 +344,17 @@ execute_custom_repo_action() {
     # Skip confirmation in pure autoscript mode
     if [[ "$autoscript_mode" != "true" ]]; then
         # Confirm before execution
-        menu_confirm "Execute '${aname}' now?" || {
+        menu_confirm "$(t run.confirm "$aname")" || {
             return 1
         }
     else
-        msg_info "Autoscript mode: executing '${aname}' automatically"
+        msg_info "$(t run.auto "$aname")"
     fi
     
     # Execute
     echo ""
     separator
-    echo "  Executing: ${script_name} → ${aname}"
+    echo "  $(t run.executing "$script_name" "$aname")"
     separator
     echo ""
     
@@ -362,12 +375,12 @@ execute_custom_repo_action() {
     
     echo ""
     separator
-    (( exit_code == 0 )) && echo "  ✅ Completed successfully" || echo "  ❌ Failed (exit code: $exit_code)"
+    (( exit_code == 0 )) && echo "  $(t run.ok)" || echo "  $(t run.failed "$exit_code")"
     echo ""
     
     # Skip pause in pure autoscript mode
     if [[ "$autoscript_mode" != "true" ]]; then
-        read -rp "  Press Enter..."
+        read -rp "  $(t menu.press_enter)"
     fi
     
     return $exit_code

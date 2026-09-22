@@ -41,7 +41,7 @@ to the new places.
 
 Pick a category, a script, an action; answer the questions (Enter takes the
 default); confirm. Scripts that need root run with `sudo` - ulh itself stays
-unprivileged.
+unprivileged. Started as root (Proxmox, containers), ulh runs them directly.
 
 ```
 1. Repository Selector (only when you use your own repositories)
@@ -69,6 +69,7 @@ menu - or type **`/term`** directly at the prompt:
 +==============================================================================+
 |  s) Search  (or /term)                                                       |
 |  b) Back                                                                     |
+|  l) Language: English                                                        |
 |  q) Quit                                           ubuntu (debian) · v24.04  |
 +==============================================================================+
 
@@ -81,6 +82,19 @@ new search, `b` goes back, `q` quits.
 
 What the 96 scripts cover (network, web servers, databases, containers, languages,
 editors, shells, monitoring, backup, system management ...): **[docs/scripts.md](docs/scripts.md)**.
+
+## Languages
+
+ulh speaks English, German, French, Italian and Spanish: the menu, the messages and
+the descriptions and questions of all 96 scripts. It starts in the language of the
+system (`$LANG`), otherwise in English.
+
+- Press **`l`** in any menu for the next language - ulh remembers it in
+  `apps/cli/config/settings.yaml`.
+- Or start with `--lang de` (`en`, `fr`, `it`, `es`) for one run.
+
+Yes/no questions take the answer in every language (`y`, `j`, `o`, `s` = yes). What
+the scripts themselves print stays English.
 
 ## Update
 
@@ -142,11 +156,12 @@ Works for ulh's scripts and your own. Details, authentication and troubleshootin
 - ✅ Proxmox VE
 - ⚠️ PiKVM v3 (Arch-based appliance, limited package management)
 
-Needs Bash 4.0+, git and `sudo` access for system-level operations.
+Needs Bash 4.0+, git and root rights for system-level operations: `sudo`, or start
+ulh as root.
 
 ## Security
 
-- Scripts run **individually with sudo** (ulh stays unprivileged)
+- Scripts run **individually with sudo** (ulh stays unprivileged); as root they run directly
 - SSH keys for your repositories stay in **apps/cli/data/keys/** (git-ignored)
 - No hardcoded credentials - tokens and passwords come from environment variables (`${NAME}`)
 - All scripts pass **syntax validation** (`bash -n`)

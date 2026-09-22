@@ -1,0 +1,94 @@
+# ulh - textes : français
+#
+# Si un texte manque ici, ulh prend celui de en.yaml. Mêmes clés dans les
+# cinq fichiers ; {0}, {1} ... doivent figurer dans chaque traduction.
+# Valeurs toujours entre guillemets doubles.
+
+lang.name: "Français"
+
+# Démarrage et ligne de commande
+main.linux_only: "Uniquement pour Linux"
+main.unknown_lang: "Langue inconnue : {0} (disponibles : {1})"
+main.unknown_option: "Option inconnue : {0}"
+main.no_catalog: "Catalogue introuvable : {0}"
+help.usage: "Utilisation : bash apps/cli/ulh.sh [OPTIONS]"
+help.options: "Options :"
+help.debug: "Messages supplémentaires pour trouver les erreurs"
+help.no_update: "Ne pas mettre à jour au démarrage"
+help.check_update: "Vérifier s'il y a des mises à jour"
+help.update: "Installer les mises à jour maintenant"
+help.lang: "Langue du menu (par défaut : celle du système)"
+help.help: "Afficher cette aide"
+
+# Menu - lignes des touches de 70 caractères au maximum
+menu.version: "VERSION: {0}"
+menu.key_search: "s) Chercher  (ou /mot)"
+menu.key_back: "b) Retour"
+menu.key_lang: "l) Langue : {0}"
+menu.key_quit: "q) Quitter"
+menu.choose: "Choix :"
+menu.goodbye: "Au revoir !"
+menu.invalid_range: "Non valide (1-{0})"
+menu.invalid: "Saisie non valide"
+menu.press_enter: "Appuyer sur Entrée pour continuer..."
+menu.category: "Catégorie : {0}"
+menu.no_scripts: "Aucun script disponible."
+menu.no_actions: "Aucune action."
+menu.search_ask: "Rechercher (nom, description, catégorie) :"
+menu.search_again: "Rechercher :"
+menu.search_title: "Recherche : {0}"
+menu.search_none: "Aucun résultat pour \"{0}\"."
+menu.search_where: "Recherche dans : nom du script, description et catégorie."
+menu.custom: "Dépôt personnel : {0}"
+menu.custom_none: "Aucun script disponible dans ce dépôt."
+menu.custom_noconfig: "Aucun config.yaml trouvé dans {0}"
+
+# Questions. Réponses acceptées dans toutes les langues : o, y, j, s = oui.
+ask.yes_hint: "[O/n]"
+ask.no_hint: "[o/N]"
+ask.yesno_hint: "[o/n]"
+ask.yesno_again: "Répondre par o ou n"
+ask.number_again: "Saisir un nombre valide"
+
+# Exécution des scripts
+run.no_script: "Script introuvable : {0}"
+run.auto_missing: "Mode automatique activé, mais il manque des réponses - ulh va les demander"
+run.config_for: "Paramètres pour : {0}"
+run.confirm: "Lancer '{0}' maintenant ?"
+run.auto: "Mode automatique : '{0}' se lance sans confirmation"
+run.executing: "Exécution : {0} → {1}"
+run.ok: "✅ Terminé avec succès"
+run.failed: "❌ Échec (code de sortie : {0})"
+run.needs_root: "Droits root nécessaires : installer sudo ou lancer ulh en tant que root."
+
+# Mise à jour automatique
+update.not_git: "Ce n'est pas un dépôt git"
+update.available: "Mises à jour disponibles ! Pour les installer : bash apps/cli/ulh.sh --update"
+update.current: "ulh est à jour."
+update.pulling: "Récupération de la dernière version..."
+update.ok: "Mise à jour réussie !"
+update.failed: "Échec de la mise à jour. Vérifier avec git status."
+update.auto: "ulh se met à jour ({0} commit(s) de retard)..."
+update.restart: "ulh mis à jour - redémarrage..."
+update.auto_failed: "Échec de la mise à jour automatique - ulh continue quand même"
+
+# Déplacement des fichiers personnels depuis l'ancien dossier custom/
+data.moved: "Fichiers personnels déplacés de custom/ vers apps/cli/config/ et apps/cli/data/"
+data.not_moved: "Non déplacé, déjà présent : {0} (ancienne copie : {1})"
+data.move_failed: "Impossible de déplacer {0}"
+
+# Dépôts personnels
+repo.init: "Préparation des dépôts personnels..."
+repo.auto_off: "Mise à jour automatique des dépôts personnels désactivée"
+repo.placeholder: "Le dépôt '{0}' n'a pas d'URL (dossier local uniquement)"
+repo.cloning: "Récupération de '{0}' dans {1}..."
+repo.cloned: "'{0}' récupéré avec succès"
+repo.clone_retry: "Échec de la récupération de '{0}', nouvel essai... ({1}/{2})"
+repo.clone_failed: "Impossible de récupérer '{0}' après {1} essais"
+repo.updating: "Mise à jour de '{0}'..."
+repo.updated: "'{0}' mis à jour avec succès"
+repo.pull_retry: "Échec de la mise à jour de '{0}', nouvel essai... ({1}/{2})"
+repo.pull_failed: "Impossible de mettre à jour '{0}' après {1} essais"
+repo.no_token: "Token manquant pour '{0}'"
+repo.no_user: "Nom d'utilisateur manquant pour '{0}'"
+repo.bad_auth: "Valeur inconnue pour auth_method : {0}"

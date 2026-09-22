@@ -15,7 +15,7 @@ repo_init() {
         return 0
     fi
     
-    msg_info "Initializing custom repositories..."
+    msg_info "$(t repo.init)"
     repo_sync_all "$repo_config"
 }
 
@@ -27,7 +27,7 @@ repo_sync_all() {
     auto_update_on_start=$(yq_eval ".update_settings.auto_update_on_start // true" "$repo_config" 2>/dev/null)
     
     if [[ "$auto_update_on_start" != "true" ]]; then
-        msg_info "Custom repo auto-update disabled"
+        msg_info "$(t repo.auto_off)"
         return 0
     fi
     
@@ -92,7 +92,7 @@ repo_sync_one() {
     
     if [[ -z "$url" ]]; then
         # enabled field present but no URL: use as local placeholder, skip clone
-        msg_info "Repository '$repo_name' has no URL (local placeholder)"
+        msg_info "$(t repo.placeholder "$repo_name")"
         return 0
     fi
     
@@ -114,7 +114,7 @@ repo_clone() {
     max_retries=$(yq_eval ".update_settings.retry_on_failure // 3" "$repo_config" 2>/dev/null)
     retry_delay=$(yq_eval ".update_settings.retry_delay_seconds // 5" "$repo_config" 2>/dev/null)
     
-    msg_info "Cloning '$repo_name' to $path..."
+    msg_info "$(t repo.cloning "$repo_name" "$path")"
     
     # Create parent directory if needed
     mkdir -p "$(dirname "$path")" || return 1
@@ -132,19 +132,19 @@ repo_clone() {
     retry_count=0
     while [[ $retry_count -lt $max_retries ]]; do
         if git clone "$auth_url" "$path" 2>/dev/null; then
-            msg_info "Successfully cloned '$repo_name'"
+            msg_info "$(t repo.cloned "$repo_name")"
             unset GIT_SSH_COMMAND
             return 0
         fi
         
         retry_count=$((retry_count + 1))
         if [[ $retry_count -lt $max_retries ]]; then
-            msg_warn "Clone failed for '$repo_name', retrying... (attempt $retry_count/$max_retries)"
+            msg_warn "$(t repo.clone_retry "$repo_name" "$retry_count" "$max_retries")"
             sleep "$retry_delay"
         fi
     done
     
-    msg_err "Failed to clone '$repo_name' after $max_retries attempts"
+    msg_err "$(t repo.clone_failed "$repo_name" "$max_retries")"
     unset GIT_SSH_COMMAND
     return 1
 }
@@ -162,7 +162,7 @@ repo_pull() {
     max_retries=$(yq_eval ".update_settings.retry_on_failure // 3" "$repo_config" 2>/dev/null)
     retry_delay=$(yq_eval ".update_settings.retry_delay_seconds // 5" "$repo_config" 2>/dev/null)
     
-    msg_info "Updating '$repo_name'..."
+    msg_info "$(t repo.updating "$repo_name")"
     
     retry_count=0
     while [[ $retry_count -lt $max_retries ]]; do
@@ -181,7 +181,7 @@ repo_pull() {
         # core.fileMode=false: a chmod on a script must never block the pull
         if git -c core.fileMode=false pull origin main 2>/dev/null ||
            git -c core.fileMode=false pull origin master 2>/dev/null; then
-            msg_info "Successfully updated '$repo_name'"
+            msg_info "$(t repo.updated "$repo_name")"
             unset GIT_SSH_COMMAND
             cd - > /dev/null
             return 0
@@ -189,13 +189,13 @@ repo_pull() {
         
         retry_count=$((retry_count + 1))
         if [[ $retry_count -lt $max_retries ]]; then
-            msg_warn "Pull failed for '$repo_name', retrying... (attempt $retry_count/$max_retries)"
+            msg_warn "$(t repo.pull_retry "$repo_name" "$retry_count" "$max_retries")"
             sleep "$retry_delay"
         fi
         cd - > /dev/null
     done
     
-    msg_err "Failed to update '$repo_name' after $max_retries attempts"
+    msg_err "$(t repo.pull_failed "$repo_name" "$max_retries")"
     unset GIT_SSH_COMMAND
     return 1
 }
@@ -217,7 +217,7 @@ repo_auth_url() {
             token=$(repo_expand_var "$token")
             
             if [[ -z "$token" || "$token" == "null" ]]; then
-                msg_err "Token not set for '$repo_name'"
+                msg_err "$(t repo.no_token "$repo_name")"
                 echo "$url"
             else
                 # Convert https://github.com/org/repo.git -> https://token@github.com/org/repo.git
@@ -233,7 +233,7 @@ repo_auth_url() {
             password=$(repo_expand_var "$password")
             
             if [[ -z "$username" || "$username" == "null" ]]; then
-                msg_err "Username not set for '$repo_name'"
+                msg_err "$(t repo.no_user "$repo_name")"
                 echo "$url"
             else
                 # Convert https://github.com/org/repo.git -> https://user:pass@github.com/org/repo.git
@@ -245,7 +245,7 @@ repo_auth_url() {
             echo "$url"
             ;;
         *)
-            msg_err "Unknown auth_method: $auth_method"
+            msg_err "$(t repo.bad_auth "$auth_method")"
             echo "$url"
             ;;
     esac

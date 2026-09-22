@@ -35,6 +35,9 @@ printf '#!/bin/bash\nwhile [[ "${1:-}" == -* ]]; do shift; done\nexec "$@"\n' > 
 chmod +x "$STUBS"/*
 export PATH="${STUBS}:${PATH}" TERM=dumb HOME="${TMP}/home"
 mkdir -p "$HOME"
+# English, whatever language the test machine speaks
+export LANG=C.UTF-8
+unset LC_ALL LC_MESSAGES ULH_SYS_LOCALE ULH_LANG
 export GIT_CONFIG_GLOBAL="${TMP}/gitconfig"
 printf '[user]\n\tname = ulh test\n\temail = test@example.invalid\n[init]\n\tdefaultBranch = main\n' > "$GIT_CONFIG_GLOBAL"
 
@@ -46,7 +49,8 @@ if git -C "$SRC" rev-parse --git-dir >/dev/null 2>&1; then
     ( cd "$SRC" && git ls-files -co --exclude-standard -z | xargs -0 cp --parents -t "$UP" 2>/dev/null )
 else
     cp -r "$SRC/." "$UP/"
-    rm -rf "$UP/apps/cli/data" "$UP/apps/cli/config/repo.yaml" "$UP/apps/cli/config/answer.yaml"
+    rm -rf "$UP/apps/cli/data" "$UP/apps/cli/config/repo.yaml" "$UP/apps/cli/config/answer.yaml" \
+           "$UP/apps/cli/config/settings.yaml"
 fi
 git -C "$UP" init -q
 git -C "$UP" add -A

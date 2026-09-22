@@ -29,7 +29,7 @@ YAML_FILE=""
 # Load a YAML file (path without extension, relative to ulh_DIR)
 yaml_load() {
     YAML_FILE="${ulh_DIR}/${1}.yaml"
-    [[ -f "$YAML_FILE" ]] || { msg_err "Config not found: $YAML_FILE"; return 1; }
+    [[ -f "$YAML_FILE" ]] || { msg_err "$(t main.no_catalog "$YAML_FILE")"; return 1; }
     debug "Config loaded: $YAML_FILE"
     return 0
 }
@@ -45,17 +45,36 @@ yq_list() { "$YQ" eval "$1" "$YAML_FILE" 2>/dev/null; }
 # Categories
 yaml_categories()  { yq_list '[.scripts[].category] | unique | .[]'; }
 
+# All categories that scripts use: "key<TAB>name<TAB>description", in the
+# current language, sorted by the name shown. One yq call for the whole menu.
+yaml_category_rows() {
+    local s="$ULH_LANG_SUFFIX"
+    yq_list "(.categories // {}) as \$c | [.scripts[].category] | unique | .[] |
+             . as \$k | \$k + \"\t\" + (\$c[\$k].name${s} // \$k) + \"\t\" +
+             (\$c[\$k].description${s} // \$c[\$k].description // \"\")" | sort -t $'\t' -k2,2
+}
+
+# The name of one category in the current language. The key goes in through the
+# environment: category names contain spaces and "&".
+yaml_category_name() {
+    ULH_Q="$1" "$YQ" eval "(.categories[strenv(ULH_Q)].name${ULH_LANG_SUFFIX} // strenv(ULH_Q))" "$YAML_FILE" 2>/dev/null || echo "$1"
+}
+
 # Scripts
 yaml_scripts()     { yq_list '.scripts | keys | .[]'; }
 yaml_scripts_by_cat() { yq_list ".scripts | to_entries | map(select(.value.category == \"${1}\")) | .[].key"; }
 
 # Search index: descriptions and categories in the same order as yaml_scripts,
-# so the three lists can be zipped by index (one yq call each instead of 3x96)
-yaml_all_descriptions() { yq_list '[.scripts[].description] | .[]'; }
-yaml_all_categories()   { yq_list '[.scripts[].category] | .[]'; }
+# so the lists can be zipped by index (one yq call each instead of 3x96).
+# Descriptions and category names in the current language.
+yaml_all_descriptions() { yq_list "[.scripts[] | (.description${ULH_LANG_SUFFIX} // .description)] | .[]"; }
+yaml_all_descriptions_base() { yq_list '[.scripts[].description] | .[]'; }
+yaml_all_categories()   { yq_list "(.categories // {}) as \$c | [.scripts[].category | (\$c[.].name${ULH_LANG_SUFFIX} // .)] | .[]"; }
 
 # Script info
 yaml_info()        { yq_get ".scripts.${1}.${2}"; }
+# The description of a script in the current language
+yaml_desc()        { yq_get "$(yq_l10n ".scripts.${1}.description")"; }
 # Scripts live in scripts/ next to the catalog
 yaml_script_path() {
     local file; file=$(yq_get ".scripts.${1}.file")
@@ -92,10 +111,17 @@ yaml_os_compatible() {
 yaml_action_count()       { yq_list ".scripts.${1}.actions | length"; }
 yaml_action_name()        { yq_get ".scripts.${1}.actions[${2}].name"; }
 yaml_action_param()       { yq_get ".scripts.${1}.actions[${2}].parameter"; }
-yaml_action_description() { yq_get ".scripts.${1}.actions[${2}].description"; }
+yaml_action_description() { yq_get "$(yq_l10n ".scripts.${1}.actions[${2}].description")"; }
 
 # Action prompts
 yaml_prompt_count() { yq_list ".scripts.${1}.actions[${2}].prompts // [] | length"; }
-yaml_prompt_field() { yq_get ".scripts.${1}.actions[${2}].prompts[${3}].${4}"; }
+yaml_prompt_field() {
+    # Questions come in the current language, the other fields as they are
+    if [[ "$4" == "question" ]]; then
+        yq_get "$(yq_l10n ".scripts.${1}.actions[${2}].prompts[${3}].question")"
+    else
+        yq_get ".scripts.${1}.actions[${2}].prompts[${3}].${4}"
+    fi
+}
 yaml_prompt_var()   { yq_get ".scripts.${1}.actions[${2}].prompts[${3}].variable"; }
 yaml_prompt_opts()  { yq_list ".scripts.${1}.actions[${2}].prompts[${3}].options // [] | .[]"; }

@@ -6,43 +6,180 @@
 #
 # Your own scripts do not belong here: updates replace this file. Put them into
 # a repository of your own, see apps/cli/config/repo.yaml.
+#
+# Languages: description, question and the category names are English. The
+# translations sit right below them, the language as suffix: descriptionDE,
+# descriptionES, descriptionIT, descriptionFR - the same for question and, in
+# categories, for name. A missing translation shows the English text.
 
 categories:
   Essential Tools:
     description: Core utilities for system administration
+    nameDE: "Grundwerkzeuge"
+    descriptionDE: "Wichtige Werkzeuge für die Systemverwaltung"
+    nameES: "Herramientas básicas"
+    descriptionES: "Utilidades para administrar el sistema"
+    nameIT: "Strumenti di base"
+    descriptionIT: "Utilità di base per gestire il sistema"
+    nameFR: "Outils essentiels"
+    descriptionFR: "Outils de base pour gérer le système"
   Text Editors:
     description: Text editors and code editors
+    nameDE: "Texteditoren"
+    descriptionDE: "Text- und Code-Editoren"
+    nameES: "Editores de texto"
+    descriptionES: "Editores de texto y de código"
+    nameIT: "Editor di testo"
+    descriptionIT: "Editor di testo e di codice"
+    nameFR: "Éditeurs de texte"
+    descriptionFR: "Éditeurs de texte et de code"
   Shells & Terminals:
     description: Shell environments and terminal tools
+    nameDE: "Shells & Terminals"
+    descriptionDE: "Shell-Umgebungen und Terminal-Werkzeuge"
+    nameES: "Shells y terminales"
+    descriptionES: "Shells y herramientas de terminal"
+    nameIT: "Shell e terminali"
+    descriptionIT: "Shell e strumenti per il terminale"
+    nameFR: "Shells et terminaux"
+    descriptionFR: "Shells et outils de terminal"
   Web Servers:
     description: HTTP/HTTPS web servers
+    nameDE: "Webserver"
+    descriptionDE: "HTTP/HTTPS-Webserver"
+    nameES: "Servidores web"
+    descriptionES: "Servidores web HTTP/HTTPS"
+    nameIT: "Server web"
+    descriptionIT: "Server web HTTP/HTTPS"
+    nameFR: "Serveurs web"
+    descriptionFR: "Serveurs web HTTP/HTTPS"
   Databases:
     description: Database management systems
+    nameDE: "Datenbanken"
+    descriptionDE: "Datenbanksysteme"
+    nameES: "Bases de datos"
+    descriptionES: "Sistemas de gestión de bases de datos"
+    nameIT: "Database"
+    descriptionIT: "Sistemi di gestione di database"
+    nameFR: "Bases de données"
+    descriptionFR: "Systèmes de gestion de bases de données"
   Container & Virtualization:
     description: Container and VM technologies
+    nameDE: "Container & Virtualisierung"
+    descriptionDE: "Container- und VM-Technik"
+    nameES: "Contenedores y virtualización"
+    descriptionES: "Contenedores y máquinas virtuales"
+    nameIT: "Container e virtualizzazione"
+    descriptionIT: "Container e macchine virtuali"
+    nameFR: "Conteneurs et virtualisation"
+    descriptionFR: "Conteneurs et machines virtuelles"
   Programming Languages:
     description: Language runtimes and environments
+    nameDE: "Programmiersprachen"
+    descriptionDE: "Laufzeitumgebungen für Programmiersprachen"
+    nameES: "Lenguajes de programación"
+    descriptionES: "Entornos de ejecución de lenguajes"
+    nameIT: "Linguaggi di programmazione"
+    descriptionIT: "Ambienti di esecuzione dei linguaggi"
+    nameFR: "Langages de programmation"
+    descriptionFR: "Environnements d'exécution des langages"
   Development Tools:
     description: Development and debugging tools
+    nameDE: "Entwicklerwerkzeuge"
+    descriptionDE: "Werkzeuge für Entwicklung und Fehlersuche"
+    nameES: "Herramientas de desarrollo"
+    descriptionES: "Herramientas de desarrollo y depuración"
+    nameIT: "Strumenti di sviluppo"
+    descriptionIT: "Strumenti di sviluppo e debug"
+    nameFR: "Outils de développement"
+    descriptionFR: "Outils de développement et de débogage"
   System Utilities:
     description: System information and file tools
+    nameDE: "Systemprogramme"
+    descriptionDE: "Systeminformationen und Dateiwerkzeuge"
+    nameES: "Utilidades del sistema"
+    descriptionES: "Información del sistema y archivos"
+    nameIT: "Utilità di sistema"
+    descriptionIT: "Informazioni di sistema e file"
+    nameFR: "Utilitaires système"
+    descriptionFR: "Infos système et outils de fichiers"
   Backup & Sync:
     description: Backup and file synchronization
+    nameDE: "Sicherung & Abgleich"
+    descriptionDE: "Datensicherung und Dateiabgleich"
+    nameES: "Respaldo y sincronización"
+    descriptionES: "Copias de seguridad y sincronización"
+    nameIT: "Backup e sincronizzazione"
+    descriptionIT: "Backup e sincronizzazione dei file"
+    nameFR: "Sauvegarde et synchronisation"
+    descriptionFR: "Sauvegarde et synchronisation de fichiers"
   Monitoring & Logging:
     description: System monitoring and log management
+    nameDE: "Überwachung & Protokolle"
+    descriptionDE: "Systemüberwachung und Protokollverwaltung"
+    nameES: "Monitorización y registros"
+    descriptionES: "Vigilar el sistema y gestionar registros"
+    nameIT: "Monitoraggio e log"
+    descriptionIT: "Monitoraggio del sistema e log"
+    nameFR: "Surveillance et journaux"
+    descriptionFR: "Surveiller le système, gérer les journaux"
   Networking:
     description: Network tools and utilities
+    nameDE: "Netzwerk"
+    descriptionDE: "Netzwerkwerkzeuge und -programme"
+    nameES: "Redes"
+    descriptionES: "Herramientas y utilidades de red"
+    nameIT: "Rete"
+    descriptionIT: "Strumenti e utilità di rete"
+    nameFR: "Réseau"
+    descriptionFR: "Outils et utilitaires réseau"
   System Management:
     description: System configuration and management
+    nameDE: "Systemverwaltung"
+    descriptionDE: "Systemeinstellungen und -verwaltung"
+    nameES: "Gestión del sistema"
+    descriptionES: "Configuración y gestión del sistema"
+    nameIT: "Gestione del sistema"
+    descriptionIT: "Configurazione e gestione del sistema"
+    nameFR: "Gestion du système"
+    descriptionFR: "Configuration et gestion du système"
   Package Managers:
     description: Package and dependency managers
+    nameDE: "Paketverwaltung"
+    descriptionDE: "Paket- und Abhängigkeitsverwaltung"
+    nameES: "Gestores de paquetes"
+    descriptionES: "Gestores de paquetes y dependencias"
+    nameIT: "Gestori di pacchetti"
+    descriptionIT: "Gestori di pacchetti e dipendenze"
+    nameFR: "Gestionnaires de paquets"
+    descriptionFR: "Gérer les paquets et les dépendances"
   Security & Sandboxing:
     description: Security and sandboxing tools
+    nameDE: "Sicherheit & Sandbox"
+    descriptionDE: "Werkzeuge für Sicherheit und Sandboxing"
+    nameES: "Seguridad y aislamiento"
+    descriptionES: "Herramientas de seguridad y aislamiento"
+    nameIT: "Sicurezza e sandbox"
+    descriptionIT: "Strumenti di sicurezza e sandbox"
+    nameFR: "Sécurité et isolation"
+    descriptionFR: "Outils de sécurité et d'isolation"
   Multimedia:
     description: Media processing and conversion
+    nameDE: "Multimedia"
+    descriptionDE: "Medien bearbeiten und umwandeln"
+    nameES: "Multimedia"
+    descriptionES: "Procesamiento y conversión de medios"
+    nameIT: "Multimedia"
+    descriptionIT: "Elaborare e convertire file multimediali"
+    nameFR: "Multimédia"
+    descriptionFR: "Traitement et conversion de médias"
 scripts:
   curl:
     description: HTTP requests utility
+    descriptionDE: "Werkzeug für HTTP-Anfragen"
+    descriptionES: "Utilidad para peticiones HTTP"
+    descriptionIT: "Strumento per richieste HTTP"
+    descriptionFR: "Outil de requêtes HTTP"
     category: Essential Tools
     file: curl.sh
     os_family:
@@ -55,14 +192,30 @@ scripts:
     - name: install
       parameter: install
       description: Install curl
+      descriptionDE: "curl installieren"
+      descriptionES: "Instalar curl"
+      descriptionIT: "Installa curl"
+      descriptionFR: "Installer curl"
     - name: update
       parameter: update
       description: Update curl
+      descriptionDE: "curl aktualisieren"
+      descriptionES: "Actualizar curl"
+      descriptionIT: "Aggiorna curl"
+      descriptionFR: "Mettre à jour curl"
     - name: uninstall
       parameter: uninstall
       description: Uninstall curl
+      descriptionDE: "curl deinstallieren"
+      descriptionES: "Desinstalar curl"
+      descriptionIT: "Disinstalla curl"
+      descriptionFR: "Désinstaller curl"
   wget:
     description: HTTP/FTP download utility
+    descriptionDE: "Download-Werkzeug für HTTP/FTP"
+    descriptionES: "Utilidad de descarga HTTP/FTP"
+    descriptionIT: "Strumento di download HTTP/FTP"
+    descriptionFR: "Outil de téléchargement HTTP/FTP"
     category: Essential Tools
     file: wget.sh
     os_family:
@@ -75,14 +228,30 @@ scripts:
     - name: install
       parameter: install
       description: Install wget
+      descriptionDE: "wget installieren"
+      descriptionES: "Instalar wget"
+      descriptionIT: "Installa wget"
+      descriptionFR: "Installer wget"
     - name: update
       parameter: update
       description: Update wget
+      descriptionDE: "wget aktualisieren"
+      descriptionES: "Actualizar wget"
+      descriptionIT: "Aggiorna wget"
+      descriptionFR: "Mettre à jour wget"
     - name: uninstall
       parameter: uninstall
       description: Uninstall wget
+      descriptionDE: "wget deinstallieren"
+      descriptionES: "Desinstalar wget"
+      descriptionIT: "Disinstalla wget"
+      descriptionFR: "Désinstaller wget"
   git:
     description: Version control system
+    descriptionDE: "System zur Versionsverwaltung"
+    descriptionES: "Sistema de control de versiones"
+    descriptionIT: "Sistema di controllo di versione"
+    descriptionFR: "Système de gestion de versions"
     category: Essential Tools
     file: git.sh
     os_family:
@@ -95,26 +264,54 @@ scripts:
     - name: install
       parameter: install
       description: Install git
+      descriptionDE: "git installieren"
+      descriptionES: "Instalar git"
+      descriptionIT: "Installa git"
+      descriptionFR: "Installer git"
     - name: update
       parameter: update
       description: Update git
+      descriptionDE: "git aktualisieren"
+      descriptionES: "Actualizar git"
+      descriptionIT: "Aggiorna git"
+      descriptionFR: "Mettre à jour git"
     - name: uninstall
       parameter: uninstall
       description: Uninstall git
+      descriptionDE: "git deinstallieren"
+      descriptionES: "Desinstalar git"
+      descriptionIT: "Disinstalla git"
+      descriptionFR: "Désinstaller git"
     - name: config
       parameter: config
       description: Configure git user
+      descriptionDE: "git-Benutzer konfigurieren"
+      descriptionES: "Configurar el usuario de git"
+      descriptionIT: "Configura l'utente git"
+      descriptionFR: "Configurer l'utilisateur git"
       prompts:
       - question: Git username?
+        questionDE: "Git-Benutzername?"
+        questionES: "¿Nombre de usuario de Git?"
+        questionIT: "Nome utente Git?"
+        questionFR: "Nom d'utilisateur Git ?"
         variable: GIT_USER
         type: text
         default: ''
       - question: Git email?
+        questionDE: "Git-E-Mail-Adresse?"
+        questionES: "¿Correo electrónico de Git?"
+        questionIT: "Indirizzo email Git?"
+        questionFR: "Adresse e-mail Git ?"
         variable: GIT_EMAIL
         type: text
         default: ''
   vim:
     description: Advanced text editor
+    descriptionDE: "Texteditor für Fortgeschrittene"
+    descriptionES: "Editor de texto avanzado"
+    descriptionIT: "Editor di testo avanzato"
+    descriptionFR: "Éditeur de texte avancé"
     category: Text Editors
     file: vim.sh
     os_family:
@@ -127,17 +324,37 @@ scripts:
     - name: install
       parameter: install
       description: Install vim
+      descriptionDE: "vim installieren"
+      descriptionES: "Instalar vim"
+      descriptionIT: "Installa vim"
+      descriptionFR: "Installer vim"
     - name: update
       parameter: update
       description: Update vim
+      descriptionDE: "vim aktualisieren"
+      descriptionES: "Actualizar vim"
+      descriptionIT: "Aggiorna vim"
+      descriptionFR: "Mettre à jour vim"
     - name: uninstall
       parameter: uninstall
       description: Uninstall vim
+      descriptionDE: "vim deinstallieren"
+      descriptionES: "Desinstalar vim"
+      descriptionIT: "Disinstalla vim"
+      descriptionFR: "Désinstaller vim"
     - name: config
       parameter: config
       description: Configure vim
+      descriptionDE: "vim konfigurieren"
+      descriptionES: "Configurar vim"
+      descriptionIT: "Configura vim"
+      descriptionFR: "Configurer vim"
   nano:
     description: Simple text editor
+    descriptionDE: "Einfacher Texteditor"
+    descriptionES: "Editor de texto sencillo"
+    descriptionIT: "Editor di testo semplice"
+    descriptionFR: "Éditeur de texte simple"
     category: Text Editors
     file: nano.sh
     os_family:
@@ -150,14 +367,30 @@ scripts:
     - name: install
       parameter: install
       description: Install nano
+      descriptionDE: "nano installieren"
+      descriptionES: "Instalar nano"
+      descriptionIT: "Installa nano"
+      descriptionFR: "Installer nano"
     - name: update
       parameter: update
       description: Update nano
+      descriptionDE: "nano aktualisieren"
+      descriptionES: "Actualizar nano"
+      descriptionIT: "Aggiorna nano"
+      descriptionFR: "Mettre à jour nano"
     - name: uninstall
       parameter: uninstall
       description: Uninstall nano
+      descriptionDE: "nano deinstallieren"
+      descriptionES: "Desinstalar nano"
+      descriptionIT: "Disinstalla nano"
+      descriptionFR: "Désinstaller nano"
   htop:
     description: System resource monitor
+    descriptionDE: "Monitor für Systemressourcen"
+    descriptionES: "Monitor de recursos del sistema"
+    descriptionIT: "Monitor delle risorse di sistema"
+    descriptionFR: "Moniteur des ressources système"
     category: Essential Tools
     file: htop.sh
     os_family:
@@ -170,14 +403,30 @@ scripts:
     - name: install
       parameter: install
       description: Install htop
+      descriptionDE: "htop installieren"
+      descriptionES: "Instalar htop"
+      descriptionIT: "Installa htop"
+      descriptionFR: "Installer htop"
     - name: update
       parameter: update
       description: Update htop
+      descriptionDE: "htop aktualisieren"
+      descriptionES: "Actualizar htop"
+      descriptionIT: "Aggiorna htop"
+      descriptionFR: "Mettre à jour htop"
     - name: uninstall
       parameter: uninstall
       description: Uninstall htop
+      descriptionDE: "htop deinstallieren"
+      descriptionES: "Desinstalar htop"
+      descriptionIT: "Disinstalla htop"
+      descriptionFR: "Désinstaller htop"
   tmux:
     description: Terminal multiplexer
+    descriptionDE: "Terminal-Multiplexer"
+    descriptionES: "Multiplexor de terminal"
+    descriptionIT: "Multiplexer di terminale"
+    descriptionFR: "Multiplexeur de terminal"
     category: Essential Tools
     file: tmux.sh
     os_family:
@@ -190,17 +439,37 @@ scripts:
     - name: install
       parameter: install
       description: Install tmux
+      descriptionDE: "tmux installieren"
+      descriptionES: "Instalar tmux"
+      descriptionIT: "Installa tmux"
+      descriptionFR: "Installer tmux"
     - name: update
       parameter: update
       description: Update tmux
+      descriptionDE: "tmux aktualisieren"
+      descriptionES: "Actualizar tmux"
+      descriptionIT: "Aggiorna tmux"
+      descriptionFR: "Mettre à jour tmux"
     - name: uninstall
       parameter: uninstall
       description: Uninstall tmux
+      descriptionDE: "tmux deinstallieren"
+      descriptionES: "Desinstalar tmux"
+      descriptionIT: "Disinstalla tmux"
+      descriptionFR: "Désinstaller tmux"
     - name: config
       parameter: config
       description: Configure tmux
+      descriptionDE: "tmux konfigurieren"
+      descriptionES: "Configurar tmux"
+      descriptionIT: "Configura tmux"
+      descriptionFR: "Configurer tmux"
   screen:
     description: Terminal multiplexer
+    descriptionDE: "Terminal-Multiplexer"
+    descriptionES: "Multiplexor de terminal"
+    descriptionIT: "Multiplexer di terminale"
+    descriptionFR: "Multiplexeur de terminal"
     category: Essential Tools
     file: screen.sh
     os_family:
@@ -213,14 +482,30 @@ scripts:
     - name: install
       parameter: install
       description: Install screen
+      descriptionDE: "screen installieren"
+      descriptionES: "Instalar screen"
+      descriptionIT: "Installa screen"
+      descriptionFR: "Installer screen"
     - name: update
       parameter: update
       description: Update screen
+      descriptionDE: "screen aktualisieren"
+      descriptionES: "Actualizar screen"
+      descriptionIT: "Aggiorna screen"
+      descriptionFR: "Mettre à jour screen"
     - name: uninstall
       parameter: uninstall
       description: Uninstall screen
+      descriptionDE: "screen deinstallieren"
+      descriptionES: "Desinstalar screen"
+      descriptionIT: "Disinstalla screen"
+      descriptionFR: "Désinstaller screen"
   openssh:
     description: SSH server and client
+    descriptionDE: "SSH-Server und -Client"
+    descriptionES: "Servidor y cliente SSH"
+    descriptionIT: "Server e client SSH"
+    descriptionFR: "Serveur et client SSH"
     category: Networking
     file: openssh.sh
     sudo:
@@ -234,206 +519,402 @@ scripts:
     - name: install
       parameter: install
       description: Install and enable SSH
+      descriptionDE: "SSH installieren und aktivieren"
+      descriptionES: "Instalar y activar SSH"
+      descriptionIT: "Installa e attiva SSH"
+      descriptionFR: "Installer et activer SSH"
     - name: update
       parameter: update
       description: Update SSH
+      descriptionDE: "SSH aktualisieren"
+      descriptionES: "Actualizar SSH"
+      descriptionIT: "Aggiorna SSH"
+      descriptionFR: "Mettre à jour SSH"
     - name: uninstall
       parameter: uninstall
       description: Uninstall SSH
+      descriptionDE: "SSH deinstallieren"
+      descriptionES: "Desinstalar SSH"
+      descriptionIT: "Disinstalla SSH"
+      descriptionFR: "Désinstaller SSH"
     - name: config
       parameter: config
       description: Configure SSH daemon with comprehensive options
+      descriptionDE: "SSH-Dienst umfassend konfigurieren"
+      descriptionES: "Configurar el servicio SSH en detalle"
+      descriptionIT: "Configura il servizio SSH in dettaglio"
+      descriptionFR: "Configurer le service SSH en détail"
       prompts:
       - question: '[NETWORK] SSH listening port? (default: 22)'
+        questionDE: "[NETZWERK] Auf welchem Port soll SSH lauschen? (Standard: 22)"
+        questionES: "[RED] ¿Puerto de escucha de SSH? (por defecto: 22)"
+        questionIT: "[RETE] Porta di ascolto SSH? (predefinito: 22)"
+        questionFR: "[RÉSEAU] Port d'écoute SSH ? (par défaut : 22)"
         variable: SSH_PORT
         type: number
         default: '22'
       - question: '[NETWORK] Listen on IPv4 address? (0.0.0.0 for all, or specific
           IP)'
+        questionDE: "[NETZWERK] Auf welcher IPv4-Adresse lauschen? (0.0.0.0 für alle oder eine bestimmte IP)"
+        questionES: "[RED] ¿Dirección IPv4 de escucha? (0.0.0.0 para todas o una IP concreta)"
+        questionIT: "[RETE] Indirizzo IPv4 di ascolto? (0.0.0.0 per tutti o un IP specifico)"
+        questionFR: "[RÉSEAU] Adresse IPv4 d'écoute ? (0.0.0.0 pour toutes ou une IP précise)"
         variable: LISTEN_IPv4
         type: text
         default: 0.0.0.0
       - question: '[NETWORK] Listen on IPv6 address? (:: for all, or specific IP,
           empty to disable)'
+        questionDE: "[NETZWERK] Auf welcher IPv6-Adresse lauschen? (:: für alle, eine bestimmte IP oder leer zum Deaktivieren)"
+        questionES: "[RED] ¿Dirección IPv6 de escucha? (:: para todas, una IP concreta o vacío para desactivar)"
+        questionIT: "[RETE] Indirizzo IPv6 di ascolto? (:: per tutti, un IP specifico o vuoto per disattivare)"
+        questionFR: "[RÉSEAU] Adresse IPv6 d'écoute ? (:: pour toutes, une IP précise ou vide pour désactiver)"
         variable: LISTEN_IPv6
         type: text
         default: '::'
       - question: '[NETWORK] SSH Protocol version? (2 or 1,2, default: 2)'
+        questionDE: "[NETZWERK] SSH-Protokollversion? (2 oder 1,2, Standard: 2)"
+        questionES: "[RED] ¿Versión del protocolo SSH? (2 o 1,2, por defecto: 2)"
+        questionIT: "[RETE] Versione del protocollo SSH? (2 o 1,2, predefinito: 2)"
+        questionFR: "[RÉSEAU] Version du protocole SSH ? (2 ou 1,2, par défaut : 2)"
         variable: SSH_PROTOCOL
         type: text
         default: '2'
       - question: '[NETWORK] TCP Keep Alive? (yes/no, default: yes)'
+        questionDE: "[NETZWERK] TCP-Keep-Alive nutzen? (yes/no, Standard: yes)"
+        questionES: "[RED] ¿Usar TCP Keep Alive? (yes/no, por defecto: yes)"
+        questionIT: "[RETE] Usare TCP Keep Alive? (yes/no, predefinito: yes)"
+        questionFR: "[RÉSEAU] Utiliser TCP Keep Alive ? (yes/no, par défaut : yes)"
         variable: TCP_KEEPALIVE
         type: yes/no
         default: 'yes'
       - question: '[NETWORK] Address family? (inet/inet6/any, default: any)'
+        questionDE: "[NETZWERK] Adressfamilie? (inet/inet6/any, Standard: any)"
+        questionES: "[RED] ¿Familia de direcciones? (inet/inet6/any, por defecto: any)"
+        questionIT: "[RETE] Famiglia di indirizzi? (inet/inet6/any, predefinito: any)"
+        questionFR: "[RÉSEAU] Famille d'adresses ? (inet/inet6/any, par défaut : any)"
         variable: ADDRESS_FAMILY
         type: text
         default: any
       - question: '[AUTH] Password Authentication? (yes/no, default: yes)'
+        questionDE: "[ANMELDUNG] Anmeldung per Passwort erlauben? (yes/no, Standard: yes)"
+        questionES: "[ACCESO] ¿Permitir el acceso con contraseña? (yes/no, por defecto: yes)"
+        questionIT: "[ACCESSO] Consentire l'accesso con password? (yes/no, predefinito: yes)"
+        questionFR: "[CONNEXION] Autoriser la connexion par mot de passe ? (yes/no, par défaut : yes)"
         variable: PASS_AUTH
         type: yes/no
         default: 'yes'
       - question: '[AUTH] Public Key Authentication? (yes/no, default: yes)'
+        questionDE: "[ANMELDUNG] Anmeldung per öffentlichem Schlüssel erlauben? (yes/no, Standard: yes)"
+        questionES: "[ACCESO] ¿Permitir el acceso con clave pública? (yes/no, por defecto: yes)"
+        questionIT: "[ACCESSO] Consentire l'accesso con chiave pubblica? (yes/no, predefinito: yes)"
+        questionFR: "[CONNEXION] Autoriser la connexion par clé publique ? (yes/no, par défaut : yes)"
         variable: PUBKEY_AUTH
         type: yes/no
         default: 'yes'
       - question: '[AUTH] Kerberos Authentication? (yes/no, default: no)'
+        questionDE: "[ANMELDUNG] Anmeldung per Kerberos erlauben? (yes/no, Standard: no)"
+        questionES: "[ACCESO] ¿Permitir el acceso con Kerberos? (yes/no, por defecto: no)"
+        questionIT: "[ACCESSO] Consentire l'accesso con Kerberos? (yes/no, predefinito: no)"
+        questionFR: "[CONNEXION] Autoriser la connexion par Kerberos ? (yes/no, par défaut : no)"
         variable: KERBEROS_AUTH
         type: yes/no
         default: 'no'
       - question: '[AUTH] GSSAPI Authentication? (yes/no, default: no)'
+        questionDE: "[ANMELDUNG] Anmeldung per GSSAPI erlauben? (yes/no, Standard: no)"
+        questionES: "[ACCESO] ¿Permitir el acceso con GSSAPI? (yes/no, por defecto: no)"
+        questionIT: "[ACCESSO] Consentire l'accesso con GSSAPI? (yes/no, predefinito: no)"
+        questionFR: "[CONNEXION] Autoriser la connexion par GSSAPI ? (yes/no, par défaut : no)"
         variable: GSSAPI_AUTH
         type: yes/no
         default: 'no'
       - question: '[AUTH] Use PAM? (yes/no, default: yes)'
+        questionDE: "[ANMELDUNG] PAM nutzen? (yes/no, Standard: yes)"
+        questionES: "[ACCESO] ¿Usar PAM? (yes/no, por defecto: yes)"
+        questionIT: "[ACCESSO] Usare PAM? (yes/no, predefinito: yes)"
+        questionFR: "[CONNEXION] Utiliser PAM ? (yes/no, par défaut : yes)"
         variable: USE_PAM
         type: yes/no
         default: 'yes'
       - question: '[AUTH] Authentication methods? (password/publickey/etc, empty for
           default)'
+        questionDE: "[ANMELDUNG] Anmeldeverfahren? (password/publickey/usw., leer für Standard)"
+        questionES: "[ACCESO] ¿Métodos de autenticación? (password/publickey/etc., vacío para el valor por defecto)"
+        questionIT: "[ACCESSO] Metodi di autenticazione? (password/publickey/ecc., vuoto per il valore predefinito)"
+        questionFR: "[CONNEXION] Méthodes d'authentification ? (password/publickey/etc., vide pour la valeur par défaut)"
         variable: AUTH_METHODS
         type: text
         default: ''
       - question: '[AUTH] Max authentication attempts? (default: 6)'
+        questionDE: "[ANMELDUNG] Maximale Anzahl an Anmeldeversuchen? (Standard: 6)"
+        questionES: "[ACCESO] ¿Número máximo de intentos de acceso? (por defecto: 6)"
+        questionIT: "[ACCESSO] Numero massimo di tentativi di accesso? (predefinito: 6)"
+        questionFR: "[CONNEXION] Nombre maximal de tentatives de connexion ? (par défaut : 6)"
         variable: MAX_AUTH_TRIES
         type: number
         default: '6'
       - question: '[USERS] Permit Root Login? (yes/no/prohibit-password/without-password/forced-commands-only,
           default: prohibit-password)'
+        questionDE: "[BENUTZER] Anmeldung als root erlauben? (yes/no/prohibit-password/without-password/forced-commands-only, Standard: prohibit-password)"
+        questionES: "[USUARIOS] ¿Permitir el acceso como root? (yes/no/prohibit-password/without-password/forced-commands-only, por defecto: prohibit-password)"
+        questionIT: "[UTENTI] Consentire l'accesso come root? (yes/no/prohibit-password/without-password/forced-commands-only, predefinito: prohibit-password)"
+        questionFR: "[UTILISATEURS] Autoriser la connexion en root ? (yes/no/prohibit-password/without-password/forced-commands-only, par défaut : prohibit-password)"
         variable: PERMIT_ROOT
         type: text
         default: prohibit-password
       - question: '[USERS] Allow Users? (comma-separated list, empty for none)'
+        questionDE: "[BENUTZER] Erlaubte Benutzer? (kommagetrennte Liste, leer für keine)"
+        questionES: "[USUARIOS] ¿Usuarios permitidos? (lista separada por comas, vacío para ninguno)"
+        questionIT: "[UTENTI] Utenti consentiti? (elenco separato da virgole, vuoto per nessuno)"
+        questionFR: "[UTILISATEURS] Utilisateurs autorisés ? (liste séparée par des virgules, vide pour aucun)"
         variable: ALLOW_USERS
         type: text
         default: ''
       - question: '[USERS] Allow Groups? (comma-separated list, empty for none)'
+        questionDE: "[BENUTZER] Erlaubte Gruppen? (kommagetrennte Liste, leer für keine)"
+        questionES: "[USUARIOS] ¿Grupos permitidos? (lista separada por comas, vacío para ninguno)"
+        questionIT: "[UTENTI] Gruppi consentiti? (elenco separato da virgole, vuoto per nessuno)"
+        questionFR: "[UTILISATEURS] Groupes autorisés ? (liste séparée par des virgules, vide pour aucun)"
         variable: ALLOW_GROUPS
         type: text
         default: ''
       - question: '[USERS] Deny Users? (comma-separated list, empty for none)'
+        questionDE: "[BENUTZER] Gesperrte Benutzer? (kommagetrennte Liste, leer für keine)"
+        questionES: "[USUARIOS] ¿Usuarios denegados? (lista separada por comas, vacío para ninguno)"
+        questionIT: "[UTENTI] Utenti bloccati? (elenco separato da virgole, vuoto per nessuno)"
+        questionFR: "[UTILISATEURS] Utilisateurs refusés ? (liste séparée par des virgules, vide pour aucun)"
         variable: DENY_USERS
         type: text
         default: ''
       - question: '[USERS] Deny Groups? (comma-separated list, empty for none)'
+        questionDE: "[BENUTZER] Gesperrte Gruppen? (kommagetrennte Liste, leer für keine)"
+        questionES: "[USUARIOS] ¿Grupos denegados? (lista separada por comas, vacío para ninguno)"
+        questionIT: "[UTENTI] Gruppi bloccati? (elenco separato da virgole, vuoto per nessuno)"
+        questionFR: "[UTILISATEURS] Groupes refusés ? (liste séparée par des virgules, vide pour aucun)"
         variable: DENY_GROUPS
         type: text
         default: ''
       - question: '[SECURITY] Strict Modes? (yes/no, default: yes)'
+        questionDE: "[SICHERHEIT] Dateirechte streng prüfen? (yes/no, Standard: yes)"
+        questionES: "[SEGURIDAD] ¿Comprobar permisos de forma estricta? (yes/no, por defecto: yes)"
+        questionIT: "[SICUREZZA] Controllare rigorosamente i permessi? (yes/no, predefinito: yes)"
+        questionFR: "[SÉCURITÉ] Vérifier strictement les droits ? (yes/no, par défaut : yes)"
         variable: STRICT_MODES
         type: yes/no
         default: 'yes'
       - question: '[SECURITY] Permit User Environment? (yes/no, default: no)'
+        questionDE: "[SICHERHEIT] Umgebungsvariablen der Benutzer erlauben? (yes/no, Standard: no)"
+        questionES: "[SEGURIDAD] ¿Permitir variables de entorno del usuario? (yes/no, por defecto: no)"
+        questionIT: "[SICUREZZA] Consentire le variabili d'ambiente dell'utente? (yes/no, predefinito: no)"
+        questionFR: "[SÉCURITÉ] Autoriser les variables d'environnement de l'utilisateur ? (yes/no, par défaut : no)"
         variable: PERMIT_USER_ENV
         type: yes/no
         default: 'no'
       - question: '[SECURITY] Permit Empty Passwords? (yes/no, default: no)'
+        questionDE: "[SICHERHEIT] Leere Passwörter erlauben? (yes/no, Standard: no)"
+        questionES: "[SEGURIDAD] ¿Permitir contraseñas vacías? (yes/no, por defecto: no)"
+        questionIT: "[SICUREZZA] Consentire password vuote? (yes/no, predefinito: no)"
+        questionFR: "[SÉCURITÉ] Autoriser les mots de passe vides ? (yes/no, par défaut : no)"
         variable: PERMIT_EMPTY_PASS
         type: yes/no
         default: 'no'
       - question: '[SECURITY] Permit Tunnel? (yes/no, default: no)'
+        questionDE: "[SICHERHEIT] Tunnel erlauben? (yes/no, Standard: no)"
+        questionES: "[SEGURIDAD] ¿Permitir túneles? (yes/no, por defecto: no)"
+        questionIT: "[SICUREZZA] Consentire i tunnel? (yes/no, predefinito: no)"
+        questionFR: "[SÉCURITÉ] Autoriser les tunnels ? (yes/no, par défaut : no)"
         variable: PERMIT_TUNNEL
         type: yes/no
         default: 'no'
       - question: '[SECURITY] Compression? (yes/no/delayed, default: delayed)'
+        questionDE: "[SICHERHEIT] Komprimierung? (yes/no/delayed, Standard: delayed)"
+        questionES: "[SEGURIDAD] ¿Compresión? (yes/no/delayed, por defecto: delayed)"
+        questionIT: "[SICUREZZA] Compressione? (yes/no/delayed, predefinito: delayed)"
+        questionFR: "[SÉCURITÉ] Compression ? (yes/no/delayed, par défaut : delayed)"
         variable: COMPRESSION
         type: text
         default: delayed
       - question: '[SECURITY] Client Alive Interval (seconds, 0=disabled, default:
           300)'
+        questionDE: "[SICHERHEIT] Prüfintervall für den Client (Sekunden, 0=deaktiviert, Standard: 300)"
+        questionES: "[SEGURIDAD] Intervalo de comprobación del cliente (segundos, 0=desactivado, por defecto: 300)"
+        questionIT: "[SICUREZZA] Intervallo di controllo del client (secondi, 0=disattivato, predefinito: 300)"
+        questionFR: "[SÉCURITÉ] Intervalle de vérification du client (secondes, 0=désactivé, par défaut : 300)"
         variable: CLIENT_ALIVE_INTERVAL
         type: number
         default: '300'
       - question: '[SECURITY] Client Alive Count Max? (default: 3)'
+        questionDE: "[SICHERHEIT] Maximale Anzahl an Prüfungen ohne Antwort? (Standard: 3)"
+        questionES: "[SEGURIDAD] ¿Número máximo de comprobaciones sin respuesta? (por defecto: 3)"
+        questionIT: "[SICUREZZA] Numero massimo di controlli senza risposta? (predefinito: 3)"
+        questionFR: "[SÉCURITÉ] Nombre maximal de vérifications sans réponse ? (par défaut : 3)"
         variable: CLIENT_ALIVE_COUNTMAX
         type: number
         default: '3'
       - question: '[SECURITY] Login Grace Time (seconds, default: 120)'
+        questionDE: "[SICHERHEIT] Zeitlimit für die Anmeldung (Sekunden, Standard: 120)"
+        questionES: "[SEGURIDAD] Tiempo límite para iniciar sesión (segundos, por defecto: 120)"
+        questionIT: "[SICUREZZA] Tempo limite per l'accesso (secondi, predefinito: 120)"
+        questionFR: "[SÉCURITÉ] Délai maximal de connexion (secondes, par défaut : 120)"
         variable: LOGIN_GRACE_TIME
         type: number
         default: '120'
       - question: '[FORWARDING] X11 Forwarding? (yes/no, default: no)'
+        questionDE: "[WEITERLEITUNG] X11-Weiterleitung erlauben? (yes/no, Standard: no)"
+        questionES: "[REENVÍO] ¿Permitir el reenvío X11? (yes/no, por defecto: no)"
+        questionIT: "[INOLTRO] Consentire l'inoltro X11? (yes/no, predefinito: no)"
+        questionFR: "[REDIRECTION] Autoriser la redirection X11 ? (yes/no, par défaut : no)"
         variable: X11_FORWARDING
         type: yes/no
         default: 'no'
       - question: '[FORWARDING] X11 Use Localhost? (yes/no, default: yes)'
+        questionDE: "[WEITERLEITUNG] localhost für X11 nutzen? (yes/no, Standard: yes)"
+        questionES: "[REENVÍO] ¿Usar localhost para X11? (yes/no, por defecto: yes)"
+        questionIT: "[INOLTRO] Usare localhost per X11? (yes/no, predefinito: yes)"
+        questionFR: "[REDIRECTION] Utiliser localhost pour X11 ? (yes/no, par défaut : yes)"
         variable: X11_USE_LOCALHOST
         type: yes/no
         default: 'yes'
       - question: '[FORWARDING] Allow Agent Forwarding? (yes/no, default: yes)'
+        questionDE: "[WEITERLEITUNG] Agent-Weiterleitung erlauben? (yes/no, Standard: yes)"
+        questionES: "[REENVÍO] ¿Permitir el reenvío del agente? (yes/no, por defecto: yes)"
+        questionIT: "[INOLTRO] Consentire l'inoltro dell'agente? (yes/no, predefinito: yes)"
+        questionFR: "[REDIRECTION] Autoriser la redirection de l'agent ? (yes/no, par défaut : yes)"
         variable: ALLOW_AGENT_FORWARD
         type: yes/no
         default: 'yes'
       - question: '[FORWARDING] Allow TCP Forwarding? (yes/no/local/remote, default:
           yes)'
+        questionDE: "[WEITERLEITUNG] TCP-Weiterleitung erlauben? (yes/no/local/remote, Standard: yes)"
+        questionES: "[REENVÍO] ¿Permitir el reenvío TCP? (yes/no/local/remote, por defecto: yes)"
+        questionIT: "[INOLTRO] Consentire l'inoltro TCP? (yes/no/local/remote, predefinito: yes)"
+        questionFR: "[REDIRECTION] Autoriser la redirection TCP ? (yes/no/local/remote, par défaut : yes)"
         variable: ALLOW_TCP_FORWARD
         type: text
         default: 'yes'
       - question: '[FORWARDING] Gateway Ports? (yes/no, default: no)'
+        questionDE: "[WEITERLEITUNG] Weitergeleitete Ports für andere Rechner öffnen? (yes/no, Standard: no)"
+        questionES: "[REENVÍO] ¿Abrir los puertos reenviados a otros equipos? (yes/no, por defecto: no)"
+        questionIT: "[INOLTRO] Aprire le porte inoltrate ad altri computer? (yes/no, predefinito: no)"
+        questionFR: "[REDIRECTION] Ouvrir les ports redirigés aux autres machines ? (yes/no, par défaut : no)"
         variable: GATEWAY_PORTS
         type: yes/no
         default: 'no'
       - question: '[LOGGING] Print MOTD? (yes/no, default: yes)'
+        questionDE: "[PROTOKOLLIERUNG] Nachricht des Tages (MOTD) anzeigen? (yes/no, Standard: yes)"
+        questionES: "[REGISTROS] ¿Mostrar el mensaje del día (MOTD)? (yes/no, por defecto: yes)"
+        questionIT: "[LOG] Mostrare il messaggio del giorno (MOTD)? (yes/no, predefinito: yes)"
+        questionFR: "[JOURNAUX] Afficher le message du jour (MOTD) ? (yes/no, par défaut : yes)"
         variable: PRINT_MOTD
         type: yes/no
         default: 'yes'
       - question: '[LOGGING] Print Last Log? (yes/no, default: yes)'
+        questionDE: "[PROTOKOLLIERUNG] Letzte Anmeldung anzeigen? (yes/no, Standard: yes)"
+        questionES: "[REGISTROS] ¿Mostrar el último inicio de sesión? (yes/no, por defecto: yes)"
+        questionIT: "[LOG] Mostrare l'ultimo accesso? (yes/no, predefinito: yes)"
+        questionFR: "[JOURNAUX] Afficher la dernière connexion ? (yes/no, par défaut : yes)"
         variable: PRINT_LASTLOG
         type: yes/no
         default: 'yes'
       - question: '[LOGGING] Log Level? (QUIET/FATAL/ERROR/INFO/VERBOSE/DEBUG/DEBUG1/DEBUG2/DEBUG3,
           default: INFO)'
+        questionDE: "[PROTOKOLLIERUNG] Protokollierungsstufe? (QUIET/FATAL/ERROR/INFO/VERBOSE/DEBUG/DEBUG1/DEBUG2/DEBUG3, Standard: INFO)"
+        questionES: "[REGISTROS] ¿Nivel de registro? (QUIET/FATAL/ERROR/INFO/VERBOSE/DEBUG/DEBUG1/DEBUG2/DEBUG3, por defecto: INFO)"
+        questionIT: "[LOG] Livello di log? (QUIET/FATAL/ERROR/INFO/VERBOSE/DEBUG/DEBUG1/DEBUG2/DEBUG3, predefinito: INFO)"
+        questionFR: "[JOURNAUX] Niveau de journalisation ? (QUIET/FATAL/ERROR/INFO/VERBOSE/DEBUG/DEBUG1/DEBUG2/DEBUG3, par défaut : INFO)"
         variable: LOG_LEVEL
         type: text
         default: INFO
       - question: '[LOGGING] Banner file path? (empty for none, e.g., /etc/ssh/banner)'
+        questionDE: "[PROTOKOLLIERUNG] Pfad zur Banner-Datei? (leer für keine, z. B. /etc/ssh/banner)"
+        questionES: "[REGISTROS] ¿Ruta del archivo de banner? (vacío para ninguno, p. ej. /etc/ssh/banner)"
+        questionIT: "[LOG] Percorso del file banner? (vuoto per nessuno, ad es. /etc/ssh/banner)"
+        questionFR: "[JOURNAUX] Chemin du fichier de bannière ? (vide pour aucune, p. ex. /etc/ssh/banner)"
         variable: BANNER
         type: text
         default: ''
       - question: '[LOGGING] Syslog Facility? (AUTH/AUTHPRIV/DAEMON/LOCAL0-7, default:
           AUTH)'
+        questionDE: "[PROTOKOLLIERUNG] Syslog-Kategorie? (AUTH/AUTHPRIV/DAEMON/LOCAL0-7, Standard: AUTH)"
+        questionES: "[REGISTROS] ¿Categoría de Syslog? (AUTH/AUTHPRIV/DAEMON/LOCAL0-7, por defecto: AUTH)"
+        questionIT: "[LOG] Categoria Syslog? (AUTH/AUTHPRIV/DAEMON/LOCAL0-7, predefinito: AUTH)"
+        questionFR: "[JOURNAUX] Catégorie Syslog ? (AUTH/AUTHPRIV/DAEMON/LOCAL0-7, par défaut : AUTH)"
         variable: SYSLOG_FACILITY
         type: text
         default: AUTH
       - question: '[CRYPTO] Host Key Algorithms? (comma-separated list, empty for
           defaults)'
+        questionDE: "[VERSCHLÜSSELUNG] Algorithmen für Host-Schlüssel? (kommagetrennte Liste, leer für Standardwerte)"
+        questionES: "[CIFRADO] ¿Algoritmos de clave de host? (lista separada por comas, vacío para los valores por defecto)"
+        questionIT: "[CRITTOGRAFIA] Algoritmi delle chiavi host? (elenco separato da virgole, vuoto per i valori predefiniti)"
+        questionFR: "[CHIFFREMENT] Algorithmes de clé d'hôte ? (liste séparée par des virgules, vide pour les valeurs par défaut)"
         variable: HOST_KEY_ALGORITHMS
         type: text
         default: ''
       - question: '[CRYPTO] Ciphers? (comma-separated list, empty for defaults)'
+        questionDE: "[VERSCHLÜSSELUNG] Verschlüsselungsverfahren? (kommagetrennte Liste, leer für Standardwerte)"
+        questionES: "[CIFRADO] ¿Algoritmos de cifrado? (lista separada por comas, vacío para los valores por defecto)"
+        questionIT: "[CRITTOGRAFIA] Algoritmi di cifratura? (elenco separato da virgole, vuoto per i valori predefiniti)"
+        questionFR: "[CHIFFREMENT] Algorithmes de chiffrement ? (liste séparée par des virgules, vide pour les valeurs par défaut)"
         variable: CIPHERS
         type: text
         default: ''
       - question: '[CRYPTO] MACs (Message Authentication Codes)? (comma-separated
           list, empty for defaults)'
+        questionDE: "[VERSCHLÜSSELUNG] MACs (Nachrichten-Authentifizierungscodes)? (kommagetrennte Liste, leer für Standardwerte)"
+        questionES: "[CIFRADO] ¿MAC (códigos de autenticación de mensajes)? (lista separada por comas, vacío para los valores por defecto)"
+        questionIT: "[CRITTOGRAFIA] MAC (codici di autenticazione dei messaggi)? (elenco separato da virgole, vuoto per i valori predefiniti)"
+        questionFR: "[CHIFFREMENT] MAC (codes d'authentification de message) ? (liste séparée par des virgules, vide pour les valeurs par défaut)"
         variable: MACS
         type: text
         default: ''
       - question: '[CRYPTO] Key Exchange Algorithms? (comma-separated list, empty
           for defaults)'
+        questionDE: "[VERSCHLÜSSELUNG] Algorithmen für den Schlüsselaustausch? (kommagetrennte Liste, leer für Standardwerte)"
+        questionES: "[CIFRADO] ¿Algoritmos de intercambio de claves? (lista separada por comas, vacío para los valores por defecto)"
+        questionIT: "[CRITTOGRAFIA] Algoritmi di scambio delle chiavi? (elenco separato da virgole, vuoto per i valori predefiniti)"
+        questionFR: "[CHIFFREMENT] Algorithmes d'échange de clés ? (liste séparée par des virgules, vide pour les valeurs par défaut)"
         variable: KEY_EXCHANGE_ALGOS
         type: text
         default: ''
       - question: '[CRYPTO] Rekey Limit (bytes and time, e.g., ''1G 1h'', empty for
           defaults)'
+        questionDE: "[VERSCHLÜSSELUNG] Limit für Schlüsselerneuerung (Bytes und Zeit, z. B. '1G 1h', leer für Standardwerte)"
+        questionES: "[CIFRADO] Límite para renovar la clave (bytes y tiempo, p. ej. '1G 1h', vacío para los valores por defecto)"
+        questionIT: "[CRITTOGRAFIA] Limite per il rinnovo della chiave (byte e tempo, ad es. '1G 1h', vuoto per i valori predefiniti)"
+        questionFR: "[CHIFFREMENT] Limite de renouvellement de clé (octets et durée, p. ex. '1G 1h', vide pour les valeurs par défaut)"
         variable: REKEY_LIMIT
         type: text
         default: ''
       - question: '[CRYPTO] Authorized Keys File? (default: .ssh/authorized_keys)'
+        questionDE: "[VERSCHLÜSSELUNG] Datei mit erlaubten Schlüsseln? (Standard: .ssh/authorized_keys)"
+        questionES: "[CIFRADO] ¿Archivo de claves autorizadas? (por defecto: .ssh/authorized_keys)"
+        questionIT: "[CRITTOGRAFIA] File delle chiavi autorizzate? (predefinito: .ssh/authorized_keys)"
+        questionFR: "[CHIFFREMENT] Fichier des clés autorisées ? (par défaut : .ssh/authorized_keys)"
         variable: AUTHORIZED_KEYS_FILE
         type: text
         default: .ssh/authorized_keys
       - question: '[SUBSYSTEM] SFTP subsystem path? (e.g., /usr/lib/openssh/sftp-server
           or internal-sftp)'
+        questionDE: "[SUBSYSTEM] Pfad zum SFTP-Subsystem? (z. B. /usr/lib/openssh/sftp-server oder internal-sftp)"
+        questionES: "[SUBSISTEMA] ¿Ruta del subsistema SFTP? (p. ej. /usr/lib/openssh/sftp-server o internal-sftp)"
+        questionIT: "[SOTTOSISTEMA] Percorso del sottosistema SFTP? (ad es. /usr/lib/openssh/sftp-server o internal-sftp)"
+        questionFR: "[SOUS-SYSTÈME] Chemin du sous-système SFTP ? (p. ex. /usr/lib/openssh/sftp-server ou internal-sftp)"
         variable: SFTP_SUBSYSTEM
         type: text
         default: /usr/lib/openssh/sftp-server
     - name: fix-xauthority
       parameter: fix-xauthority
       description: Fix X11 Xauthority permissions and generate trust
+      descriptionDE: "X11-Xauthority-Rechte reparieren und Vertrauen erzeugen"
+      descriptionES: "Reparar permisos de X11 Xauthority y generar confianza"
+      descriptionIT: "Ripara i permessi X11 Xauthority e genera fiducia"
+      descriptionFR: "Réparer les droits X11 Xauthority et générer la confiance"
   net-tools:
     description: Network utilities (ifconfig, netstat)
+    descriptionDE: "Netzwerkwerkzeuge (ifconfig, netstat)"
+    descriptionES: "Utilidades de red (ifconfig, netstat)"
+    descriptionIT: "Strumenti di rete (ifconfig, netstat)"
+    descriptionFR: "Outils réseau (ifconfig, netstat)"
     category: Networking
     file: net-tools.sh
     os_family:
@@ -446,14 +927,30 @@ scripts:
     - name: install
       parameter: install
       description: Install net-tools
+      descriptionDE: "net-tools installieren"
+      descriptionES: "Instalar net-tools"
+      descriptionIT: "Installa net-tools"
+      descriptionFR: "Installer net-tools"
     - name: update
       parameter: update
       description: Update net-tools
+      descriptionDE: "net-tools aktualisieren"
+      descriptionES: "Actualizar net-tools"
+      descriptionIT: "Aggiorna net-tools"
+      descriptionFR: "Mettre à jour net-tools"
     - name: uninstall
       parameter: uninstall
       description: Uninstall net-tools
+      descriptionDE: "net-tools deinstallieren"
+      descriptionES: "Desinstalar net-tools"
+      descriptionIT: "Disinstalla net-tools"
+      descriptionFR: "Désinstaller net-tools"
   build-essential:
     description: Development tools and compilers
+    descriptionDE: "Entwicklungswerkzeuge und Compiler"
+    descriptionES: "Herramientas de desarrollo y compiladores"
+    descriptionIT: "Strumenti di sviluppo e compilatori"
+    descriptionFR: "Outils de développement et compilateurs"
     category: Essential Tools
     file: build-essential.sh
     sudo:
@@ -467,14 +964,30 @@ scripts:
     - name: install
       parameter: install
       description: Install build tools
+      descriptionDE: "Build-Werkzeuge installieren"
+      descriptionES: "Instalar las herramientas de compilación"
+      descriptionIT: "Installa gli strumenti di compilazione"
+      descriptionFR: "Installer les outils de compilation"
     - name: update
       parameter: update
       description: Update build tools
+      descriptionDE: "Build-Werkzeuge aktualisieren"
+      descriptionES: "Actualizar las herramientas de compilación"
+      descriptionIT: "Aggiorna gli strumenti di compilazione"
+      descriptionFR: "Mettre à jour les outils de compilation"
     - name: uninstall
       parameter: uninstall
       description: Uninstall build tools
+      descriptionDE: "Build-Werkzeuge deinstallieren"
+      descriptionES: "Desinstalar las herramientas de compilación"
+      descriptionIT: "Disinstalla gli strumenti di compilazione"
+      descriptionFR: "Désinstaller les outils de compilation"
   jq:
     description: JSON query processor
+    descriptionDE: "Werkzeug für JSON-Abfragen"
+    descriptionES: "Herramienta de consultas JSON"
+    descriptionIT: "Strumento per query JSON"
+    descriptionFR: "Outil de requêtes JSON"
     category: Essential Tools
     file: jq.sh
     os_family:
@@ -487,14 +1000,30 @@ scripts:
     - name: install
       parameter: install
       description: Install jq
+      descriptionDE: "jq installieren"
+      descriptionES: "Instalar jq"
+      descriptionIT: "Installa jq"
+      descriptionFR: "Installer jq"
     - name: update
       parameter: update
       description: Update jq
+      descriptionDE: "jq aktualisieren"
+      descriptionES: "Actualizar jq"
+      descriptionIT: "Aggiorna jq"
+      descriptionFR: "Mettre à jour jq"
     - name: uninstall
       parameter: uninstall
       description: Uninstall jq
+      descriptionDE: "jq deinstallieren"
+      descriptionES: "Desinstalar jq"
+      descriptionIT: "Disinstalla jq"
+      descriptionFR: "Désinstaller jq"
   locate:
     description: Fast file search using indexed database
+    descriptionDE: "Schnelle Dateisuche mit Index-Datenbank"
+    descriptionES: "Búsqueda rápida de archivos con índice"
+    descriptionIT: "Ricerca rapida di file con database indicizzato"
+    descriptionFR: "Recherche rapide de fichiers via une base indexée"
     category: Essential Tools
     file: locate.sh
     sudo:
@@ -508,22 +1037,46 @@ scripts:
     - name: install
       parameter: install
       description: Install locate
+      descriptionDE: "locate installieren"
+      descriptionES: "Instalar locate"
+      descriptionIT: "Installa locate"
+      descriptionFR: "Installer locate"
     - name: update
       parameter: update
       description: Update locate database
+      descriptionDE: "locate-Datenbank aktualisieren"
+      descriptionES: "Actualizar la base de datos de locate"
+      descriptionIT: "Aggiorna il database di locate"
+      descriptionFR: "Mettre à jour la base de données de locate"
     - name: uninstall
       parameter: uninstall
       description: Uninstall locate
+      descriptionDE: "locate deinstallieren"
+      descriptionES: "Desinstalar locate"
+      descriptionIT: "Disinstalla locate"
+      descriptionFR: "Désinstaller locate"
       prompts:
       - question: Remove locate database files? (y/n)
+        questionDE: "Datenbankdateien von locate entfernen? (y/n)"
+        questionES: "¿Eliminar los archivos de la base de datos de locate? (y/n)"
+        questionIT: "Rimuovere i file del database di locate? (y/n)"
+        questionFR: "Supprimer les fichiers de base de données de locate ? (y/n)"
         variable: CONFIRM
         type: yes/no
         default: 'no'
     - name: config
       parameter: config
       description: Show locate configuration info
+      descriptionDE: "Konfiguration von locate anzeigen"
+      descriptionES: "Mostrar la configuración de locate"
+      descriptionIT: "Mostra la configurazione di locate"
+      descriptionFR: "Afficher la configuration de locate"
   apache:
     description: Apache HTTP Server
+    descriptionDE: "Apache-HTTP-Server"
+    descriptionES: "Servidor HTTP Apache"
+    descriptionIT: "Server HTTP Apache"
+    descriptionFR: "Serveur HTTP Apache"
     category: Web Servers
     file: apache.sh
     sudo:
@@ -537,31 +1090,63 @@ scripts:
     - name: install
       parameter: install
       description: Install Apache
+      descriptionDE: "Apache installieren"
+      descriptionES: "Instalar Apache"
+      descriptionIT: "Installa Apache"
+      descriptionFR: "Installer Apache"
     - name: update
       parameter: update
       description: Update Apache
+      descriptionDE: "Apache aktualisieren"
+      descriptionES: "Actualizar Apache"
+      descriptionIT: "Aggiorna Apache"
+      descriptionFR: "Mettre à jour Apache"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Apache
+      descriptionDE: "Apache deinstallieren"
+      descriptionES: "Desinstalar Apache"
+      descriptionIT: "Disinstalla Apache"
+      descriptionFR: "Désinstaller Apache"
       prompts:
       - question: Delete config files?
+        questionDE: "Konfigurationsdateien löschen?"
+        questionES: "¿Borrar los archivos de configuración?"
+        questionIT: "Eliminare i file di configurazione?"
+        questionFR: "Supprimer les fichiers de configuration ?"
         variable: DELETE_CONFIG
         type: yes/no
         default: 'no'
     - name: vhosts
       parameter: vhosts
       description: Configure virtual hosts
+      descriptionDE: "Virtuelle Hosts konfigurieren"
+      descriptionES: "Configurar los hosts virtuales"
+      descriptionIT: "Configura gli host virtuali"
+      descriptionFR: "Configurer les hôtes virtuels"
       prompts:
       - question: Virtual host name?
+        questionDE: "Name des virtuellen Hosts?"
+        questionES: "¿Nombre del host virtual?"
+        questionIT: "Nome dell'host virtuale?"
+        questionFR: "Nom de l'hôte virtuel ?"
         variable: VHOST_NAME
         type: text
         default: www.example.com
       - question: Document root?
+        questionDE: "Stammverzeichnis der Website?"
+        questionES: "¿Carpeta raíz del sitio web?"
+        questionIT: "Cartella principale del sito?"
+        questionFR: "Dossier racine du site ?"
         variable: VHOST_ROOT
         type: text
         default: /var/www/html
   nginx:
     description: Nginx HTTP Server
+    descriptionDE: "Nginx-HTTP-Server"
+    descriptionES: "Servidor HTTP Nginx"
+    descriptionIT: "Server HTTP Nginx"
+    descriptionFR: "Serveur HTTP Nginx"
     category: Web Servers
     file: nginx.sh
     sudo:
@@ -575,31 +1160,63 @@ scripts:
     - name: install
       parameter: install
       description: Install Nginx
+      descriptionDE: "Nginx installieren"
+      descriptionES: "Instalar Nginx"
+      descriptionIT: "Installa Nginx"
+      descriptionFR: "Installer Nginx"
     - name: update
       parameter: update
       description: Update Nginx
+      descriptionDE: "Nginx aktualisieren"
+      descriptionES: "Actualizar Nginx"
+      descriptionIT: "Aggiorna Nginx"
+      descriptionFR: "Mettre à jour Nginx"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Nginx
+      descriptionDE: "Nginx deinstallieren"
+      descriptionES: "Desinstalar Nginx"
+      descriptionIT: "Disinstalla Nginx"
+      descriptionFR: "Désinstaller Nginx"
       prompts:
       - question: Delete config files?
+        questionDE: "Konfigurationsdateien löschen?"
+        questionES: "¿Borrar los archivos de configuración?"
+        questionIT: "Eliminare i file di configurazione?"
+        questionFR: "Supprimer les fichiers de configuration ?"
         variable: DELETE_CONFIG
         type: yes/no
         default: 'no'
     - name: vhosts
       parameter: vhosts
       description: Configure server blocks
+      descriptionDE: "Server-Blöcke konfigurieren"
+      descriptionES: "Configurar los bloques de servidor"
+      descriptionIT: "Configura i blocchi server"
+      descriptionFR: "Configurer les blocs server"
       prompts:
       - question: Server name?
+        questionDE: "Servername?"
+        questionES: "¿Nombre del servidor?"
+        questionIT: "Nome del server?"
+        questionFR: "Nom du serveur ?"
         variable: SERVER_NAME
         type: text
         default: ''
       - question: Root path?
+        questionDE: "Pfad zum Stammverzeichnis?"
+        questionES: "¿Ruta de la carpeta raíz?"
+        questionIT: "Percorso della cartella principale?"
+        questionFR: "Chemin du dossier racine ?"
         variable: ROOT_PATH
         type: text
         default: /var/www/html
   mariadb:
     description: MariaDB database server
+    descriptionDE: "MariaDB-Datenbankserver"
+    descriptionES: "Servidor de bases de datos MariaDB"
+    descriptionIT: "Server di database MariaDB"
+    descriptionFR: "Serveur de bases de données MariaDB"
     category: Databases
     file: mariadb.sh
     sudo:
@@ -610,39 +1227,79 @@ scripts:
     - name: install
       parameter: install
       description: Install MariaDB
+      descriptionDE: "MariaDB installieren"
+      descriptionES: "Instalar MariaDB"
+      descriptionIT: "Installa MariaDB"
+      descriptionFR: "Installer MariaDB"
     - name: update
       parameter: update
       description: Update MariaDB
+      descriptionDE: "MariaDB aktualisieren"
+      descriptionES: "Actualizar MariaDB"
+      descriptionIT: "Aggiorna MariaDB"
+      descriptionFR: "Mettre à jour MariaDB"
     - name: uninstall
       parameter: uninstall
       description: Uninstall MariaDB
+      descriptionDE: "MariaDB deinstallieren"
+      descriptionES: "Desinstalar MariaDB"
+      descriptionIT: "Disinstalla MariaDB"
+      descriptionFR: "Désinstaller MariaDB"
       prompts:
       - question: Delete data?
+        questionDE: "Daten löschen?"
+        questionES: "¿Borrar los datos?"
+        questionIT: "Eliminare i dati?"
+        questionFR: "Supprimer les données ?"
         variable: DELETE_DATA
         type: yes/no
         default: 'no'
       - question: Delete config?
+        questionDE: "Konfiguration löschen?"
+        questionES: "¿Borrar la configuración?"
+        questionIT: "Eliminare la configurazione?"
+        questionFR: "Supprimer la configuration ?"
         variable: DELETE_CONFIG
         type: yes/no
         default: 'no'
     - name: config
       parameter: config
       description: Configure MariaDB
+      descriptionDE: "MariaDB konfigurieren"
+      descriptionES: "Configurar MariaDB"
+      descriptionIT: "Configura MariaDB"
+      descriptionFR: "Configurer MariaDB"
       prompts:
       - question: Max connections?
+        questionDE: "Maximale Anzahl an Verbindungen?"
+        questionES: "¿Número máximo de conexiones?"
+        questionIT: "Numero massimo di connessioni?"
+        questionFR: "Nombre maximal de connexions ?"
         variable: MAX_CONNECTIONS
         type: number
         default: '100'
       - question: InnoDB buffer pool (e.g., 512M)?
+        questionDE: "Größe des InnoDB-Pufferpools (z. B. 512M)?"
+        questionES: "¿Tamaño del buffer pool de InnoDB (p. ej. 512M)?"
+        questionIT: "Dimensione del buffer pool InnoDB (ad es. 512M)?"
+        questionFR: "Taille du buffer pool InnoDB (p. ex. 512M) ?"
         variable: INNODB_BUFFER
         type: text
         default: 512M
       - question: Bind address?
+        questionDE: "Auf welcher Adresse lauschen?"
+        questionES: "¿Dirección de escucha?"
+        questionIT: "Indirizzo di ascolto?"
+        questionFR: "Adresse d'écoute ?"
         variable: BIND_ADDRESS
         type: text
         default: 127.0.0.1
   postgres:
     description: PostgreSQL database server
+    descriptionDE: "PostgreSQL-Datenbankserver"
+    descriptionES: "Servidor de bases de datos PostgreSQL"
+    descriptionIT: "Server di database PostgreSQL"
+    descriptionFR: "Serveur de bases de données PostgreSQL"
     category: Databases
     file: postgres.sh
     sudo:
@@ -656,17 +1313,37 @@ scripts:
     - name: install
       parameter: install
       description: Install PostgreSQL
+      descriptionDE: "PostgreSQL installieren"
+      descriptionES: "Instalar PostgreSQL"
+      descriptionIT: "Installa PostgreSQL"
+      descriptionFR: "Installer PostgreSQL"
     - name: update
       parameter: update
       description: Update PostgreSQL
+      descriptionDE: "PostgreSQL aktualisieren"
+      descriptionES: "Actualizar PostgreSQL"
+      descriptionIT: "Aggiorna PostgreSQL"
+      descriptionFR: "Mettre à jour PostgreSQL"
     - name: uninstall
       parameter: uninstall
       description: Uninstall PostgreSQL
+      descriptionDE: "PostgreSQL deinstallieren"
+      descriptionES: "Desinstalar PostgreSQL"
+      descriptionIT: "Disinstalla PostgreSQL"
+      descriptionFR: "Désinstaller PostgreSQL"
     - name: config
       parameter: config
       description: Configure PostgreSQL
+      descriptionDE: "PostgreSQL konfigurieren"
+      descriptionES: "Configurar PostgreSQL"
+      descriptionIT: "Configura PostgreSQL"
+      descriptionFR: "Configurer PostgreSQL"
   mysql:
     description: MySQL database server
+    descriptionDE: "MySQL-Datenbankserver"
+    descriptionES: "Servidor de bases de datos MySQL"
+    descriptionIT: "Server di database MySQL"
+    descriptionFR: "Serveur de bases de données MySQL"
     category: Databases
     file: mysql.sh
     sudo:
@@ -680,17 +1357,37 @@ scripts:
     - name: install
       parameter: install
       description: Install MySQL
+      descriptionDE: "MySQL installieren"
+      descriptionES: "Instalar MySQL"
+      descriptionIT: "Installa MySQL"
+      descriptionFR: "Installer MySQL"
     - name: update
       parameter: update
       description: Update MySQL
+      descriptionDE: "MySQL aktualisieren"
+      descriptionES: "Actualizar MySQL"
+      descriptionIT: "Aggiorna MySQL"
+      descriptionFR: "Mettre à jour MySQL"
     - name: uninstall
       parameter: uninstall
       description: Uninstall MySQL
+      descriptionDE: "MySQL deinstallieren"
+      descriptionES: "Desinstalar MySQL"
+      descriptionIT: "Disinstalla MySQL"
+      descriptionFR: "Désinstaller MySQL"
     - name: config
       parameter: config
       description: Configure MySQL
+      descriptionDE: "MySQL konfigurieren"
+      descriptionES: "Configurar MySQL"
+      descriptionIT: "Configura MySQL"
+      descriptionFR: "Configurer MySQL"
   docker:
     description: Docker container runtime
+    descriptionDE: "Laufzeitumgebung für Docker-Container"
+    descriptionES: "Entorno de ejecución de contenedores Docker"
+    descriptionIT: "Ambiente di esecuzione per container Docker"
+    descriptionFR: "Environnement d'exécution de conteneurs Docker"
     category: Container & Virtualization
     file: docker.sh
     sudo:
@@ -704,31 +1401,63 @@ scripts:
     - name: install
       parameter: install
       description: Install Docker
+      descriptionDE: "Docker installieren"
+      descriptionES: "Instalar Docker"
+      descriptionIT: "Installa Docker"
+      descriptionFR: "Installer Docker"
     - name: update
       parameter: update
       description: Update Docker
+      descriptionDE: "Docker aktualisieren"
+      descriptionES: "Actualizar Docker"
+      descriptionIT: "Aggiorna Docker"
+      descriptionFR: "Mettre à jour Docker"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Docker
+      descriptionDE: "Docker deinstallieren"
+      descriptionES: "Desinstalar Docker"
+      descriptionIT: "Disinstalla Docker"
+      descriptionFR: "Désinstaller Docker"
       prompts:
       - question: Delete container images?
+        questionDE: "Container-Images löschen?"
+        questionES: "¿Borrar las imágenes de contenedor?"
+        questionIT: "Eliminare le immagini dei container?"
+        questionFR: "Supprimer les images de conteneur ?"
         variable: DELETE_IMAGES
         type: yes/no
         default: 'no'
     - name: config
       parameter: config
       description: Configure Docker
+      descriptionDE: "Docker konfigurieren"
+      descriptionES: "Configurar Docker"
+      descriptionIT: "Configura Docker"
+      descriptionFR: "Configurer Docker"
       prompts:
       - question: Storage driver (overlay2, etc)?
+        questionDE: "Speichertreiber (overlay2 usw.)?"
+        questionES: "¿Controlador de almacenamiento (overlay2, etc.)?"
+        questionIT: "Driver di archiviazione (overlay2, ecc.)?"
+        questionFR: "Pilote de stockage (overlay2, etc.) ?"
         variable: STORAGE_DRIVER
         type: text
         default: overlay2
       - question: Log driver (json-file, etc)?
+        questionDE: "Log-Treiber (json-file usw.)?"
+        questionES: "¿Controlador de registros (json-file, etc.)?"
+        questionIT: "Driver dei log (json-file, ecc.)?"
+        questionFR: "Pilote de journalisation (json-file, etc.) ?"
         variable: LOG_DRIVER
         type: text
         default: json-file
   portainer:
     description: Portainer container management UI
+    descriptionDE: "Portainer-Oberfläche zur Containerverwaltung"
+    descriptionES: "Interfaz de gestión de contenedores Portainer"
+    descriptionIT: "Interfaccia di gestione dei container Portainer"
+    descriptionFR: "Interface de gestion de conteneurs Portainer"
     category: Container & Virtualization
     file: portainer.sh
     sudo:
@@ -742,14 +1471,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Portainer
+      descriptionDE: "Portainer installieren"
+      descriptionES: "Instalar Portainer"
+      descriptionIT: "Installa Portainer"
+      descriptionFR: "Installer Portainer"
     - name: update
       parameter: update
       description: Update Portainer
+      descriptionDE: "Portainer aktualisieren"
+      descriptionES: "Actualizar Portainer"
+      descriptionIT: "Aggiorna Portainer"
+      descriptionFR: "Mettre à jour Portainer"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Portainer
+      descriptionDE: "Portainer deinstallieren"
+      descriptionES: "Desinstalar Portainer"
+      descriptionIT: "Disinstalla Portainer"
+      descriptionFR: "Désinstaller Portainer"
   proxmox:
     description: Proxmox guest agent and container management
+    descriptionDE: "Proxmox-Gastagent und Containerverwaltung"
+    descriptionES: "Agente invitado Proxmox y gestión de contenedores"
+    descriptionIT: "Agente guest Proxmox e gestione dei container"
+    descriptionFR: "Agent invité Proxmox et gestion des conteneurs"
     category: Container & Virtualization
     file: proxmox.sh
     sudo:
@@ -757,86 +1502,174 @@ scripts:
     - name: install
       parameter: install
       description: Install qemu-guest-agent (multi-distro)
+      descriptionDE: "qemu-guest-agent installieren (mehrere Distributionen)"
+      descriptionES: "Instalar qemu-guest-agent (varias distribuciones)"
+      descriptionIT: "Installa qemu-guest-agent (più distribuzioni)"
+      descriptionFR: "Installer qemu-guest-agent (plusieurs distributions)"
     - name: update
       parameter: update
       description: Update qemu-guest-agent
+      descriptionDE: "qemu-guest-agent aktualisieren"
+      descriptionES: "Actualizar qemu-guest-agent"
+      descriptionIT: "Aggiorna qemu-guest-agent"
+      descriptionFR: "Mettre à jour qemu-guest-agent"
     - name: uninstall
       parameter: uninstall
       description: Uninstall qemu-guest-agent
+      descriptionDE: "qemu-guest-agent deinstallieren"
+      descriptionES: "Desinstalar qemu-guest-agent"
+      descriptionIT: "Disinstalla qemu-guest-agent"
+      descriptionFR: "Désinstaller qemu-guest-agent"
       prompts:
       - question: Are you sure? (yes/no)
+        questionDE: "Wirklich fortfahren? (yes/no)"
+        questionES: "¿Seguro que desea continuar? (yes/no)"
+        questionIT: "Continuare davvero? (yes/no)"
+        questionFR: "Voulez-vous vraiment continuer ? (yes/no)"
         variable: CONFIRM
         type: yes/no
         default: 'no'
     - name: make-lxc-to-template
       parameter: make-lxc-to-template
       description: Convert LXC container to template
+      descriptionDE: "LXC-Container in Vorlage umwandeln"
+      descriptionES: "Convertir un contenedor LXC en plantilla"
+      descriptionIT: "Converti un container LXC in template"
+      descriptionFR: "Convertir un conteneur LXC en modèle"
       prompts:
       - question: Container ID (CTID)?
+        questionDE: "Container-ID (CTID)?"
+        questionES: "¿ID del contenedor (CTID)?"
+        questionIT: "ID del container (CTID)?"
+        questionFR: "ID du conteneur (CTID) ?"
         variable: CTID
         type: number
         default: ''
     - name: make-template-to-lxc
       parameter: make-template-to-lxc
       description: Convert template back to normal LXC container
+      descriptionDE: "Vorlage wieder in normalen LXC-Container umwandeln"
+      descriptionES: "Reconvertir la plantilla en contenedor LXC normal"
+      descriptionIT: "Riconverti il template in un normale container LXC"
+      descriptionFR: "Reconvertir le modèle en conteneur LXC normal"
       prompts:
       - question: Container ID (CTID)?
+        questionDE: "Container-ID (CTID)?"
+        questionES: "¿ID del contenedor (CTID)?"
+        questionIT: "ID del container (CTID)?"
+        questionFR: "ID du conteneur (CTID) ?"
         variable: CTID
         type: number
         default: ''
     - name: unlock-vm
       parameter: unlock-vm
       description: Unlock a locked VM or container
+      descriptionDE: "Gesperrte VM oder Container entsperren"
+      descriptionES: "Desbloquear una VM o un contenedor bloqueado"
+      descriptionIT: "Sblocca una VM o un container bloccato"
+      descriptionFR: "Déverrouiller une VM ou un conteneur verrouillé"
       prompts:
       - question: Container/VM ID (CTID)?
+        questionDE: "Container-/VM-ID (CTID)?"
+        questionES: "¿ID del contenedor/VM (CTID)?"
+        questionIT: "ID del container/VM (CTID)?"
+        questionFR: "ID du conteneur/VM (CTID) ?"
         variable: CTID
         type: number
         default: ''
     - name: stop-all
       parameter: stop-all
       description: Stop all VMs and LXC containers
+      descriptionDE: "Alle VMs und LXC-Container stoppen"
+      descriptionES: "Detener todas las VM y contenedores LXC"
+      descriptionIT: "Arresta tutte le VM e i container LXC"
+      descriptionFR: "Arrêter toutes les VM et tous les conteneurs LXC"
     - name: list-lxc
       parameter: list-lxc
       description: List all LXC containers (running and offline) with VMID, Hostname,
         IP, Status
+      descriptionDE: "Alle LXC-Container (laufend und offline) mit VMID, Hostname, IP, Status auflisten"
+      descriptionES: "Listar todos los contenedores LXC (activos y apagados) con VMID, nombre de host, IP, estado"
+      descriptionIT: "Elenca tutti i container LXC (attivi e spenti) con VMID, nome host, IP, stato"
+      descriptionFR: "Lister tous les conteneurs LXC (actifs et arrêtés) avec VMID, nom d'hôte, IP, état"
     - name: list-lxc-running
       parameter: list-lxc-running
       description: List only running LXC containers with VMID, Hostname, and live
         IP (from eth0)
+      descriptionDE: "Nur laufende LXC-Container mit VMID, Hostname und aktueller IP (von eth0) auflisten"
+      descriptionES: "Listar solo los contenedores LXC activos con VMID, nombre de host e IP actual (de eth0)"
+      descriptionIT: "Elenca solo i container LXC attivi con VMID, nome host e IP attuale (da eth0)"
+      descriptionFR: "Lister seulement les conteneurs LXC actifs avec VMID, nom d'hôte et IP actuelle (de eth0)"
     - name: start-vm
       parameter: start-vm
       description: Start a specific VM by VMID
+      descriptionDE: "Bestimmte VM per VMID starten"
+      descriptionES: "Iniciar una VM concreta por su VMID"
+      descriptionIT: "Avvia una VM specifica tramite VMID"
+      descriptionFR: "Démarrer une VM précise par son VMID"
       prompts:
       - question: VM ID (VMID)?
+        questionDE: "VM-ID (VMID)?"
+        questionES: "¿ID de la VM (VMID)?"
+        questionIT: "ID della VM (VMID)?"
+        questionFR: "ID de la VM (VMID) ?"
         variable: VMID
         type: number
         default: ''
     - name: stop-vm
       parameter: stop-vm
       description: Stop a specific VM by VMID
+      descriptionDE: "Bestimmte VM per VMID stoppen"
+      descriptionES: "Detener una VM concreta por su VMID"
+      descriptionIT: "Arresta una VM specifica tramite VMID"
+      descriptionFR: "Arrêter une VM précise par son VMID"
       prompts:
       - question: VM ID (VMID)?
+        questionDE: "VM-ID (VMID)?"
+        questionES: "¿ID de la VM (VMID)?"
+        questionIT: "ID della VM (VMID)?"
+        questionFR: "ID de la VM (VMID) ?"
         variable: VMID
         type: number
         default: ''
     - name: start-lxc
       parameter: start-lxc
       description: Start a specific LXC container by CTID
+      descriptionDE: "Bestimmten LXC-Container per CTID starten"
+      descriptionES: "Iniciar un contenedor LXC concreto por su CTID"
+      descriptionIT: "Avvia un container LXC specifico tramite CTID"
+      descriptionFR: "Démarrer un conteneur LXC précis par son CTID"
       prompts:
       - question: Container ID (CTID)?
+        questionDE: "Container-ID (CTID)?"
+        questionES: "¿ID del contenedor (CTID)?"
+        questionIT: "ID del container (CTID)?"
+        questionFR: "ID du conteneur (CTID) ?"
         variable: CTID
         type: number
         default: ''
     - name: stop-lxc
       parameter: stop-lxc
       description: Stop a specific LXC container by CTID
+      descriptionDE: "Bestimmten LXC-Container per CTID stoppen"
+      descriptionES: "Detener un contenedor LXC concreto por su CTID"
+      descriptionIT: "Arresta un container LXC specifico tramite CTID"
+      descriptionFR: "Arrêter un conteneur LXC précis par son CTID"
       prompts:
       - question: Container ID (CTID)?
+        questionDE: "Container-ID (CTID)?"
+        questionES: "¿ID del contenedor (CTID)?"
+        questionIT: "ID del container (CTID)?"
+        questionFR: "ID du conteneur (CTID) ?"
         variable: CTID
         type: number
         default: ''
   docker-compose:
     description: Docker Compose multi-container orchestration
+    descriptionDE: "Docker Compose: Steuerung mehrerer Container"
+    descriptionES: "Docker Compose: orquestación multicontenedor"
+    descriptionIT: "Docker Compose: orchestrazione multi-container"
+    descriptionFR: "Docker Compose : orchestration multi-conteneurs"
     category: Container & Virtualization
     file: docker-compose.sh
     sudo:
@@ -850,22 +1683,46 @@ scripts:
     - name: install
       parameter: install
       description: Install Docker Compose
+      descriptionDE: "Docker Compose installieren"
+      descriptionES: "Instalar Docker Compose"
+      descriptionIT: "Installa Docker Compose"
+      descriptionFR: "Installer Docker Compose"
     - name: update
       parameter: update
       description: Update Docker Compose
+      descriptionDE: "Docker Compose aktualisieren"
+      descriptionES: "Actualizar Docker Compose"
+      descriptionIT: "Aggiorna Docker Compose"
+      descriptionFR: "Mettre à jour Docker Compose"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Docker Compose
+      descriptionDE: "Docker Compose deinstallieren"
+      descriptionES: "Desinstalar Docker Compose"
+      descriptionIT: "Disinstalla Docker Compose"
+      descriptionFR: "Désinstaller Docker Compose"
       prompts:
       - question: Are you sure you want to uninstall Docker Compose? (yes/no)
+        questionDE: "Docker Compose wirklich deinstallieren? (yes/no)"
+        questionES: "¿Seguro que desea desinstalar Docker Compose? (yes/no)"
+        questionIT: "Disinstallare davvero Docker Compose? (yes/no)"
+        questionFR: "Voulez-vous vraiment désinstaller Docker Compose ? (yes/no)"
         variable: CONFIRM
         type: yes/no
         default: 'no'
     - name: config
       parameter: config
       description: Show Docker Compose info
+      descriptionDE: "Infos zu Docker Compose anzeigen"
+      descriptionES: "Mostrar información de Docker Compose"
+      descriptionIT: "Mostra informazioni su Docker Compose"
+      descriptionFR: "Afficher les informations de Docker Compose"
   nodejs:
     description: Node.js runtime and npm
+    descriptionDE: "Node.js-Laufzeitumgebung und npm"
+    descriptionES: "Entorno de ejecución de Node.js y npm"
+    descriptionIT: "Ambiente di esecuzione Node.js e npm"
+    descriptionFR: "Environnement d'exécution Node.js et npm"
     category: Programming Languages
     file: nodejs.sh
     os_family:
@@ -878,14 +1735,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Node.js
+      descriptionDE: "Node.js installieren"
+      descriptionES: "Instalar Node.js"
+      descriptionIT: "Installa Node.js"
+      descriptionFR: "Installer Node.js"
     - name: update
       parameter: update
       description: Update Node.js
+      descriptionDE: "Node.js aktualisieren"
+      descriptionES: "Actualizar Node.js"
+      descriptionIT: "Aggiorna Node.js"
+      descriptionFR: "Mettre à jour Node.js"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Node.js
+      descriptionDE: "Node.js deinstallieren"
+      descriptionES: "Desinstalar Node.js"
+      descriptionIT: "Disinstalla Node.js"
+      descriptionFR: "Désinstaller Node.js"
   python:
     description: Python 3 runtime and pip
+    descriptionDE: "Python-3-Laufzeitumgebung und pip"
+    descriptionES: "Entorno de ejecución de Python 3 y pip"
+    descriptionIT: "Ambiente di esecuzione Python 3 e pip"
+    descriptionFR: "Environnement d'exécution Python 3 et pip"
     category: Programming Languages
     file: python.sh
     os_family:
@@ -898,14 +1771,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Python
+      descriptionDE: "Python installieren"
+      descriptionES: "Instalar Python"
+      descriptionIT: "Installa Python"
+      descriptionFR: "Installer Python"
     - name: update
       parameter: update
       description: Update Python
+      descriptionDE: "Python aktualisieren"
+      descriptionES: "Actualizar Python"
+      descriptionIT: "Aggiorna Python"
+      descriptionFR: "Mettre à jour Python"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Python
+      descriptionDE: "Python deinstallieren"
+      descriptionES: "Desinstalar Python"
+      descriptionIT: "Disinstalla Python"
+      descriptionFR: "Désinstaller Python"
   ruby:
     description: Ruby runtime and gem
+    descriptionDE: "Ruby-Laufzeitumgebung und gem"
+    descriptionES: "Entorno de ejecución de Ruby y gem"
+    descriptionIT: "Ambiente di esecuzione Ruby e gem"
+    descriptionFR: "Environnement d'exécution Ruby et gem"
     category: Programming Languages
     file: ruby.sh
     os_family:
@@ -918,14 +1807,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Ruby
+      descriptionDE: "Ruby installieren"
+      descriptionES: "Instalar Ruby"
+      descriptionIT: "Installa Ruby"
+      descriptionFR: "Installer Ruby"
     - name: update
       parameter: update
       description: Update Ruby
+      descriptionDE: "Ruby aktualisieren"
+      descriptionES: "Actualizar Ruby"
+      descriptionIT: "Aggiorna Ruby"
+      descriptionFR: "Mettre à jour Ruby"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Ruby
+      descriptionDE: "Ruby deinstallieren"
+      descriptionES: "Desinstalar Ruby"
+      descriptionIT: "Disinstalla Ruby"
+      descriptionFR: "Désinstaller Ruby"
   golang:
     description: Go programming language
+    descriptionDE: "Programmiersprache Go"
+    descriptionES: "Lenguaje de programación Go"
+    descriptionIT: "Linguaggio di programmazione Go"
+    descriptionFR: "Langage de programmation Go"
     category: Programming Languages
     file: golang.sh
     os_family:
@@ -938,14 +1843,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Go
+      descriptionDE: "Go installieren"
+      descriptionES: "Instalar Go"
+      descriptionIT: "Installa Go"
+      descriptionFR: "Installer Go"
     - name: update
       parameter: update
       description: Update Go
+      descriptionDE: "Go aktualisieren"
+      descriptionES: "Actualizar Go"
+      descriptionIT: "Aggiorna Go"
+      descriptionFR: "Mettre à jour Go"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Go
+      descriptionDE: "Go deinstallieren"
+      descriptionES: "Desinstalar Go"
+      descriptionIT: "Disinstalla Go"
+      descriptionFR: "Désinstaller Go"
   php:
     description: PHP runtime and CLI
+    descriptionDE: "PHP-Laufzeitumgebung und CLI"
+    descriptionES: "Entorno de ejecución de PHP y CLI"
+    descriptionIT: "Ambiente di esecuzione PHP e CLI"
+    descriptionFR: "Environnement d'exécution PHP et CLI"
     category: Programming Languages
     file: php.sh
     os_family:
@@ -958,14 +1879,30 @@ scripts:
     - name: install
       parameter: install
       description: Install PHP
+      descriptionDE: "PHP installieren"
+      descriptionES: "Instalar PHP"
+      descriptionIT: "Installa PHP"
+      descriptionFR: "Installer PHP"
     - name: update
       parameter: update
       description: Update PHP
+      descriptionDE: "PHP aktualisieren"
+      descriptionES: "Actualizar PHP"
+      descriptionIT: "Aggiorna PHP"
+      descriptionFR: "Mettre à jour PHP"
     - name: uninstall
       parameter: uninstall
       description: Uninstall PHP
+      descriptionDE: "PHP deinstallieren"
+      descriptionES: "Desinstalar PHP"
+      descriptionIT: "Disinstalla PHP"
+      descriptionFR: "Désinstaller PHP"
   perl:
     description: Perl runtime and modules
+    descriptionDE: "Perl-Laufzeitumgebung und Module"
+    descriptionES: "Entorno de ejecución de Perl y módulos"
+    descriptionIT: "Ambiente di esecuzione Perl e moduli"
+    descriptionFR: "Environnement d'exécution Perl et modules"
     category: Programming Languages
     file: perl.sh
     os_family:
@@ -978,14 +1915,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Perl
+      descriptionDE: "Perl installieren"
+      descriptionES: "Instalar Perl"
+      descriptionIT: "Installa Perl"
+      descriptionFR: "Installer Perl"
     - name: update
       parameter: update
       description: Update Perl
+      descriptionDE: "Perl aktualisieren"
+      descriptionES: "Actualizar Perl"
+      descriptionIT: "Aggiorna Perl"
+      descriptionFR: "Mettre à jour Perl"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Perl
+      descriptionDE: "Perl deinstallieren"
+      descriptionES: "Desinstalar Perl"
+      descriptionIT: "Disinstalla Perl"
+      descriptionFR: "Désinstaller Perl"
   rsyslog:
     description: System logging daemon
+    descriptionDE: "Dienst für Systemprotokolle"
+    descriptionES: "Servicio de registro del sistema"
+    descriptionIT: "Servizio di log di sistema"
+    descriptionFR: "Service de journalisation système"
     category: Monitoring & Logging
     file: rsyslog.sh
     sudo:
@@ -999,17 +1952,37 @@ scripts:
     - name: install
       parameter: install
       description: Install rsyslog
+      descriptionDE: "rsyslog installieren"
+      descriptionES: "Instalar rsyslog"
+      descriptionIT: "Installa rsyslog"
+      descriptionFR: "Installer rsyslog"
     - name: update
       parameter: update
       description: Update rsyslog
+      descriptionDE: "rsyslog aktualisieren"
+      descriptionES: "Actualizar rsyslog"
+      descriptionIT: "Aggiorna rsyslog"
+      descriptionFR: "Mettre à jour rsyslog"
     - name: uninstall
       parameter: uninstall
       description: Uninstall rsyslog
+      descriptionDE: "rsyslog deinstallieren"
+      descriptionES: "Desinstalar rsyslog"
+      descriptionIT: "Disinstalla rsyslog"
+      descriptionFR: "Désinstaller rsyslog"
     - name: config
       parameter: config
       description: Configure rsyslog
+      descriptionDE: "rsyslog konfigurieren"
+      descriptionES: "Configurar rsyslog"
+      descriptionIT: "Configura rsyslog"
+      descriptionFR: "Configurer rsyslog"
   syslog-ng:
     description: Advanced system logging
+    descriptionDE: "Erweiterte Systemprotokollierung"
+    descriptionES: "Registro avanzado del sistema"
+    descriptionIT: "Logging di sistema avanzato"
+    descriptionFR: "Journalisation système avancée"
     category: Monitoring & Logging
     file: syslog-ng.sh
     sudo:
@@ -1023,17 +1996,37 @@ scripts:
     - name: install
       parameter: install
       description: Install syslog-ng
+      descriptionDE: "syslog-ng installieren"
+      descriptionES: "Instalar syslog-ng"
+      descriptionIT: "Installa syslog-ng"
+      descriptionFR: "Installer syslog-ng"
     - name: update
       parameter: update
       description: Update syslog-ng
+      descriptionDE: "syslog-ng aktualisieren"
+      descriptionES: "Actualizar syslog-ng"
+      descriptionIT: "Aggiorna syslog-ng"
+      descriptionFR: "Mettre à jour syslog-ng"
     - name: uninstall
       parameter: uninstall
       description: Uninstall syslog-ng
+      descriptionDE: "syslog-ng deinstallieren"
+      descriptionES: "Desinstalar syslog-ng"
+      descriptionIT: "Disinstalla syslog-ng"
+      descriptionFR: "Désinstaller syslog-ng"
     - name: config
       parameter: config
       description: Configure syslog-ng
+      descriptionDE: "syslog-ng konfigurieren"
+      descriptionES: "Configurar syslog-ng"
+      descriptionIT: "Configura syslog-ng"
+      descriptionFR: "Configurer syslog-ng"
   fail2ban:
     description: Brute-force attack protection
+    descriptionDE: "Schutz vor Brute-Force-Angriffen"
+    descriptionES: "Protección contra ataques de fuerza bruta"
+    descriptionIT: "Protezione dagli attacchi di forza bruta"
+    descriptionFR: "Protection contre les attaques par force brute"
     category: Monitoring & Logging
     file: fail2ban.sh
     sudo:
@@ -1047,17 +2040,37 @@ scripts:
     - name: install
       parameter: install
       description: Install fail2ban
+      descriptionDE: "fail2ban installieren"
+      descriptionES: "Instalar fail2ban"
+      descriptionIT: "Installa fail2ban"
+      descriptionFR: "Installer fail2ban"
     - name: update
       parameter: update
       description: Update fail2ban
+      descriptionDE: "fail2ban aktualisieren"
+      descriptionES: "Actualizar fail2ban"
+      descriptionIT: "Aggiorna fail2ban"
+      descriptionFR: "Mettre à jour fail2ban"
     - name: uninstall
       parameter: uninstall
       description: Uninstall fail2ban
+      descriptionDE: "fail2ban deinstallieren"
+      descriptionES: "Desinstalar fail2ban"
+      descriptionIT: "Disinstalla fail2ban"
+      descriptionFR: "Désinstaller fail2ban"
     - name: config
       parameter: config
       description: Configure fail2ban
+      descriptionDE: "fail2ban konfigurieren"
+      descriptionES: "Configurar fail2ban"
+      descriptionIT: "Configura fail2ban"
+      descriptionFR: "Configurer fail2ban"
   logrotate:
     description: Log rotation utility
+    descriptionDE: "Werkzeug zur Log-Rotation"
+    descriptionES: "Utilidad de rotación de registros"
+    descriptionIT: "Strumento di rotazione dei log"
+    descriptionFR: "Outil de rotation des journaux"
     category: Monitoring & Logging
     file: logrotate.sh
     sudo:
@@ -1071,17 +2084,37 @@ scripts:
     - name: install
       parameter: install
       description: Install logrotate
+      descriptionDE: "logrotate installieren"
+      descriptionES: "Instalar logrotate"
+      descriptionIT: "Installa logrotate"
+      descriptionFR: "Installer logrotate"
     - name: update
       parameter: update
       description: Update logrotate
+      descriptionDE: "logrotate aktualisieren"
+      descriptionES: "Actualizar logrotate"
+      descriptionIT: "Aggiorna logrotate"
+      descriptionFR: "Mettre à jour logrotate"
     - name: uninstall
       parameter: uninstall
       description: Uninstall logrotate
+      descriptionDE: "logrotate deinstallieren"
+      descriptionES: "Desinstalar logrotate"
+      descriptionIT: "Disinstalla logrotate"
+      descriptionFR: "Désinstaller logrotate"
     - name: config
       parameter: config
       description: Configure logrotate
+      descriptionDE: "logrotate konfigurieren"
+      descriptionES: "Configurar logrotate"
+      descriptionIT: "Configura logrotate"
+      descriptionFR: "Configurer logrotate"
   bind-utils:
     description: DNS tools (dig, nslookup, host)
+    descriptionDE: "DNS-Werkzeuge (dig, nslookup, host)"
+    descriptionES: "Herramientas de DNS (dig, nslookup, host)"
+    descriptionIT: "Strumenti DNS (dig, nslookup, host)"
+    descriptionFR: "Outils DNS (dig, nslookup, host)"
     category: Networking
     file: bind-utils.sh
     os_family:
@@ -1094,17 +2127,37 @@ scripts:
     - name: install
       parameter: install
       description: Install bind-utils
+      descriptionDE: "bind-utils installieren"
+      descriptionES: "Instalar bind-utils"
+      descriptionIT: "Installa bind-utils"
+      descriptionFR: "Installer bind-utils"
     - name: update
       parameter: update
       description: Update bind-utils
+      descriptionDE: "bind-utils aktualisieren"
+      descriptionES: "Actualizar bind-utils"
+      descriptionIT: "Aggiorna bind-utils"
+      descriptionFR: "Mettre à jour bind-utils"
     - name: uninstall
       parameter: uninstall
       description: Uninstall bind-utils
+      descriptionDE: "bind-utils deinstallieren"
+      descriptionES: "Desinstalar bind-utils"
+      descriptionIT: "Disinstalla bind-utils"
+      descriptionFR: "Désinstaller bind-utils"
     - name: config
       parameter: config
       description: DNS tools info
+      descriptionDE: "Infos zu den DNS-Werkzeugen"
+      descriptionES: "Información sobre las herramientas de DNS"
+      descriptionIT: "Informazioni sugli strumenti DNS"
+      descriptionFR: "Informations sur les outils DNS"
   wireguard:
     description: Modern VPN protocol
+    descriptionDE: "Modernes VPN-Protokoll"
+    descriptionES: "Protocolo VPN moderno"
+    descriptionIT: "Protocollo VPN moderno"
+    descriptionFR: "Protocole VPN moderne"
     category: Networking
     file: wireguard.sh
     sudo:
@@ -1118,17 +2171,37 @@ scripts:
     - name: install
       parameter: install
       description: Install WireGuard
+      descriptionDE: "WireGuard installieren"
+      descriptionES: "Instalar WireGuard"
+      descriptionIT: "Installa WireGuard"
+      descriptionFR: "Installer WireGuard"
     - name: update
       parameter: update
       description: Update WireGuard
+      descriptionDE: "WireGuard aktualisieren"
+      descriptionES: "Actualizar WireGuard"
+      descriptionIT: "Aggiorna WireGuard"
+      descriptionFR: "Mettre à jour WireGuard"
     - name: uninstall
       parameter: uninstall
       description: Uninstall WireGuard
+      descriptionDE: "WireGuard deinstallieren"
+      descriptionES: "Desinstalar WireGuard"
+      descriptionIT: "Disinstalla WireGuard"
+      descriptionFR: "Désinstaller WireGuard"
     - name: config
       parameter: config
       description: Configure WireGuard
+      descriptionDE: "WireGuard konfigurieren"
+      descriptionES: "Configurar WireGuard"
+      descriptionIT: "Configura WireGuard"
+      descriptionFR: "Configurer WireGuard"
   openvpn:
     description: OpenVPN tunneling protocol
+    descriptionDE: "OpenVPN-Tunnelprotokoll"
+    descriptionES: "Protocolo de túnel OpenVPN"
+    descriptionIT: "Protocollo di tunneling OpenVPN"
+    descriptionFR: "Protocole de tunnel OpenVPN"
     category: Networking
     file: openvpn.sh
     sudo:
@@ -1142,17 +2215,37 @@ scripts:
     - name: install
       parameter: install
       description: Install OpenVPN
+      descriptionDE: "OpenVPN installieren"
+      descriptionES: "Instalar OpenVPN"
+      descriptionIT: "Installa OpenVPN"
+      descriptionFR: "Installer OpenVPN"
     - name: update
       parameter: update
       description: Update OpenVPN
+      descriptionDE: "OpenVPN aktualisieren"
+      descriptionES: "Actualizar OpenVPN"
+      descriptionIT: "Aggiorna OpenVPN"
+      descriptionFR: "Mettre à jour OpenVPN"
     - name: uninstall
       parameter: uninstall
       description: Uninstall OpenVPN
+      descriptionDE: "OpenVPN deinstallieren"
+      descriptionES: "Desinstalar OpenVPN"
+      descriptionIT: "Disinstalla OpenVPN"
+      descriptionFR: "Désinstaller OpenVPN"
     - name: config
       parameter: config
       description: Configure OpenVPN
+      descriptionDE: "OpenVPN konfigurieren"
+      descriptionES: "Configurar OpenVPN"
+      descriptionIT: "Configura OpenVPN"
+      descriptionFR: "Configurer OpenVPN"
   ufw:
     description: Uncomplicated Firewall
+    descriptionDE: "Einfache Firewall"
+    descriptionES: "Firewall sencillo"
+    descriptionIT: "Firewall semplice"
+    descriptionFR: "Pare-feu simple"
     category: Networking
     file: ufw.sh
     sudo:
@@ -1166,34 +2259,74 @@ scripts:
     - name: install
       parameter: install
       description: Install firewall
+      descriptionDE: "Firewall installieren"
+      descriptionES: "Instalar el firewall"
+      descriptionIT: "Installa il firewall"
+      descriptionFR: "Installer le pare-feu"
     - name: update
       parameter: update
       description: Update firewall
+      descriptionDE: "Firewall aktualisieren"
+      descriptionES: "Actualizar el firewall"
+      descriptionIT: "Aggiorna il firewall"
+      descriptionFR: "Mettre à jour le pare-feu"
     - name: uninstall
       parameter: uninstall
       description: Uninstall firewall
+      descriptionDE: "Firewall deinstallieren"
+      descriptionES: "Desinstalar el firewall"
+      descriptionIT: "Disinstalla il firewall"
+      descriptionFR: "Désinstaller le pare-feu"
     - name: enable
       parameter: enable
       description: Enable firewall
+      descriptionDE: "Firewall aktivieren"
+      descriptionES: "Activar el firewall"
+      descriptionIT: "Attiva il firewall"
+      descriptionFR: "Activer le pare-feu"
     - name: disable
       parameter: disable
       description: Disable firewall
+      descriptionDE: "Firewall deaktivieren"
+      descriptionES: "Desactivar el firewall"
+      descriptionIT: "Disattiva il firewall"
+      descriptionFR: "Désactiver le pare-feu"
     - name: config
       parameter: config
       description: Manage firewall rules interactively
+      descriptionDE: "Firewall-Regeln interaktiv verwalten"
+      descriptionES: "Gestionar las reglas del firewall de forma interactiva"
+      descriptionIT: "Gestisci le regole del firewall in modo interattivo"
+      descriptionFR: "Gérer les règles du pare-feu de façon interactive"
     - name: status
       parameter: status
       description: Show firewall status
+      descriptionDE: "Status der Firewall anzeigen"
+      descriptionES: "Mostrar el estado del firewall"
+      descriptionIT: "Mostra lo stato del firewall"
+      descriptionFR: "Afficher l'état du pare-feu"
     - name: reset
       parameter: reset
       description: Reset firewall to defaults
+      descriptionDE: "Firewall auf Standardwerte zurücksetzen"
+      descriptionES: "Restablecer el firewall a los valores predeterminados"
+      descriptionIT: "Ripristina il firewall alle impostazioni predefinite"
+      descriptionFR: "Réinitialiser le pare-feu aux valeurs par défaut"
       prompts:
       - question: Are you sure? This will reset all UFW rules (yes/no)
+        questionDE: "Wirklich fortfahren? Alle UFW-Regeln werden zurückgesetzt (yes/no)"
+        questionES: "¿Seguro que desea continuar? Se restablecerán todas las reglas de UFW (yes/no)"
+        questionIT: "Continuare davvero? Tutte le regole UFW verranno reimpostate (yes/no)"
+        questionFR: "Continuer vraiment ? Toutes les règles UFW seront réinitialisées (yes/no)"
         variable: CONFIRM
         type: yes/no
         default: 'no'
   pihole:
     description: Pi-hole DNS ad-blocking service
+    descriptionDE: "Pi-hole, Werbeblocker per DNS"
+    descriptionES: "Pi-hole, bloqueador de anuncios por DNS"
+    descriptionIT: "Pi-hole, blocco della pubblicità via DNS"
+    descriptionFR: "Pi-hole, bloqueur de publicités par DNS"
     category: Networking
     file: pihole.sh
     sudo:
@@ -1207,26 +2340,54 @@ scripts:
     - name: install
       parameter: install
       description: Install Pi-hole
+      descriptionDE: "Pi-hole installieren"
+      descriptionES: "Instalar Pi-hole"
+      descriptionIT: "Installa Pi-hole"
+      descriptionFR: "Installer Pi-hole"
     - name: update
       parameter: update
       description: Update Pi-hole
+      descriptionDE: "Pi-hole aktualisieren"
+      descriptionES: "Actualizar Pi-hole"
+      descriptionIT: "Aggiorna Pi-hole"
+      descriptionFR: "Mettre à jour Pi-hole"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Pi-hole
+      descriptionDE: "Pi-hole deinstallieren"
+      descriptionES: "Desinstalar Pi-hole"
+      descriptionIT: "Disinstalla Pi-hole"
+      descriptionFR: "Désinstaller Pi-hole"
       prompts:
       - question: Are you sure you want to uninstall Pi-hole? (yes/no)
+        questionDE: "Pi-hole wirklich deinstallieren? (yes/no)"
+        questionES: "¿Seguro que desea desinstalar Pi-hole? (yes/no)"
+        questionIT: "Disinstallare davvero Pi-hole? (yes/no)"
+        questionFR: "Désinstaller vraiment Pi-hole ? (yes/no)"
         variable: CONFIRM
         type: yes/no
         default: 'no'
       - question: Keep Pi-hole configuration and data? (yes/no)
+        questionDE: "Konfiguration und Daten von Pi-hole behalten? (yes/no)"
+        questionES: "¿Conservar la configuración y los datos de Pi-hole? (yes/no)"
+        questionIT: "Mantenere la configurazione e i dati di Pi-hole? (yes/no)"
+        questionFR: "Conserver la configuration et les données de Pi-hole ? (yes/no)"
         variable: KEEP_CONFIG
         type: yes/no
         default: 'yes'
     - name: config
       parameter: config
       description: Show Pi-hole configuration info
+      descriptionDE: "Infos zur Konfiguration von Pi-hole anzeigen"
+      descriptionES: "Mostrar información de la configuración de Pi-hole"
+      descriptionIT: "Mostra informazioni sulla configurazione di Pi-hole"
+      descriptionFR: "Afficher les informations de configuration de Pi-hole"
   adguard-home:
     description: AdGuard Home DNS ad-blocking service
+    descriptionDE: "AdGuard Home, Werbeblocker per DNS"
+    descriptionES: "AdGuard Home, bloqueador de anuncios por DNS"
+    descriptionIT: "AdGuard Home, blocco della pubblicità via DNS"
+    descriptionFR: "AdGuard Home, bloqueur de publicités par DNS"
     category: Networking
     file: adguard-home.sh
     sudo:
@@ -1240,34 +2401,70 @@ scripts:
     - name: install
       parameter: install
       description: Install AdGuard Home
+      descriptionDE: "AdGuard Home installieren"
+      descriptionES: "Instalar AdGuard Home"
+      descriptionIT: "Installa AdGuard Home"
+      descriptionFR: "Installer AdGuard Home"
     - name: update
       parameter: update
       description: Update AdGuard Home
+      descriptionDE: "AdGuard Home aktualisieren"
+      descriptionES: "Actualizar AdGuard Home"
+      descriptionIT: "Aggiorna AdGuard Home"
+      descriptionFR: "Mettre à jour AdGuard Home"
     - name: uninstall
       parameter: uninstall
       description: Uninstall AdGuard Home
+      descriptionDE: "AdGuard Home deinstallieren"
+      descriptionES: "Desinstalar AdGuard Home"
+      descriptionIT: "Disinstalla AdGuard Home"
+      descriptionFR: "Désinstaller AdGuard Home"
       prompts:
       - question: Are you sure you want to uninstall AdGuard Home? (yes/no)
+        questionDE: "AdGuard Home wirklich deinstallieren? (yes/no)"
+        questionES: "¿Seguro que desea desinstalar AdGuard Home? (yes/no)"
+        questionIT: "Disinstallare davvero AdGuard Home? (yes/no)"
+        questionFR: "Désinstaller vraiment AdGuard Home ? (yes/no)"
         variable: CONFIRM
         type: yes/no
         default: 'no'
       - question: Keep AdGuard Home configuration? (yes/no)
+        questionDE: "Konfiguration von AdGuard Home behalten? (yes/no)"
+        questionES: "¿Conservar la configuración de AdGuard Home? (yes/no)"
+        questionIT: "Mantenere la configurazione di AdGuard Home? (yes/no)"
+        questionFR: "Conserver la configuration d'AdGuard Home ? (yes/no)"
         variable: KEEP_CONFIG
         type: yes/no
         default: 'yes'
     - name: config
       parameter: config
       description: Show AdGuard Home configuration info
+      descriptionDE: "Infos zur Konfiguration von AdGuard Home anzeigen"
+      descriptionES: "Mostrar información de la configuración de AdGuard Home"
+      descriptionIT: "Mostra informazioni sulla configurazione di AdGuard Home"
+      descriptionFR: "Afficher les informations de configuration d'AdGuard Home"
     - name: dns-check
       parameter: dns-check
       description: Trace hostname through all AGH DNS sources (hosts, rewrites, user_rules, live)
+      descriptionDE: "Hostnamen durch alle DNS-Quellen von AGH verfolgen (hosts, rewrites, user_rules, live)"
+      descriptionES: "Rastrear un nombre de host en todas las fuentes DNS de AGH (hosts, rewrites, user_rules, live)"
+      descriptionIT: "Traccia un nome host in tutte le fonti DNS di AGH (hosts, rewrites, user_rules, live)"
+      descriptionFR: "Tracer un nom d'hôte dans toutes les sources DNS d'AGH (hosts, rewrites, user_rules, live)"
       prompts:
       - question: Hostname to trace? (e.g. ca.mein.lan)
+        questionDE: "Welchen Hostnamen verfolgen? (z. B. ca.mein.lan)"
+        questionES: "¿Nombre de host a rastrear? (p. ej. ca.mein.lan)"
+        questionIT: "Nome host da tracciare? (es. ca.mein.lan)"
+        questionFR: "Nom d'hôte à tracer ? (p. ex. ca.mein.lan)"
         variable: HOSTNAME
         type: text
         default: ''
   samba:
     description: Network file sharing with Samba/SMB
+    descriptionDE: "Dateifreigabe im Netzwerk mit Samba/SMB"
+    descriptionES: "Compartir archivos en red con Samba/SMB"
+    descriptionIT: "Condivisione di file in rete con Samba/SMB"
+    descriptionFR: "Partage de fichiers en réseau avec Samba/SMB"
     category: Networking
     file: samba.sh
     sudo:
@@ -1281,56 +2478,116 @@ scripts:
     - name: install
       parameter: install
       description: Install Samba
+      descriptionDE: "Samba installieren"
+      descriptionES: "Instalar Samba"
+      descriptionIT: "Installa Samba"
+      descriptionFR: "Installer Samba"
     - name: update
       parameter: update
       description: Update Samba
+      descriptionDE: "Samba aktualisieren"
+      descriptionES: "Actualizar Samba"
+      descriptionIT: "Aggiorna Samba"
+      descriptionFR: "Mettre à jour Samba"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Samba
+      descriptionDE: "Samba deinstallieren"
+      descriptionES: "Desinstalar Samba"
+      descriptionIT: "Disinstalla Samba"
+      descriptionFR: "Désinstaller Samba"
     - name: config
       parameter: config
       description: Configure Samba globally (smb.conf)
+      descriptionDE: "Samba global konfigurieren (smb.conf)"
+      descriptionES: "Configurar Samba globalmente (smb.conf)"
+      descriptionIT: "Configura Samba globalmente (smb.conf)"
+      descriptionFR: "Configurer Samba globalement (smb.conf)"
       prompts:
       - question: Workgroup name
+        questionDE: "Name der Arbeitsgruppe"
+        questionES: "Nombre del grupo de trabajo"
+        questionIT: "Nome del gruppo di lavoro"
+        questionFR: "Nom du groupe de travail"
         variable: WORKGROUP
         type: text
         default: WORKGROUP
       - question: Server description
+        questionDE: "Beschreibung des Servers"
+        questionES: "Descripción del servidor"
+        questionIT: "Descrizione del server"
+        questionFR: "Description du serveur"
         variable: SERVER_DESC
         type: text
         default: Samba Server
       - question: Security mode (user/share/domain)
+        questionDE: "Sicherheitsmodus (user/share/domain)"
+        questionES: "Modo de seguridad (user/share/domain)"
+        questionIT: "Modalità di sicurezza (user/share/domain)"
+        questionFR: "Mode de sécurité (user/share/domain)"
         variable: SECURITY
         type: text
         default: user
       - question: Map to guest (Never/Bad User/Bad Password)
+        questionDE: "Als Gast behandeln (Never/Bad User/Bad Password)"
+        questionES: "Tratar como invitado (Never/Bad User/Bad Password)"
+        questionIT: "Trattare come ospite (Never/Bad User/Bad Password)"
+        questionFR: "Traiter comme invité (Never/Bad User/Bad Password)"
         variable: MAP_GUEST
         type: text
         default: Never
       - question: Guest account
+        questionDE: "Gastkonto"
+        questionES: "Cuenta de invitado"
+        questionIT: "Account ospite"
+        questionFR: "Compte invité"
         variable: GUEST_ACCT
         type: text
         default: nobody
       - question: Enable WINS support? (yes/no)
+        questionDE: "WINS-Unterstützung aktivieren? (yes/no)"
+        questionES: "¿Activar el soporte de WINS? (yes/no)"
+        questionIT: "Attivare il supporto WINS? (yes/no)"
+        questionFR: "Activer la prise en charge de WINS ? (yes/no)"
         variable: WINS
         type: yes/no
         default: 'no'
       - question: Enable hosts lookup? (yes/no)
+        questionDE: "Hostnamen-Auflösung aktivieren? (yes/no)"
+        questionES: "¿Activar la resolución de nombres de host? (yes/no)"
+        questionIT: "Attivare la risoluzione dei nomi host? (yes/no)"
+        questionFR: "Activer la résolution des noms d'hôte ? (yes/no)"
         variable: HOSTS
         type: yes/no
         default: 'yes'
       - question: Logging level (0-10)
+        questionDE: "Protokollierungsstufe (0-10)"
+        questionES: "Nivel de registro (0-10)"
+        questionIT: "Livello di log (0-10)"
+        questionFR: "Niveau de journalisation (0-10)"
         variable: LOG_LEVEL
         type: text
         default: '1'
     - name: add-share
       parameter: add-share
       description: Add new Samba share
+      descriptionDE: "Neue Samba-Freigabe hinzufügen"
+      descriptionES: "Añadir una nueva carpeta compartida de Samba"
+      descriptionIT: "Aggiungi una nuova condivisione Samba"
+      descriptionFR: "Ajouter un nouveau partage Samba"
     - name: smbuser
       parameter: smbuser
       description: Manage Samba users
+      descriptionDE: "Samba-Benutzer verwalten"
+      descriptionES: "Gestionar los usuarios de Samba"
+      descriptionIT: "Gestisci gli utenti Samba"
+      descriptionFR: "Gérer les utilisateurs Samba"
   cifs-utils:
     description: Mount and manage SMB/CIFS network shares
+    descriptionDE: "SMB/CIFS-Freigaben einhängen und verwalten"
+    descriptionES: "Montar y gestionar carpetas compartidas SMB/CIFS"
+    descriptionIT: "Monta e gestisci condivisioni di rete SMB/CIFS"
+    descriptionFR: "Monter et gérer des partages réseau SMB/CIFS"
     category: Networking
     file: cifs-utils.sh
     sudo:
@@ -1344,17 +2601,37 @@ scripts:
     - name: install
       parameter: install
       description: Install cifs-utils
+      descriptionDE: "cifs-utils installieren"
+      descriptionES: "Instalar cifs-utils"
+      descriptionIT: "Installa cifs-utils"
+      descriptionFR: "Installer cifs-utils"
     - name: update
       parameter: update
       description: Update cifs-utils
+      descriptionDE: "cifs-utils aktualisieren"
+      descriptionES: "Actualizar cifs-utils"
+      descriptionIT: "Aggiorna cifs-utils"
+      descriptionFR: "Mettre à jour cifs-utils"
     - name: uninstall
       parameter: uninstall
       description: Uninstall cifs-utils
+      descriptionDE: "cifs-utils deinstallieren"
+      descriptionES: "Desinstalar cifs-utils"
+      descriptionIT: "Disinstalla cifs-utils"
+      descriptionFR: "Désinstaller cifs-utils"
     - name: mountSMB
       parameter: mountSMB
       description: Mount SMB/CIFS network share
+      descriptionDE: "SMB/CIFS-Netzwerkfreigabe einhängen"
+      descriptionES: "Montar una carpeta compartida SMB/CIFS"
+      descriptionIT: "Monta una condivisione di rete SMB/CIFS"
+      descriptionFR: "Monter un partage réseau SMB/CIFS"
   linux:
     description: Network, DNS, users, groups configuration
+    descriptionDE: "Netzwerk, DNS, Benutzer und Gruppen konfigurieren"
+    descriptionES: "Configuración de red, DNS, usuarios y grupos"
+    descriptionIT: "Configurazione di rete, DNS, utenti e gruppi"
+    descriptionFR: "Configuration réseau, DNS, utilisateurs et groupes"
     category: System Management
     file: linux.sh
     sudo:
@@ -1368,107 +2645,215 @@ scripts:
     - name: network
       parameter: network
       description: Configure network interface
+      descriptionDE: "Netzwerkschnittstelle konfigurieren"
+      descriptionES: "Configurar la interfaz de red"
+      descriptionIT: "Configura l'interfaccia di rete"
+      descriptionFR: "Configurer l'interface réseau"
       prompts:
       - question: Interface name (eth0, etc)?
+        questionDE: "Name der Schnittstelle (eth0 usw.)?"
+        questionES: "¿Nombre de la interfaz (eth0, etc.)?"
+        questionIT: "Nome dell'interfaccia (eth0, ecc.)?"
+        questionFR: "Nom de l'interface (eth0, etc.) ?"
         variable: INTERFACE
         type: text
         default: eth0
       - question: Use DHCP? (yes/no)
+        questionDE: "DHCP verwenden? (yes/no)"
+        questionES: "¿Usar DHCP? (yes/no)"
+        questionIT: "Usare DHCP? (yes/no)"
+        questionFR: "Utiliser DHCP ? (yes/no)"
         variable: DHCP_MODE
         type: yes/no
         default: 'yes'
       - question: IP address (if static)?
+        questionDE: "IP-Adresse (falls statisch)?"
+        questionES: "¿Dirección IP (si es estática)?"
+        questionIT: "Indirizzo IP (se statico)?"
+        questionFR: "Adresse IP (si statique) ?"
         variable: IP_ADDRESS
         type: text
         default: ''
       - question: Gateway (if static)?
+        questionDE: "Gateway (falls statisch)?"
+        questionES: "¿Puerta de enlace (si es estática)?"
+        questionIT: "Gateway (se statico)?"
+        questionFR: "Passerelle (si statique) ?"
         variable: GATEWAY
         type: text
         default: ''
     - name: dns
       parameter: dns
       description: Configure DNS
+      descriptionDE: "DNS konfigurieren"
+      descriptionES: "Configurar el DNS"
+      descriptionIT: "Configura il DNS"
+      descriptionFR: "Configurer le DNS"
       prompts:
       - question: DNS server? (e.g., 8.8.8.8)
+        questionDE: "DNS-Server? (z. B. 8.8.8.8)"
+        questionES: "¿Servidor DNS? (p. ej. 8.8.8.8)"
+        questionIT: "Server DNS? (es. 8.8.8.8)"
+        questionFR: "Serveur DNS ? (p. ex. 8.8.8.8)"
         variable: DNS_SERVER
         type: text
         default: 8.8.8.8
     - name: hostname
       parameter: hostname
       description: Set hostname
+      descriptionDE: "Hostnamen festlegen"
+      descriptionES: "Establecer el nombre de host"
+      descriptionIT: "Imposta il nome host"
+      descriptionFR: "Définir le nom d'hôte"
       prompts:
       - question: New hostname?
+        questionDE: "Neuer Hostname?"
+        questionES: "¿Nuevo nombre de host?"
+        questionIT: "Nuovo nome host?"
+        questionFR: "Nouveau nom d'hôte ?"
         variable: HOSTNAME
         type: text
         default: ''
     - name: user-add
       parameter: user-add
       description: Add user account
+      descriptionDE: "Benutzerkonto hinzufügen"
+      descriptionES: "Añadir una cuenta de usuario"
+      descriptionIT: "Aggiungi un account utente"
+      descriptionFR: "Ajouter un compte utilisateur"
       prompts:
       - question: Username?
+        questionDE: "Benutzername?"
+        questionES: "¿Nombre de usuario?"
+        questionIT: "Nome utente?"
+        questionFR: "Nom d'utilisateur ?"
         variable: USERNAME
         type: text
         default: ''
       - question: Shell? (/bin/bash, /bin/sh, etc)
+        questionDE: "Shell? (/bin/bash, /bin/sh usw.)"
+        questionES: "¿Shell? (/bin/bash, /bin/sh, etc.)"
+        questionIT: "Shell? (/bin/bash, /bin/sh, ecc.)"
+        questionFR: "Shell ? (/bin/bash, /bin/sh, etc.)"
         variable: SHELL
         type: text
         default: /bin/bash
     - name: user-delete
       parameter: user-delete
       description: Delete user account
+      descriptionDE: "Benutzerkonto löschen"
+      descriptionES: "Eliminar una cuenta de usuario"
+      descriptionIT: "Elimina un account utente"
+      descriptionFR: "Supprimer un compte utilisateur"
       prompts:
       - question: Username to delete?
+        questionDE: "Welchen Benutzer löschen?"
+        questionES: "¿Nombre del usuario a eliminar?"
+        questionIT: "Nome utente da eliminare?"
+        questionFR: "Nom d'utilisateur à supprimer ?"
         variable: USERNAME
         type: text
         default: ''
     - name: user-password
       parameter: user-password
       description: Change user password
+      descriptionDE: "Benutzerpasswort ändern"
+      descriptionES: "Cambiar la contraseña de un usuario"
+      descriptionIT: "Cambia la password di un utente"
+      descriptionFR: "Changer le mot de passe d'un utilisateur"
       prompts:
       - question: Username?
+        questionDE: "Benutzername?"
+        questionES: "¿Nombre de usuario?"
+        questionIT: "Nome utente?"
+        questionFR: "Nom d'utilisateur ?"
         variable: USERNAME
         type: text
         default: ''
       - question: New password?
+        questionDE: "Neues Passwort?"
+        questionES: "¿Nueva contraseña?"
+        questionIT: "Nuova password?"
+        questionFR: "Nouveau mot de passe ?"
         variable: PASSWORD
         type: text
         default: ''
     - name: group-create
       parameter: group-create
       description: Create user group
+      descriptionDE: "Benutzergruppe erstellen"
+      descriptionES: "Crear un grupo de usuarios"
+      descriptionIT: "Crea un gruppo di utenti"
+      descriptionFR: "Créer un groupe d'utilisateurs"
       prompts:
       - question: Group name?
+        questionDE: "Gruppenname?"
+        questionES: "¿Nombre del grupo?"
+        questionIT: "Nome del gruppo?"
+        questionFR: "Nom du groupe ?"
         variable: GROUPNAME
         type: text
         default: ''
     - name: user-to-group
       parameter: user-to-group
       description: Add user to group
+      descriptionDE: "Benutzer zu einer Gruppe hinzufügen"
+      descriptionES: "Añadir un usuario a un grupo"
+      descriptionIT: "Aggiungi un utente a un gruppo"
+      descriptionFR: "Ajouter un utilisateur à un groupe"
       prompts:
       - question: Username?
+        questionDE: "Benutzername?"
+        questionES: "¿Nombre de usuario?"
+        questionIT: "Nome utente?"
+        questionFR: "Nom d'utilisateur ?"
         variable: USERNAME
         type: text
         default: ''
       - question: Group name?
+        questionDE: "Gruppenname?"
+        questionES: "¿Nombre del grupo?"
+        questionIT: "Nome del gruppo?"
+        questionFR: "Nom du groupe ?"
         variable: GROUPNAME
         type: text
         default: ''
     - name: ca-cert
       parameter: ca-cert
       description: Install CA certificate
+      descriptionDE: "CA-Zertifikat installieren"
+      descriptionES: "Instalar el certificado CA"
+      descriptionIT: "Installa il certificato CA"
+      descriptionFR: "Installer le certificat CA"
       prompts:
       - question: CA server hostname? (e.g., cert.my.lan)
+        questionDE: "Hostname des CA-Servers? (z. B. cert.my.lan)"
+        questionES: "¿Nombre de host del servidor CA? (p. ej. cert.my.lan)"
+        questionIT: "Nome host del server CA? (es. cert.my.lan)"
+        questionFR: "Nom d'hôte du serveur CA ? (p. ex. cert.my.lan)"
         variable: SERVER
         type: text
         default: cert.my.lan
     - name: install-zip
       parameter: install-zip
       description: Install zip and unzip
+      descriptionDE: "zip und unzip installieren"
+      descriptionES: "Instalar zip y unzip"
+      descriptionIT: "Installa zip e unzip"
+      descriptionFR: "Installer zip et unzip"
     - name: uninstall-zip
       parameter: uninstall-zip
       description: Uninstall zip and unzip
+      descriptionDE: "zip und unzip deinstallieren"
+      descriptionES: "Desinstalar zip y unzip"
+      descriptionIT: "Disinstalla zip e unzip"
+      descriptionFR: "Désinstaller zip et unzip"
   ubuntu:
     description: Ubuntu system management
+    descriptionDE: "Ubuntu-Systemverwaltung"
+    descriptionES: "Gestión del sistema Ubuntu"
+    descriptionIT: "Gestione del sistema Ubuntu"
+    descriptionFR: "Gestion du système Ubuntu"
     category: System Management
     file: ubuntu.sh
     sudo:
@@ -1477,19 +2862,39 @@ scripts:
     - name: update
       parameter: update
       description: Update Ubuntu system
+      descriptionDE: "Ubuntu-System aktualisieren"
+      descriptionES: "Actualizar el sistema Ubuntu"
+      descriptionIT: "Aggiorna il sistema Ubuntu"
+      descriptionFR: "Mettre à jour le système Ubuntu"
     - name: pro
       parameter: pro
       description: Attach Ubuntu Pro
+      descriptionDE: "Mit Ubuntu Pro verbinden"
+      descriptionES: "Vincular a Ubuntu Pro"
+      descriptionIT: "Collega a Ubuntu Pro"
+      descriptionFR: "Associer à Ubuntu Pro"
       prompts:
       - question: Ubuntu Pro key?
+        questionDE: "Schlüssel für Ubuntu Pro?"
+        questionES: "¿Clave de Ubuntu Pro?"
+        questionIT: "Chiave di Ubuntu Pro?"
+        questionFR: "Clé Ubuntu Pro ?"
         variable: KEY
         type: text
         default: ''
     - name: detach
       parameter: detach
       description: Detach Ubuntu Pro
+      descriptionDE: "Von Ubuntu Pro trennen"
+      descriptionES: "Desvincular de Ubuntu Pro"
+      descriptionIT: "Scollega da Ubuntu Pro"
+      descriptionFR: "Dissocier d'Ubuntu Pro"
   debian:
     description: Debian system management
+    descriptionDE: "Debian-Systemverwaltung"
+    descriptionES: "Gestión del sistema Debian"
+    descriptionIT: "Gestione del sistema Debian"
+    descriptionFR: "Gestion du système Debian"
     category: System Management
     file: debian.sh
     sudo:
@@ -1498,11 +2903,23 @@ scripts:
     - name: update
       parameter: update
       description: Update Debian system
+      descriptionDE: "Debian-System aktualisieren"
+      descriptionES: "Actualizar el sistema Debian"
+      descriptionIT: "Aggiorna il sistema Debian"
+      descriptionFR: "Mettre à jour le système Debian"
     - name: dist-upgrade
       parameter: dist-upgrade
       description: Distribution upgrade
+      descriptionDE: "Upgrade der Distribution"
+      descriptionES: "Actualización de la distribución"
+      descriptionIT: "Aggiornamento della distribuzione"
+      descriptionFR: "Mise à niveau de la distribution"
   pikvm-v3:
     description: PiKVM v3 appliance management
+    descriptionDE: "Verwaltung des PiKVM-v3-Geräts"
+    descriptionES: "Gestión del dispositivo PiKVM v3"
+    descriptionIT: "Gestione del dispositivo PiKVM v3"
+    descriptionFR: "Gestion de l'appareil PiKVM v3"
     category: System Management
     file: pikvm-v3.sh
     sudo:
@@ -1513,20 +2930,44 @@ scripts:
     - name: update
       parameter: update
       description: Update PiKVM v3
+      descriptionDE: "PiKVM v3 aktualisieren"
+      descriptionES: "Actualizar PiKVM v3"
+      descriptionIT: "Aggiorna PiKVM v3"
+      descriptionFR: "Mettre à jour PiKVM v3"
     - name: mount-iso
       parameter: mount-iso
       description: Mount ISO directory (rw)
+      descriptionDE: "ISO-Verzeichnis einhängen (rw)"
+      descriptionES: "Montar el directorio ISO (rw)"
+      descriptionIT: "Monta la directory ISO (rw)"
+      descriptionFR: "Monter le répertoire ISO (rw)"
     - name: dismount-iso
       parameter: dismount-iso
       description: Dismount ISO directory (ro)
+      descriptionDE: "ISO-Verzeichnis aushängen (ro)"
+      descriptionES: "Desmontar el directorio ISO (ro)"
+      descriptionIT: "Smonta la directory ISO (ro)"
+      descriptionFR: "Démonter le répertoire ISO (ro)"
     - name: oled-enable
       parameter: oled-enable
       description: Enable OLED display
+      descriptionDE: "OLED-Display aktivieren"
+      descriptionES: "Activar la pantalla OLED"
+      descriptionIT: "Attiva il display OLED"
+      descriptionFR: "Activer l'écran OLED"
     - name: vnc-enable
       parameter: vnc-enable
       description: Enable VNC server
+      descriptionDE: "VNC-Server aktivieren"
+      descriptionES: "Activar el servidor VNC"
+      descriptionIT: "Attiva il server VNC"
+      descriptionFR: "Activer le serveur VNC"
   remotely:
     description: Remotely - open-source remote desktop and support software
+    descriptionDE: "Remotely - Open-Source-Fernwartung"
+    descriptionES: "Remotely - asistencia remota de código abierto"
+    descriptionIT: "Remotely - assistenza remota open source"
+    descriptionFR: "Remotely - assistance à distance open source"
     category: System Management
     file: remotely.sh
     sudo:
@@ -1537,48 +2978,96 @@ scripts:
     - name: install
       parameter: install
       description: Install Remotely
+      descriptionDE: "Remotely installieren"
+      descriptionES: "Instalar Remotely"
+      descriptionIT: "Installa Remotely"
+      descriptionFR: "Installer Remotely"
       prompts:
       - question: Remotely Server URL (e.g., http://remotely.example.com:5000)
+        questionDE: "URL des Remotely-Servers (z. B. http://remotely.example.com:5000)"
+        questionES: "URL del servidor de Remotely (p. ej. http://remotely.example.com:5000)"
+        questionIT: "URL del server Remotely (es. http://remotely.example.com:5000)"
+        questionFR: "URL du serveur Remotely (p. ex. http://remotely.example.com:5000)"
         variable: REMOTELY_SERVER
         type: text
         default: ''
       - question: OrganizationID (UUID format)
+        questionDE: "OrganizationID (UUID-Format)"
+        questionES: "OrganizationID (formato UUID)"
+        questionIT: "OrganizationID (formato UUID)"
+        questionFR: "OrganizationID (format UUID)"
         variable: ORGANIZATION_ID
         type: text
         default: ''
     - name: update
       parameter: update
       description: Update Remotely
+      descriptionDE: "Remotely aktualisieren"
+      descriptionES: "Actualizar Remotely"
+      descriptionIT: "Aggiorna Remotely"
+      descriptionFR: "Mettre à jour Remotely"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Remotely
+      descriptionDE: "Remotely deinstallieren"
+      descriptionES: "Desinstalar Remotely"
+      descriptionIT: "Disinstalla Remotely"
+      descriptionFR: "Désinstaller Remotely"
       prompts:
       - question: Are you sure you want to uninstall Remotely? (yes/no)
+        questionDE: "Remotely wirklich deinstallieren? (yes/no)"
+        questionES: "¿Seguro que desea desinstalar Remotely? (yes/no)"
+        questionIT: "Disinstallare davvero Remotely? (yes/no)"
+        questionFR: "Désinstaller vraiment Remotely ? (yes/no)"
         variable: CONFIRM
         type: yes/no
         default: 'no'
       - question: Keep configuration files? (yes/no)
+        questionDE: "Konfigurationsdateien behalten? (yes/no)"
+        questionES: "¿Conservar los archivos de configuración? (yes/no)"
+        questionIT: "Mantenere i file di configurazione? (yes/no)"
+        questionFR: "Conserver les fichiers de configuration ? (yes/no)"
         variable: KEEP_CONFIG
         type: yes/no
         default: 'yes'
       - question: Remove Microsoft package repository? (yes/no)
+        questionDE: "Microsoft-Paketquelle entfernen? (yes/no)"
+        questionES: "¿Eliminar el repositorio de paquetes de Microsoft? (yes/no)"
+        questionIT: "Rimuovere il repository dei pacchetti Microsoft? (yes/no)"
+        questionFR: "Supprimer le dépôt de paquets Microsoft ? (yes/no)"
         variable: REMOVE_REPO
         type: yes/no
         default: 'no'
     - name: config
       parameter: config
       description: Reconfigure Remotely connection settings
+      descriptionDE: "Remotely-Verbindung neu konfigurieren"
+      descriptionES: "Reconfigurar la conexión de Remotely"
+      descriptionIT: "Riconfigura la connessione di Remotely"
+      descriptionFR: "Reconfigurer la connexion de Remotely"
       prompts:
       - question: New Remotely Server URL (press Enter to keep current)
+        questionDE: "Neue URL des Remotely-Servers (Enter = aktuelle behalten)"
+        questionES: "Nueva URL del servidor de Remotely (Enter = mantener la actual)"
+        questionIT: "Nuovo URL del server Remotely (Invio = mantieni quello attuale)"
+        questionFR: "Nouvelle URL du serveur Remotely (Entrée = conserver l'actuelle)"
         variable: NEW_REMOTELY_SERVER
         type: text
         default: ''
       - question: New OrganizationID (press Enter to keep current)
+        questionDE: "Neue OrganizationID (Enter = aktuelle behalten)"
+        questionES: "Nuevo OrganizationID (Enter = mantener el actual)"
+        questionIT: "Nuovo OrganizationID (Invio = mantieni quello attuale)"
+        questionFR: "Nouvel OrganizationID (Entrée = conserver l'actuel)"
         variable: NEW_ORG
         type: text
         default: ''
   spoolman:
     description: Spoolman filament spool management (standalone or Docker)
+    descriptionDE: "Filamentspulen verwalten (standalone oder Docker)"
+    descriptionES: "Gestionar bobinas de filamento (standalone/Docker)"
+    descriptionIT: "Gestione bobine di filamento (standalone o Docker)"
+    descriptionFR: "Gérer les bobines de filament (standalone/Docker)"
     category: System Management
     file: spoolman.sh
     sudo:
@@ -1592,73 +3081,145 @@ scripts:
     - name: install
       parameter: install
       description: Install Spoolman
+      descriptionDE: "Spoolman installieren"
+      descriptionES: "Instalar Spoolman"
+      descriptionIT: "Installa Spoolman"
+      descriptionFR: "Installer Spoolman"
       prompts:
       - question: Install method (standalone or docker)
+        questionDE: "Installationsart (standalone oder docker)"
+        questionES: "Método de instalación (standalone o docker)"
+        questionIT: "Metodo di installazione (standalone o docker)"
+        questionFR: "Méthode d'installation (standalone ou docker)"
         variable: INSTALL_METHOD
         type: text
         default: standalone
       - question: Target user (owner of the installation, empty = current user)
+        questionDE: "Zielbenutzer (Besitzer der Installation, leer = aktueller Benutzer)"
+        questionES: "Usuario de destino (propietario de la instalación, vacío = usuario actual)"
+        questionIT: "Utente di destinazione (proprietario dell'installazione, vuoto = utente attuale)"
+        questionFR: "Utilisateur cible (propriétaire de l'installation, vide = utilisateur actuel)"
         variable: TARGET_USER
         type: text
         default: ''
       - question: Web UI port
+        questionDE: "Port der Weboberfläche"
+        questionES: "Puerto de la interfaz web"
+        questionIT: "Porta dell'interfaccia web"
+        questionFR: "Port de l'interface web"
         variable: SPOOLMAN_PORT
         type: number
         default: '7912'
       - question: Timezone for the Docker container (empty = detect from system)
+        questionDE: "Zeitzone für den Docker-Container (leer = vom System übernehmen)"
+        questionES: "Zona horaria del contenedor Docker (vacío = detectar desde el sistema)"
+        questionIT: "Fuso orario del container Docker (vuoto = rileva dal sistema)"
+        questionFR: "Fuseau horaire du conteneur Docker (vide = détecter depuis le système)"
         variable: SPOOLMAN_TZ
         type: text
         default: ''
     - name: update
       parameter: update
       description: Update Spoolman to the latest release
+      descriptionDE: "Spoolman auf die neueste Version aktualisieren"
+      descriptionES: "Actualizar Spoolman a la última versión"
+      descriptionIT: "Aggiorna Spoolman all'ultima versione"
+      descriptionFR: "Mettre à jour Spoolman vers la dernière version"
       prompts:
       - question: Target user (owner of the installation, empty = current user)
+        questionDE: "Zielbenutzer (Besitzer der Installation, leer = aktueller Benutzer)"
+        questionES: "Usuario de destino (propietario de la instalación, vacío = usuario actual)"
+        questionIT: "Utente di destinazione (proprietario dell'installazione, vuoto = utente attuale)"
+        questionFR: "Utilisateur cible (propriétaire de l'installation, vide = utilisateur actuel)"
         variable: TARGET_USER
         type: text
         default: ''
       - question: Create a backup before updating? (yes/no)
+        questionDE: "Vor dem Aktualisieren ein Backup erstellen? (yes/no)"
+        questionES: "¿Crear una copia de seguridad antes de actualizar? (yes/no)"
+        questionIT: "Creare un backup prima dell'aggiornamento? (yes/no)"
+        questionFR: "Créer une sauvegarde avant la mise à jour ? (yes/no)"
         variable: DO_BACKUP
         type: yes/no
         default: 'yes'
     - name: detect
       parameter: detect
       description: Detect an existing installation (read-only)
+      descriptionDE: "Vorhandene Installation erkennen (nur lesend)"
+      descriptionES: "Detectar una instalación existente (solo lectura)"
+      descriptionIT: "Rileva un'installazione esistente (sola lettura)"
+      descriptionFR: "Détecter une installation existante (lecture seule)"
       prompts:
       - question: Target user (owner of the installation, empty = current user)
+        questionDE: "Zielbenutzer (Besitzer der Installation, leer = aktueller Benutzer)"
+        questionES: "Usuario de destino (propietario de la instalación, vacío = usuario actual)"
+        questionIT: "Utente di destinazione (proprietario dell'installazione, vuoto = utente attuale)"
+        questionFR: "Utilisateur cible (propriétaire de l'installation, vide = utilisateur actuel)"
         variable: TARGET_USER
         type: text
         default: ''
     - name: backup
       parameter: backup
       description: Back up database, .env, units and compose files
+      descriptionDE: "Datenbank, .env, Units und Compose-Dateien sichern"
+      descriptionES: "Respaldar base de datos, .env, units y archivos compose"
+      descriptionIT: "Esegui il backup di database, .env, unit e file compose"
+      descriptionFR: "Sauvegarder base de données, .env, units et fichiers compose"
       prompts:
       - question: Target user (owner of the installation, empty = current user)
+        questionDE: "Zielbenutzer (Besitzer der Installation, leer = aktueller Benutzer)"
+        questionES: "Usuario de destino (propietario de la instalación, vacío = usuario actual)"
+        questionIT: "Utente di destinazione (proprietario dell'installazione, vuoto = utente attuale)"
+        questionFR: "Utilisateur cible (propriétaire de l'installation, vide = utilisateur actuel)"
         variable: TARGET_USER
         type: text
         default: ''
     - name: uninstall
       parameter: uninstall
       description: Uninstall Spoolman (standalone, /opt and Docker)
+      descriptionDE: "Spoolman deinstallieren (standalone, /opt und Docker)"
+      descriptionES: "Desinstalar Spoolman (standalone, /opt y Docker)"
+      descriptionIT: "Disinstalla Spoolman (standalone, /opt e Docker)"
+      descriptionFR: "Désinstaller Spoolman (standalone, /opt et Docker)"
       prompts:
       - question: Target user (owner of the installation, empty = current user)
+        questionDE: "Zielbenutzer (Besitzer der Installation, leer = aktueller Benutzer)"
+        questionES: "Usuario de destino (propietario de la instalación, vacío = usuario actual)"
+        questionIT: "Utente di destinazione (proprietario dell'installazione, vuoto = utente attuale)"
+        questionFR: "Utilisateur cible (propriétaire de l'installation, vide = utilisateur actuel)"
         variable: TARGET_USER
         type: text
         default: ''
       - question: Create a backup before removing? (yes/no)
+        questionDE: "Vor dem Entfernen ein Backup erstellen? (yes/no)"
+        questionES: "¿Crear una copia de seguridad antes de eliminar? (yes/no)"
+        questionIT: "Creare un backup prima della rimozione? (yes/no)"
+        questionFR: "Créer une sauvegarde avant la suppression ? (yes/no)"
         variable: DO_BACKUP
         type: yes/no
         default: 'yes'
       - question: Also delete database and data directories? (yes/no)
+        questionDE: "Auch Datenbank und Datenverzeichnisse löschen? (yes/no)"
+        questionES: "¿Eliminar también la base de datos y los directorios de datos? (yes/no)"
+        questionIT: "Eliminare anche il database e le directory dei dati? (yes/no)"
+        questionFR: "Supprimer aussi la base de données et les répertoires de données ? (yes/no)"
         variable: PURGE
         type: yes/no
         default: 'no'
       - question: Comment out [spoolman] sections in moonraker.conf? (yes/no)
+        questionDE: "Abschnitte [spoolman] in moonraker.conf auskommentieren? (yes/no)"
+        questionES: "¿Comentar las secciones [spoolman] en moonraker.conf? (yes/no)"
+        questionIT: "Commentare le sezioni [spoolman] in moonraker.conf? (yes/no)"
+        questionFR: "Mettre en commentaire les sections [spoolman] de moonraker.conf ? (yes/no)"
         variable: CLEAN_MOONRAKER
         type: yes/no
         default: 'no'
   tigervnc:
     description: TigerVNC remote desktop server
+    descriptionDE: "TigerVNC-Server für Remote-Desktop"
+    descriptionES: "Servidor de escritorio remoto TigerVNC"
+    descriptionIT: "Server di desktop remoto TigerVNC"
+    descriptionFR: "Serveur de bureau à distance TigerVNC"
     category: System Management
     file: tigervnc.sh
     sudo:
@@ -1672,34 +3233,70 @@ scripts:
     - name: install
       parameter: install
       description: Install TigerVNC
+      descriptionDE: "TigerVNC installieren"
+      descriptionES: "Instalar TigerVNC"
+      descriptionIT: "Installa TigerVNC"
+      descriptionFR: "Installer TigerVNC"
     - name: update
       parameter: update
       description: Update TigerVNC
+      descriptionDE: "TigerVNC aktualisieren"
+      descriptionES: "Actualizar TigerVNC"
+      descriptionIT: "Aggiorna TigerVNC"
+      descriptionFR: "Mettre à jour TigerVNC"
     - name: uninstall
       parameter: uninstall
       description: Uninstall TigerVNC
+      descriptionDE: "TigerVNC deinstallieren"
+      descriptionES: "Desinstalar TigerVNC"
+      descriptionIT: "Disinstalla TigerVNC"
+      descriptionFR: "Désinstaller TigerVNC"
     - name: config
       parameter: config
       description: Configure TigerVNC server
+      descriptionDE: "TigerVNC-Server konfigurieren"
+      descriptionES: "Configurar el servidor TigerVNC"
+      descriptionIT: "Configura il server TigerVNC"
+      descriptionFR: "Configurer le serveur TigerVNC"
       prompts:
       - question: VNC display number (e.g., 1 for :1, default 1)
+        questionDE: "Nummer des VNC-Displays (z. B. 1 für :1, Standard 1)"
+        questionES: "Número de pantalla VNC (p. ej. 1 para :1, por defecto 1)"
+        questionIT: "Numero del display VNC (es. 1 per :1, predefinito 1)"
+        questionFR: "Numéro d'affichage VNC (p. ex. 1 pour :1, par défaut 1)"
         variable: VNC_DISPLAY
         type: number
         default: '1'
       - question: VNC username (which user runs the server)
+        questionDE: "VNC-Benutzername (Benutzer, unter dem der Server läuft)"
+        questionES: "Nombre de usuario VNC (el usuario que ejecuta el servidor)"
+        questionIT: "Nome utente VNC (l'utente che esegue il server)"
+        questionFR: "Nom d'utilisateur VNC (l'utilisateur qui exécute le serveur)"
         variable: VNC_USER
         type: text
         default: ''
       - question: Screen resolution (e.g., 1920x1080)
+        questionDE: "Bildschirmauflösung (z. B. 1920x1080)"
+        questionES: "Resolución de pantalla (p. ej. 1920x1080)"
+        questionIT: "Risoluzione dello schermo (es. 1920x1080)"
+        questionFR: "Résolution d'écran (p. ex. 1920x1080)"
         variable: VNC_GEOMETRY
         type: text
         default: '1920x1080'
       - question: Desktop session (lxde, kde, gnome, xfce, etc., empty for default)
+        questionDE: "Desktop-Sitzung (lxde, kde, gnome, xfce usw., leer = Standard)"
+        questionES: "Sesión de escritorio (lxde, kde, gnome, xfce, etc., vacío = predeterminada)"
+        questionIT: "Sessione desktop (lxde, kde, gnome, xfce, ecc., vuoto = predefinita)"
+        questionFR: "Session de bureau (lxde, kde, gnome, xfce, etc., vide = par défaut)"
         variable: VNC_SESSION
         type: text
         default: ''
   borgbackup:
     description: Backup and archival tool
+    descriptionDE: "Werkzeug für Backups und Archivierung"
+    descriptionES: "Herramienta de copias de seguridad y archivado"
+    descriptionIT: "Strumento di backup e archiviazione"
+    descriptionFR: "Outil de sauvegarde et d'archivage"
     category: Backup & Sync
     file: borgbackup.sh
     os_family:
@@ -1712,14 +3309,30 @@ scripts:
     - name: install
       parameter: install
       description: Install BorgBackup
+      descriptionDE: "BorgBackup installieren"
+      descriptionES: "Instalar BorgBackup"
+      descriptionIT: "Installa BorgBackup"
+      descriptionFR: "Installer BorgBackup"
     - name: update
       parameter: update
       description: Update BorgBackup
+      descriptionDE: "BorgBackup aktualisieren"
+      descriptionES: "Actualizar BorgBackup"
+      descriptionIT: "Aggiorna BorgBackup"
+      descriptionFR: "Mettre à jour BorgBackup"
     - name: uninstall
       parameter: uninstall
       description: Uninstall BorgBackup
+      descriptionDE: "BorgBackup deinstallieren"
+      descriptionES: "Desinstalar BorgBackup"
+      descriptionIT: "Disinstalla BorgBackup"
+      descriptionFR: "Désinstaller BorgBackup"
   bun:
     description: JavaScript runtime and package manager
+    descriptionDE: "JavaScript-Laufzeitumgebung und Paketmanager"
+    descriptionES: "Runtime de JavaScript y gestor de paquetes"
+    descriptionIT: "Runtime JavaScript e gestore di pacchetti"
+    descriptionFR: "Runtime JavaScript et gestionnaire de paquets"
     category: Programming Languages
     file: bun.sh
     os_family:
@@ -1732,14 +3345,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Bun
+      descriptionDE: "Bun installieren"
+      descriptionES: "Instalar Bun"
+      descriptionIT: "Installa Bun"
+      descriptionFR: "Installer Bun"
     - name: update
       parameter: update
       description: Update Bun
+      descriptionDE: "Bun aktualisieren"
+      descriptionES: "Actualizar Bun"
+      descriptionIT: "Aggiorna Bun"
+      descriptionFR: "Mettre à jour Bun"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Bun
+      descriptionDE: "Bun deinstallieren"
+      descriptionES: "Desinstalar Bun"
+      descriptionIT: "Disinstalla Bun"
+      descriptionFR: "Désinstaller Bun"
   cmake:
     description: Build system generator
+    descriptionDE: "Generator für Build-Systeme"
+    descriptionES: "Generador de sistemas de compilación"
+    descriptionIT: "Generatore di sistemi di build"
+    descriptionFR: "Générateur de systèmes de compilation"
     category: Development Tools
     file: cmake.sh
     os_family:
@@ -1752,14 +3381,30 @@ scripts:
     - name: install
       parameter: install
       description: Install CMake
+      descriptionDE: "CMake installieren"
+      descriptionES: "Instalar CMake"
+      descriptionIT: "Installa CMake"
+      descriptionFR: "Installer CMake"
     - name: update
       parameter: update
       description: Update CMake
+      descriptionDE: "CMake aktualisieren"
+      descriptionES: "Actualizar CMake"
+      descriptionIT: "Aggiorna CMake"
+      descriptionFR: "Mettre à jour CMake"
     - name: uninstall
       parameter: uninstall
       description: Uninstall CMake
+      descriptionDE: "CMake deinstallieren"
+      descriptionES: "Desinstalar CMake"
+      descriptionIT: "Disinstalla CMake"
+      descriptionFR: "Désinstaller CMake"
   clamav:
     description: Antivirus engine
+    descriptionDE: "Virenscanner"
+    descriptionES: "Motor antivirus"
+    descriptionIT: "Motore antivirus"
+    descriptionFR: "Moteur antivirus"
     category: System Utilities
     file: clamav.sh
     os_family:
@@ -1772,14 +3417,30 @@ scripts:
     - name: install
       parameter: install
       description: Install ClamAV
+      descriptionDE: "ClamAV installieren"
+      descriptionES: "Instalar ClamAV"
+      descriptionIT: "Installa ClamAV"
+      descriptionFR: "Installer ClamAV"
     - name: update
       parameter: update
       description: Update ClamAV
+      descriptionDE: "ClamAV aktualisieren"
+      descriptionES: "Actualizar ClamAV"
+      descriptionIT: "Aggiorna ClamAV"
+      descriptionFR: "Mettre à jour ClamAV"
     - name: uninstall
       parameter: uninstall
       description: Uninstall ClamAV
+      descriptionDE: "ClamAV deinstallieren"
+      descriptionES: "Desinstalar ClamAV"
+      descriptionIT: "Disinstalla ClamAV"
+      descriptionFR: "Désinstaller ClamAV"
   deno:
     description: JavaScript/TypeScript runtime
+    descriptionDE: "Laufzeitumgebung für JavaScript/TypeScript"
+    descriptionES: "Runtime de JavaScript/TypeScript"
+    descriptionIT: "Runtime JavaScript/TypeScript"
+    descriptionFR: "Runtime JavaScript/TypeScript"
     category: Programming Languages
     file: deno.sh
     os_family:
@@ -1792,14 +3453,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Deno
+      descriptionDE: "Deno installieren"
+      descriptionES: "Instalar Deno"
+      descriptionIT: "Installa Deno"
+      descriptionFR: "Installer Deno"
     - name: update
       parameter: update
       description: Update Deno
+      descriptionDE: "Deno aktualisieren"
+      descriptionES: "Actualizar Deno"
+      descriptionIT: "Aggiorna Deno"
+      descriptionFR: "Mettre à jour Deno"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Deno
+      descriptionDE: "Deno deinstallieren"
+      descriptionES: "Desinstalar Deno"
+      descriptionIT: "Disinstalla Deno"
+      descriptionFR: "Désinstaller Deno"
   emacs:
     description: Advanced text editor
+    descriptionDE: "Leistungsstarker Texteditor"
+    descriptionES: "Editor de texto avanzado"
+    descriptionIT: "Editor di testo avanzato"
+    descriptionFR: "Éditeur de texte avancé"
     category: Text Editors
     file: emacs.sh
     os_family:
@@ -1812,14 +3489,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Emacs
+      descriptionDE: "Emacs installieren"
+      descriptionES: "Instalar Emacs"
+      descriptionIT: "Installa Emacs"
+      descriptionFR: "Installer Emacs"
     - name: update
       parameter: update
       description: Update Emacs
+      descriptionDE: "Emacs aktualisieren"
+      descriptionES: "Actualizar Emacs"
+      descriptionIT: "Aggiorna Emacs"
+      descriptionFR: "Mettre à jour Emacs"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Emacs
+      descriptionDE: "Emacs deinstallieren"
+      descriptionES: "Desinstalar Emacs"
+      descriptionIT: "Disinstalla Emacs"
+      descriptionFR: "Désinstaller Emacs"
   ffmpeg:
     description: Multimedia framework
+    descriptionDE: "Multimedia-Framework"
+    descriptionES: "Framework multimedia"
+    descriptionIT: "Framework multimediale"
+    descriptionFR: "Framework multimédia"
     category: Multimedia
     file: ffmpeg.sh
     os_family:
@@ -1832,14 +3525,30 @@ scripts:
     - name: install
       parameter: install
       description: Install FFmpeg
+      descriptionDE: "FFmpeg installieren"
+      descriptionES: "Instalar FFmpeg"
+      descriptionIT: "Installa FFmpeg"
+      descriptionFR: "Installer FFmpeg"
     - name: update
       parameter: update
       description: Update FFmpeg
+      descriptionDE: "FFmpeg aktualisieren"
+      descriptionES: "Actualizar FFmpeg"
+      descriptionIT: "Aggiorna FFmpeg"
+      descriptionFR: "Mettre à jour FFmpeg"
     - name: uninstall
       parameter: uninstall
       description: Uninstall FFmpeg
+      descriptionDE: "FFmpeg deinstallieren"
+      descriptionES: "Desinstalar FFmpeg"
+      descriptionIT: "Disinstalla FFmpeg"
+      descriptionFR: "Désinstaller FFmpeg"
   firejail:
     description: Application sandboxing
+    descriptionDE: "Sandbox für Programme"
+    descriptionES: "Sandbox para aplicaciones"
+    descriptionIT: "Sandbox per applicazioni"
+    descriptionFR: "Bac à sable pour applications"
     category: Security & Sandboxing
     file: firejail.sh
     os_family:
@@ -1852,14 +3561,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Firejail
+      descriptionDE: "Firejail installieren"
+      descriptionES: "Instalar Firejail"
+      descriptionIT: "Installa Firejail"
+      descriptionFR: "Installer Firejail"
     - name: update
       parameter: update
       description: Update Firejail
+      descriptionDE: "Firejail aktualisieren"
+      descriptionES: "Actualizar Firejail"
+      descriptionIT: "Aggiorna Firejail"
+      descriptionFR: "Mettre à jour Firejail"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Firejail
+      descriptionDE: "Firejail deinstallieren"
+      descriptionES: "Desinstalar Firejail"
+      descriptionIT: "Disinstalla Firejail"
+      descriptionFR: "Désinstaller Firejail"
   fish:
     description: User-friendly shell
+    descriptionDE: "Benutzerfreundliche Shell"
+    descriptionES: "Shell fácil de usar"
+    descriptionIT: "Shell facile da usare"
+    descriptionFR: "Shell facile à utiliser"
     category: Shells & Terminals
     file: fish.sh
     os_family:
@@ -1872,14 +3597,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Fish
+      descriptionDE: "Fish installieren"
+      descriptionES: "Instalar Fish"
+      descriptionIT: "Installa Fish"
+      descriptionFR: "Installer Fish"
     - name: update
       parameter: update
       description: Update Fish
+      descriptionDE: "Fish aktualisieren"
+      descriptionES: "Actualizar Fish"
+      descriptionIT: "Aggiorna Fish"
+      descriptionFR: "Mettre à jour Fish"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Fish
+      descriptionDE: "Fish deinstallieren"
+      descriptionES: "Desinstalar Fish"
+      descriptionIT: "Disinstalla Fish"
+      descriptionFR: "Désinstaller Fish"
   flatpak:
     description: Application containerization
+    descriptionDE: "Programme in Containern"
+    descriptionES: "Aplicaciones en contenedores"
+    descriptionIT: "Applicazioni in container"
+    descriptionFR: "Applications en conteneurs"
     category: Container & Virtualization
     file: flatpak.sh
     os_family:
@@ -1892,14 +3633,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Flatpak
+      descriptionDE: "Flatpak installieren"
+      descriptionES: "Instalar Flatpak"
+      descriptionIT: "Installa Flatpak"
+      descriptionFR: "Installer Flatpak"
     - name: update
       parameter: update
       description: Update Flatpak
+      descriptionDE: "Flatpak aktualisieren"
+      descriptionES: "Actualizar Flatpak"
+      descriptionIT: "Aggiorna Flatpak"
+      descriptionFR: "Mettre à jour Flatpak"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Flatpak
+      descriptionDE: "Flatpak deinstallieren"
+      descriptionES: "Desinstalar Flatpak"
+      descriptionIT: "Disinstalla Flatpak"
+      descriptionFR: "Désinstaller Flatpak"
   gamemode:
     description: Performance optimizer
+    descriptionDE: "Leistungsoptimierer"
+    descriptionES: "Optimizador de rendimiento"
+    descriptionIT: "Ottimizzatore delle prestazioni"
+    descriptionFR: "Optimiseur de performances"
     category: Security & Sandboxing
     file: gamemode.sh
     os_family:
@@ -1912,14 +3669,30 @@ scripts:
     - name: install
       parameter: install
       description: Install GameMode
+      descriptionDE: "GameMode installieren"
+      descriptionES: "Instalar GameMode"
+      descriptionIT: "Installa GameMode"
+      descriptionFR: "Installer GameMode"
     - name: update
       parameter: update
       description: Update GameMode
+      descriptionDE: "GameMode aktualisieren"
+      descriptionES: "Actualizar GameMode"
+      descriptionIT: "Aggiorna GameMode"
+      descriptionFR: "Mettre à jour GameMode"
     - name: uninstall
       parameter: uninstall
       description: Uninstall GameMode
+      descriptionDE: "GameMode deinstallieren"
+      descriptionES: "Desinstalar GameMode"
+      descriptionIT: "Disinstalla GameMode"
+      descriptionFR: "Désinstaller GameMode"
   git-lfs:
     description: Git Large File Storage
+    descriptionDE: "Git-Speicher für große Dateien"
+    descriptionES: "Almacenamiento de archivos grandes para Git"
+    descriptionIT: "Archiviazione di file grandi per Git"
+    descriptionFR: "Stockage de gros fichiers pour Git"
     category: Development Tools
     file: git-lfs.sh
     os_family:
@@ -1932,14 +3705,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Git LFS
+      descriptionDE: "Git LFS installieren"
+      descriptionES: "Instalar Git LFS"
+      descriptionIT: "Installa Git LFS"
+      descriptionFR: "Installer Git LFS"
     - name: update
       parameter: update
       description: Update Git LFS
+      descriptionDE: "Git LFS aktualisieren"
+      descriptionES: "Actualizar Git LFS"
+      descriptionIT: "Aggiorna Git LFS"
+      descriptionFR: "Mettre à jour Git LFS"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Git LFS
+      descriptionDE: "Git LFS deinstallieren"
+      descriptionES: "Desinstalar Git LFS"
+      descriptionIT: "Disinstalla Git LFS"
+      descriptionFR: "Désinstaller Git LFS"
   step-ca:
     description: Private Certificate Authority
+    descriptionDE: "Private Zertifizierungsstelle"
+    descriptionES: "Autoridad de certificación privada"
+    descriptionIT: "Autorità di certificazione privata"
+    descriptionFR: "Autorité de certification privée"
     category: Security & Sandboxing
     file: step-ca.sh
     sudo:
@@ -1953,14 +3742,30 @@ scripts:
     - name: install
       parameter: install
       description: Install step-ca and step-cli
+      descriptionDE: "step-ca und step-cli installieren"
+      descriptionES: "Instalar step-ca y step-cli"
+      descriptionIT: "Installa step-ca e step-cli"
+      descriptionFR: "Installer step-ca et step-cli"
     - name: update
       parameter: update
       description: Update step-ca and step-cli
+      descriptionDE: "step-ca und step-cli aktualisieren"
+      descriptionES: "Actualizar step-ca y step-cli"
+      descriptionIT: "Aggiorna step-ca e step-cli"
+      descriptionFR: "Mettre à jour step-ca et step-cli"
     - name: uninstall
       parameter: uninstall
       description: Uninstall step-ca and step-cli
+      descriptionDE: "step-ca und step-cli deinstallieren"
+      descriptionES: "Desinstalar step-ca y step-cli"
+      descriptionIT: "Disinstalla step-ca e step-cli"
+      descriptionFR: "Désinstaller step-ca et step-cli"
   gnupg:
     description: Encryption and signing
+    descriptionDE: "Verschlüsseln und Signieren"
+    descriptionES: "Cifrado y firma"
+    descriptionIT: "Crittografia e firma"
+    descriptionFR: "Chiffrement et signature"
     category: Security & Sandboxing
     file: gnupg.sh
     os_family:
@@ -1973,14 +3778,30 @@ scripts:
     - name: install
       parameter: install
       description: Install GnuPG
+      descriptionDE: "GnuPG installieren"
+      descriptionES: "Instalar GnuPG"
+      descriptionIT: "Installa GnuPG"
+      descriptionFR: "Installer GnuPG"
     - name: update
       parameter: update
       description: Update GnuPG
+      descriptionDE: "GnuPG aktualisieren"
+      descriptionES: "Actualizar GnuPG"
+      descriptionIT: "Aggiorna GnuPG"
+      descriptionFR: "Mettre à jour GnuPG"
     - name: uninstall
       parameter: uninstall
       description: Uninstall GnuPG
+      descriptionDE: "GnuPG deinstallieren"
+      descriptionES: "Desinstalar GnuPG"
+      descriptionIT: "Disinstalla GnuPG"
+      descriptionFR: "Désinstaller GnuPG"
   helix:
     description: Post-modern text editor
+    descriptionDE: "Postmoderner Texteditor"
+    descriptionES: "Editor de texto posmoderno"
+    descriptionIT: "Editor di testo postmoderno"
+    descriptionFR: "Éditeur de texte postmoderne"
     category: Text Editors
     file: helix.sh
     os_family:
@@ -1993,14 +3814,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Helix
+      descriptionDE: "Helix installieren"
+      descriptionES: "Instalar Helix"
+      descriptionIT: "Installa Helix"
+      descriptionFR: "Installer Helix"
     - name: update
       parameter: update
       description: Update Helix
+      descriptionDE: "Helix aktualisieren"
+      descriptionES: "Actualizar Helix"
+      descriptionIT: "Aggiorna Helix"
+      descriptionFR: "Mettre à jour Helix"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Helix
+      descriptionDE: "Helix deinstallieren"
+      descriptionES: "Desinstalar Helix"
+      descriptionIT: "Disinstalla Helix"
+      descriptionFR: "Désinstaller Helix"
   imhex:
     description: Hex editor and analyzer
+    descriptionDE: "Hex-Editor und Analysewerkzeug"
+    descriptionES: "Editor y analizador hexadecimal"
+    descriptionIT: "Editor e analizzatore esadecimale"
+    descriptionFR: "Éditeur et analyseur hexadécimal"
     category: Development Tools
     file: imhex.sh
     os_family:
@@ -2013,14 +3850,30 @@ scripts:
     - name: install
       parameter: install
       description: Install ImHex
+      descriptionDE: "ImHex installieren"
+      descriptionES: "Instalar ImHex"
+      descriptionIT: "Installa ImHex"
+      descriptionFR: "Installer ImHex"
     - name: update
       parameter: update
       description: Update ImHex
+      descriptionDE: "ImHex aktualisieren"
+      descriptionES: "Actualizar ImHex"
+      descriptionIT: "Aggiorna ImHex"
+      descriptionFR: "Mettre à jour ImHex"
     - name: uninstall
       parameter: uninstall
       description: Uninstall ImHex
+      descriptionDE: "ImHex deinstallieren"
+      descriptionES: "Desinstalar ImHex"
+      descriptionIT: "Disinstalla ImHex"
+      descriptionFR: "Désinstaller ImHex"
   lazygit:
     description: Simple git UI
+    descriptionDE: "Einfache Oberfläche für git"
+    descriptionES: "Interfaz sencilla para git"
+    descriptionIT: "Interfaccia semplice per git"
+    descriptionFR: "Interface simple pour git"
     category: Development Tools
     file: lazygit.sh
     os_family:
@@ -2033,14 +3886,30 @@ scripts:
     - name: install
       parameter: install
       description: Install LazyGit
+      descriptionDE: "LazyGit installieren"
+      descriptionES: "Instalar LazyGit"
+      descriptionIT: "Installa LazyGit"
+      descriptionFR: "Installer LazyGit"
     - name: update
       parameter: update
       description: Update LazyGit
+      descriptionDE: "LazyGit aktualisieren"
+      descriptionES: "Actualizar LazyGit"
+      descriptionIT: "Aggiorna LazyGit"
+      descriptionFR: "Mettre à jour LazyGit"
     - name: uninstall
       parameter: uninstall
       description: Uninstall LazyGit
+      descriptionDE: "LazyGit deinstallieren"
+      descriptionES: "Desinstalar LazyGit"
+      descriptionIT: "Disinstalla LazyGit"
+      descriptionFR: "Désinstaller LazyGit"
   micro:
     description: Terminal text editor
+    descriptionDE: "Texteditor für das Terminal"
+    descriptionES: "Editor de texto para la terminal"
+    descriptionIT: "Editor di testo per il terminale"
+    descriptionFR: "Éditeur de texte pour le terminal"
     category: Text Editors
     file: micro.sh
     os_family:
@@ -2053,14 +3922,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Micro
+      descriptionDE: "Micro installieren"
+      descriptionES: "Instalar Micro"
+      descriptionIT: "Installa Micro"
+      descriptionFR: "Installer Micro"
     - name: update
       parameter: update
       description: Update Micro
+      descriptionDE: "Micro aktualisieren"
+      descriptionES: "Actualizar Micro"
+      descriptionIT: "Aggiorna Micro"
+      descriptionFR: "Mettre à jour Micro"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Micro
+      descriptionDE: "Micro deinstallieren"
+      descriptionES: "Desinstalar Micro"
+      descriptionIT: "Disinstalla Micro"
+      descriptionFR: "Désinstaller Micro"
   neovim:
     description: Vim-based editor
+    descriptionDE: "Editor auf Basis von Vim"
+    descriptionES: "Editor basado en Vim"
+    descriptionIT: "Editor basato su Vim"
+    descriptionFR: "Éditeur basé sur Vim"
     category: Text Editors
     file: neovim.sh
     os_family:
@@ -2073,14 +3958,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Neovim
+      descriptionDE: "Neovim installieren"
+      descriptionES: "Instalar Neovim"
+      descriptionIT: "Installa Neovim"
+      descriptionFR: "Installer Neovim"
     - name: update
       parameter: update
       description: Update Neovim
+      descriptionDE: "Neovim aktualisieren"
+      descriptionES: "Actualizar Neovim"
+      descriptionIT: "Aggiorna Neovim"
+      descriptionFR: "Mettre à jour Neovim"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Neovim
+      descriptionDE: "Neovim deinstallieren"
+      descriptionES: "Desinstalar Neovim"
+      descriptionIT: "Disinstalla Neovim"
+      descriptionFR: "Désinstaller Neovim"
   nmap:
     description: Network scanner
+    descriptionDE: "Netzwerkscanner"
+    descriptionES: "Escáner de red"
+    descriptionIT: "Scanner di rete"
+    descriptionFR: "Scanner réseau"
     category: Networking
     file: nmap.sh
     os_family:
@@ -2093,14 +3994,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Nmap
+      descriptionDE: "Nmap installieren"
+      descriptionES: "Instalar Nmap"
+      descriptionIT: "Installa Nmap"
+      descriptionFR: "Installer Nmap"
     - name: update
       parameter: update
       description: Update Nmap
+      descriptionDE: "Nmap aktualisieren"
+      descriptionES: "Actualizar Nmap"
+      descriptionIT: "Aggiorna Nmap"
+      descriptionFR: "Mettre à jour Nmap"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Nmap
+      descriptionDE: "Nmap deinstallieren"
+      descriptionES: "Desinstalar Nmap"
+      descriptionIT: "Disinstalla Nmap"
+      descriptionFR: "Désinstaller Nmap"
   oh-my-zsh:
     description: Zsh framework
+    descriptionDE: "Framework für Zsh"
+    descriptionES: "Framework para Zsh"
+    descriptionIT: "Framework per Zsh"
+    descriptionFR: "Framework pour Zsh"
     category: Shells & Terminals
     file: oh-my-zsh.sh
     os_family:
@@ -2113,14 +4030,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Oh My Zsh
+      descriptionDE: "Oh My Zsh installieren"
+      descriptionES: "Instalar Oh My Zsh"
+      descriptionIT: "Installa Oh My Zsh"
+      descriptionFR: "Installer Oh My Zsh"
     - name: update
       parameter: update
       description: Update Oh My Zsh
+      descriptionDE: "Oh My Zsh aktualisieren"
+      descriptionES: "Actualizar Oh My Zsh"
+      descriptionIT: "Aggiorna Oh My Zsh"
+      descriptionFR: "Mettre à jour Oh My Zsh"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Oh My Zsh
+      descriptionDE: "Oh My Zsh deinstallieren"
+      descriptionES: "Desinstalar Oh My Zsh"
+      descriptionIT: "Disinstalla Oh My Zsh"
+      descriptionFR: "Désinstaller Oh My Zsh"
   openjdk:
     description: Java platform
+    descriptionDE: "Java-Plattform"
+    descriptionES: "Plataforma Java"
+    descriptionIT: "Piattaforma Java"
+    descriptionFR: "Plateforme Java"
     category: Programming Languages
     file: openjdk.sh
     os_family:
@@ -2133,14 +4066,30 @@ scripts:
     - name: install
       parameter: install
       description: Install OpenJDK
+      descriptionDE: "OpenJDK installieren"
+      descriptionES: "Instalar OpenJDK"
+      descriptionIT: "Installa OpenJDK"
+      descriptionFR: "Installer OpenJDK"
     - name: update
       parameter: update
       description: Update OpenJDK
+      descriptionDE: "OpenJDK aktualisieren"
+      descriptionES: "Actualizar OpenJDK"
+      descriptionIT: "Aggiorna OpenJDK"
+      descriptionFR: "Mettre à jour OpenJDK"
     - name: uninstall
       parameter: uninstall
       description: Uninstall OpenJDK
+      descriptionDE: "OpenJDK deinstallieren"
+      descriptionES: "Desinstalar OpenJDK"
+      descriptionIT: "Disinstalla OpenJDK"
+      descriptionFR: "Désinstaller OpenJDK"
   podman:
     description: Container runtime
+    descriptionDE: "Container-Laufzeitumgebung"
+    descriptionES: "Entorno de ejecución de contenedores"
+    descriptionIT: "Ambiente di esecuzione per container"
+    descriptionFR: "Environnement d'exécution de conteneurs"
     category: Container & Virtualization
     file: podman.sh
     os_family:
@@ -2153,14 +4102,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Podman
+      descriptionDE: "Podman installieren"
+      descriptionES: "Instalar Podman"
+      descriptionIT: "Installa Podman"
+      descriptionFR: "Installer Podman"
     - name: update
       parameter: update
       description: Update Podman
+      descriptionDE: "Podman aktualisieren"
+      descriptionES: "Actualizar Podman"
+      descriptionIT: "Aggiorna Podman"
+      descriptionFR: "Mettre à jour Podman"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Podman
+      descriptionDE: "Podman deinstallieren"
+      descriptionES: "Desinstalar Podman"
+      descriptionIT: "Disinstalla Podman"
+      descriptionFR: "Désinstaller Podman"
   restic:
     description: Backup program
+    descriptionDE: "Backup-Programm"
+    descriptionES: "Programa de copias de seguridad"
+    descriptionIT: "Programma di backup"
+    descriptionFR: "Logiciel de sauvegarde"
     category: Backup & Sync
     file: restic.sh
     os_family:
@@ -2173,14 +4138,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Restic
+      descriptionDE: "Restic installieren"
+      descriptionES: "Instalar Restic"
+      descriptionIT: "Installa Restic"
+      descriptionFR: "Installer Restic"
     - name: update
       parameter: update
       description: Update Restic
+      descriptionDE: "Restic aktualisieren"
+      descriptionES: "Actualizar Restic"
+      descriptionIT: "Aggiorna Restic"
+      descriptionFR: "Mettre à jour Restic"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Restic
+      descriptionDE: "Restic deinstallieren"
+      descriptionES: "Desinstalar Restic"
+      descriptionIT: "Disinstalla Restic"
+      descriptionFR: "Désinstaller Restic"
   rust:
     description: Systems programming language
+    descriptionDE: "Systemnahe Programmiersprache"
+    descriptionES: "Lenguaje de programación de sistemas"
+    descriptionIT: "Linguaggio di programmazione di sistema"
+    descriptionFR: "Langage de programmation système"
     category: Programming Languages
     file: rust.sh
     os_family:
@@ -2193,14 +4174,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Rust
+      descriptionDE: "Rust installieren"
+      descriptionES: "Instalar Rust"
+      descriptionIT: "Installa Rust"
+      descriptionFR: "Installer Rust"
     - name: update
       parameter: update
       description: Update Rust
+      descriptionDE: "Rust aktualisieren"
+      descriptionES: "Actualizar Rust"
+      descriptionIT: "Aggiorna Rust"
+      descriptionFR: "Mettre à jour Rust"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Rust
+      descriptionDE: "Rust deinstallieren"
+      descriptionES: "Desinstalar Rust"
+      descriptionIT: "Disinstalla Rust"
+      descriptionFR: "Désinstaller Rust"
   starship:
     description: Shell prompt
+    descriptionDE: "Eingabeaufforderung für die Shell"
+    descriptionES: "Prompt para la shell"
+    descriptionIT: "Prompt per la shell"
+    descriptionFR: "Invite de commande pour le shell"
     category: Shells & Terminals
     file: starship.sh
     os_family:
@@ -2213,14 +4210,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Starship
+      descriptionDE: "Starship installieren"
+      descriptionES: "Instalar Starship"
+      descriptionIT: "Installa Starship"
+      descriptionFR: "Installer Starship"
     - name: update
       parameter: update
       description: Update Starship
+      descriptionDE: "Starship aktualisieren"
+      descriptionES: "Actualizar Starship"
+      descriptionIT: "Aggiorna Starship"
+      descriptionFR: "Mettre à jour Starship"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Starship
+      descriptionDE: "Starship deinstallieren"
+      descriptionES: "Desinstalar Starship"
+      descriptionIT: "Disinstalla Starship"
+      descriptionFR: "Désinstaller Starship"
   superfile:
     description: Terminal file manager
+    descriptionDE: "Dateimanager für das Terminal"
+    descriptionES: "Gestor de archivos para la terminal"
+    descriptionIT: "Gestore di file per il terminale"
+    descriptionFR: "Gestionnaire de fichiers pour le terminal"
     category: System Utilities
     file: superfile.sh
     os_family:
@@ -2233,14 +4246,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Superfile
+      descriptionDE: "Superfile installieren"
+      descriptionES: "Instalar Superfile"
+      descriptionIT: "Installa Superfile"
+      descriptionFR: "Installer Superfile"
     - name: update
       parameter: update
       description: Update Superfile
+      descriptionDE: "Superfile aktualisieren"
+      descriptionES: "Actualizar Superfile"
+      descriptionIT: "Aggiorna Superfile"
+      descriptionFR: "Mettre à jour Superfile"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Superfile
+      descriptionDE: "Superfile deinstallieren"
+      descriptionES: "Desinstalar Superfile"
+      descriptionIT: "Disinstalla Superfile"
+      descriptionFR: "Désinstaller Superfile"
   vagrant:
     description: Infrastructure automation
+    descriptionDE: "Automatisierung von Infrastruktur"
+    descriptionES: "Automatización de infraestructura"
+    descriptionIT: "Automazione dell'infrastruttura"
+    descriptionFR: "Automatisation d'infrastructure"
     category: Container & Virtualization
     file: vagrant.sh
     os_family:
@@ -2253,14 +4282,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Vagrant
+      descriptionDE: "Vagrant installieren"
+      descriptionES: "Instalar Vagrant"
+      descriptionIT: "Installa Vagrant"
+      descriptionFR: "Installer Vagrant"
     - name: update
       parameter: update
       description: Update Vagrant
+      descriptionDE: "Vagrant aktualisieren"
+      descriptionES: "Actualizar Vagrant"
+      descriptionIT: "Aggiorna Vagrant"
+      descriptionFR: "Mettre à jour Vagrant"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Vagrant
+      descriptionDE: "Vagrant deinstallieren"
+      descriptionES: "Desinstalar Vagrant"
+      descriptionIT: "Disinstalla Vagrant"
+      descriptionFR: "Désinstaller Vagrant"
   zellij:
     description: Terminal multiplexer
+    descriptionDE: "Terminal-Multiplexer"
+    descriptionES: "Multiplexor de terminal"
+    descriptionIT: "Multiplexer di terminale"
+    descriptionFR: "Multiplexeur de terminal"
     category: Shells & Terminals
     file: zellij.sh
     os_family:
@@ -2273,14 +4318,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Zellij
+      descriptionDE: "Zellij installieren"
+      descriptionES: "Instalar Zellij"
+      descriptionIT: "Installa Zellij"
+      descriptionFR: "Installer Zellij"
     - name: update
       parameter: update
       description: Update Zellij
+      descriptionDE: "Zellij aktualisieren"
+      descriptionES: "Actualizar Zellij"
+      descriptionIT: "Aggiorna Zellij"
+      descriptionFR: "Mettre à jour Zellij"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Zellij
+      descriptionDE: "Zellij deinstallieren"
+      descriptionES: "Desinstalar Zellij"
+      descriptionIT: "Disinstalla Zellij"
+      descriptionFR: "Désinstaller Zellij"
   zsh:
     description: Z shell
+    descriptionDE: "Z-Shell"
+    descriptionES: "Z shell"
+    descriptionIT: "Z shell"
+    descriptionFR: "Z shell"
     category: Shells & Terminals
     file: zsh.sh
     os_family:
@@ -2293,14 +4354,30 @@ scripts:
     - name: install
       parameter: install
       description: Install Zsh
+      descriptionDE: "Zsh installieren"
+      descriptionES: "Instalar Zsh"
+      descriptionIT: "Installa Zsh"
+      descriptionFR: "Installer Zsh"
     - name: update
       parameter: update
       description: Update Zsh
+      descriptionDE: "Zsh aktualisieren"
+      descriptionES: "Actualizar Zsh"
+      descriptionIT: "Aggiorna Zsh"
+      descriptionFR: "Mettre à jour Zsh"
     - name: uninstall
       parameter: uninstall
       description: Uninstall Zsh
+      descriptionDE: "Zsh deinstallieren"
+      descriptionES: "Desinstalar Zsh"
+      descriptionIT: "Disinstalla Zsh"
+      descriptionFR: "Désinstaller Zsh"
   aria2:
     description: Download utility
+    descriptionDE: "Werkzeug für Downloads"
+    descriptionES: "Utilidad para descargas"
+    descriptionIT: "Strumento per i download"
+    descriptionFR: "Outil de téléchargement"
     category: System Utilities
     file: aria2.sh
     os_family:
@@ -2313,14 +4390,30 @@ scripts:
     - name: install
       parameter: install
       description: Install aria2
+      descriptionDE: "aria2 installieren"
+      descriptionES: "Instalar aria2"
+      descriptionIT: "Installa aria2"
+      descriptionFR: "Installer aria2"
     - name: update
       parameter: update
       description: Update aria2
+      descriptionDE: "aria2 aktualisieren"
+      descriptionES: "Actualizar aria2"
+      descriptionIT: "Aggiorna aria2"
+      descriptionFR: "Mettre à jour aria2"
     - name: uninstall
       parameter: uninstall
       description: Uninstall aria2
+      descriptionDE: "aria2 deinstallieren"
+      descriptionES: "Desinstalar aria2"
+      descriptionIT: "Disinstalla aria2"
+      descriptionFR: "Désinstaller aria2"
   bat:
     description: Cat with syntax highlighting
+    descriptionDE: "Cat mit Syntaxhervorhebung"
+    descriptionES: "Cat con resaltado de sintaxis"
+    descriptionIT: "Cat con evidenziazione della sintassi"
+    descriptionFR: "Cat avec coloration syntaxique"
     category: System Utilities
     file: bat.sh
     os_family:
@@ -2333,14 +4426,30 @@ scripts:
     - name: install
       parameter: install
       description: Install bat
+      descriptionDE: "bat installieren"
+      descriptionES: "Instalar bat"
+      descriptionIT: "Installa bat"
+      descriptionFR: "Installer bat"
     - name: update
       parameter: update
       description: Update bat
+      descriptionDE: "bat aktualisieren"
+      descriptionES: "Actualizar bat"
+      descriptionIT: "Aggiorna bat"
+      descriptionFR: "Mettre à jour bat"
     - name: uninstall
       parameter: uninstall
       description: Uninstall bat
+      descriptionDE: "bat deinstallieren"
+      descriptionES: "Desinstalar bat"
+      descriptionIT: "Disinstalla bat"
+      descriptionFR: "Désinstaller bat"
   btop:
     description: System monitor
+    descriptionDE: "Systemmonitor"
+    descriptionES: "Monitor del sistema"
+    descriptionIT: "Monitor di sistema"
+    descriptionFR: "Moniteur système"
     category: System Utilities
     file: btop.sh
     os_family:
@@ -2353,14 +4462,30 @@ scripts:
     - name: install
       parameter: install
       description: Install btop
+      descriptionDE: "btop installieren"
+      descriptionES: "Instalar btop"
+      descriptionIT: "Installa btop"
+      descriptionFR: "Installer btop"
     - name: update
       parameter: update
       description: Update btop
+      descriptionDE: "btop aktualisieren"
+      descriptionES: "Actualizar btop"
+      descriptionIT: "Aggiorna btop"
+      descriptionFR: "Mettre à jour btop"
     - name: uninstall
       parameter: uninstall
       description: Uninstall btop
+      descriptionDE: "btop deinstallieren"
+      descriptionES: "Desinstalar btop"
+      descriptionIT: "Disinstalla btop"
+      descriptionFR: "Désinstaller btop"
   eza:
     description: Modern ls replacement
+    descriptionDE: "Moderner Ersatz für ls"
+    descriptionES: "Sustituto moderno de ls"
+    descriptionIT: "Sostituto moderno di ls"
+    descriptionFR: "Remplaçant moderne de ls"
     category: System Utilities
     file: eza.sh
     os_family:
@@ -2373,14 +4498,30 @@ scripts:
     - name: install
       parameter: install
       description: Install eza
+      descriptionDE: "eza installieren"
+      descriptionES: "Instalar eza"
+      descriptionIT: "Installa eza"
+      descriptionFR: "Installer eza"
     - name: update
       parameter: update
       description: Update eza
+      descriptionDE: "eza aktualisieren"
+      descriptionES: "Actualizar eza"
+      descriptionIT: "Aggiorna eza"
+      descriptionFR: "Mettre à jour eza"
     - name: uninstall
       parameter: uninstall
       description: Uninstall eza
+      descriptionDE: "eza deinstallieren"
+      descriptionES: "Desinstalar eza"
+      descriptionIT: "Disinstalla eza"
+      descriptionFR: "Désinstaller eza"
   fastfetch:
     description: System information tool
+    descriptionDE: "Werkzeug für Systeminformationen"
+    descriptionES: "Herramienta de información del sistema"
+    descriptionIT: "Strumento per le informazioni di sistema"
+    descriptionFR: "Outil d'informations système"
     category: System Utilities
     file: fastfetch.sh
     os_family:
@@ -2393,14 +4534,30 @@ scripts:
     - name: install
       parameter: install
       description: Install fastfetch
+      descriptionDE: "fastfetch installieren"
+      descriptionES: "Instalar fastfetch"
+      descriptionIT: "Installa fastfetch"
+      descriptionFR: "Installer fastfetch"
     - name: update
       parameter: update
       description: Update fastfetch
+      descriptionDE: "fastfetch aktualisieren"
+      descriptionES: "Actualizar fastfetch"
+      descriptionIT: "Aggiorna fastfetch"
+      descriptionFR: "Mettre à jour fastfetch"
     - name: uninstall
       parameter: uninstall
       description: Uninstall fastfetch
+      descriptionDE: "fastfetch deinstallieren"
+      descriptionES: "Desinstalar fastfetch"
+      descriptionIT: "Disinstalla fastfetch"
+      descriptionFR: "Désinstaller fastfetch"
   fd:
     description: Find alternative
+    descriptionDE: "Alternative zu find"
+    descriptionES: "Alternativa a find"
+    descriptionIT: "Alternativa a find"
+    descriptionFR: "Alternative à find"
     category: System Utilities
     file: fd.sh
     os_family:
@@ -2413,14 +4570,30 @@ scripts:
     - name: install
       parameter: install
       description: Install fd
+      descriptionDE: "fd installieren"
+      descriptionES: "Instalar fd"
+      descriptionIT: "Installa fd"
+      descriptionFR: "Installer fd"
     - name: update
       parameter: update
       description: Update fd
+      descriptionDE: "fd aktualisieren"
+      descriptionES: "Actualizar fd"
+      descriptionIT: "Aggiorna fd"
+      descriptionFR: "Mettre à jour fd"
     - name: uninstall
       parameter: uninstall
       description: Uninstall fd
+      descriptionDE: "fd deinstallieren"
+      descriptionES: "Desinstalar fd"
+      descriptionIT: "Disinstalla fd"
+      descriptionFR: "Désinstaller fd"
   fzf:
     description: Fuzzy finder
+    descriptionDE: "Unscharfe Suche"
+    descriptionES: "Buscador difuso"
+    descriptionIT: "Ricerca approssimata"
+    descriptionFR: "Recherche floue"
     category: System Utilities
     file: fzf.sh
     os_family:
@@ -2433,14 +4606,30 @@ scripts:
     - name: install
       parameter: install
       description: Install fzf
+      descriptionDE: "fzf installieren"
+      descriptionES: "Instalar fzf"
+      descriptionIT: "Installa fzf"
+      descriptionFR: "Installer fzf"
     - name: update
       parameter: update
       description: Update fzf
+      descriptionDE: "fzf aktualisieren"
+      descriptionES: "Actualizar fzf"
+      descriptionIT: "Aggiorna fzf"
+      descriptionFR: "Mettre à jour fzf"
     - name: uninstall
       parameter: uninstall
       description: Uninstall fzf
+      descriptionDE: "fzf deinstallieren"
+      descriptionES: "Desinstalar fzf"
+      descriptionIT: "Disinstalla fzf"
+      descriptionFR: "Désinstaller fzf"
   kubectl:
     description: Kubernetes CLI
+    descriptionDE: "Kommandozeile für Kubernetes"
+    descriptionES: "Línea de comandos para Kubernetes"
+    descriptionIT: "Riga di comando per Kubernetes"
+    descriptionFR: "Ligne de commande pour Kubernetes"
     category: Container & Virtualization
     file: kubectl.sh
     os_family:
@@ -2453,14 +4642,30 @@ scripts:
     - name: install
       parameter: install
       description: Install kubectl
+      descriptionDE: "kubectl installieren"
+      descriptionES: "Instalar kubectl"
+      descriptionIT: "Installa kubectl"
+      descriptionFR: "Installer kubectl"
     - name: update
       parameter: update
       description: Update kubectl
+      descriptionDE: "kubectl aktualisieren"
+      descriptionES: "Actualizar kubectl"
+      descriptionIT: "Aggiorna kubectl"
+      descriptionFR: "Mettre à jour kubectl"
     - name: uninstall
       parameter: uninstall
       description: Uninstall kubectl
+      descriptionDE: "kubectl deinstallieren"
+      descriptionES: "Desinstalar kubectl"
+      descriptionIT: "Disinstalla kubectl"
+      descriptionFR: "Désinstaller kubectl"
   ncdu:
     description: Disk usage analyzer
+    descriptionDE: "Analyse der Festplattenbelegung"
+    descriptionES: "Analizador de uso de disco"
+    descriptionIT: "Analizzatore dello spazio su disco"
+    descriptionFR: "Analyseur d'espace disque"
     category: System Utilities
     file: ncdu.sh
     os_family:
@@ -2473,14 +4678,30 @@ scripts:
     - name: install
       parameter: install
       description: Install ncdu
+      descriptionDE: "ncdu installieren"
+      descriptionES: "Instalar ncdu"
+      descriptionIT: "Installa ncdu"
+      descriptionFR: "Installer ncdu"
     - name: update
       parameter: update
       description: Update ncdu
+      descriptionDE: "ncdu aktualisieren"
+      descriptionES: "Actualizar ncdu"
+      descriptionIT: "Aggiorna ncdu"
+      descriptionFR: "Mettre à jour ncdu"
     - name: uninstall
       parameter: uninstall
       description: Uninstall ncdu
+      descriptionDE: "ncdu deinstallieren"
+      descriptionES: "Desinstalar ncdu"
+      descriptionIT: "Disinstalla ncdu"
+      descriptionFR: "Désinstaller ncdu"
   npm:
     description: Node Package Manager
+    descriptionDE: "Paketmanager für Node.js"
+    descriptionES: "Gestor de paquetes de Node.js"
+    descriptionIT: "Gestore di pacchetti per Node.js"
+    descriptionFR: "Gestionnaire de paquets pour Node.js"
     category: Package Managers
     file: npm.sh
     os_family:
@@ -2493,14 +4714,30 @@ scripts:
     - name: install
       parameter: install
       description: Install npm
+      descriptionDE: "npm installieren"
+      descriptionES: "Instalar npm"
+      descriptionIT: "Installa npm"
+      descriptionFR: "Installer npm"
     - name: update
       parameter: update
       description: Update npm
+      descriptionDE: "npm aktualisieren"
+      descriptionES: "Actualizar npm"
+      descriptionIT: "Aggiorna npm"
+      descriptionFR: "Mettre à jour npm"
     - name: uninstall
       parameter: uninstall
       description: Uninstall npm
+      descriptionDE: "npm deinstallieren"
+      descriptionES: "Desinstalar npm"
+      descriptionIT: "Disinstalla npm"
+      descriptionFR: "Désinstaller npm"
   pnpm:
     description: Fast npm alternative
+    descriptionDE: "Schnelle Alternative zu npm"
+    descriptionES: "Alternativa rápida a npm"
+    descriptionIT: "Alternativa veloce a npm"
+    descriptionFR: "Alternative rapide à npm"
     category: Package Managers
     file: pnpm.sh
     os_family:
@@ -2513,14 +4750,30 @@ scripts:
     - name: install
       parameter: install
       description: Install pnpm
+      descriptionDE: "pnpm installieren"
+      descriptionES: "Instalar pnpm"
+      descriptionIT: "Installa pnpm"
+      descriptionFR: "Installer pnpm"
     - name: update
       parameter: update
       description: Update pnpm
+      descriptionDE: "pnpm aktualisieren"
+      descriptionES: "Actualizar pnpm"
+      descriptionIT: "Aggiorna pnpm"
+      descriptionFR: "Mettre à jour pnpm"
     - name: uninstall
       parameter: uninstall
       description: Uninstall pnpm
+      descriptionDE: "pnpm deinstallieren"
+      descriptionES: "Desinstalar pnpm"
+      descriptionIT: "Disinstalla pnpm"
+      descriptionFR: "Désinstaller pnpm"
   ranger:
     description: Terminal file manager
+    descriptionDE: "Dateimanager für das Terminal"
+    descriptionES: "Gestor de archivos para la terminal"
+    descriptionIT: "Gestore di file per il terminale"
+    descriptionFR: "Gestionnaire de fichiers pour le terminal"
     category: System Utilities
     file: ranger.sh
     os_family:
@@ -2533,14 +4786,30 @@ scripts:
     - name: install
       parameter: install
       description: Install ranger
+      descriptionDE: "ranger installieren"
+      descriptionES: "Instalar ranger"
+      descriptionIT: "Installa ranger"
+      descriptionFR: "Installer ranger"
     - name: update
       parameter: update
       description: Update ranger
+      descriptionDE: "ranger aktualisieren"
+      descriptionES: "Actualizar ranger"
+      descriptionIT: "Aggiorna ranger"
+      descriptionFR: "Mettre à jour ranger"
     - name: uninstall
       parameter: uninstall
       description: Uninstall ranger
+      descriptionDE: "ranger deinstallieren"
+      descriptionES: "Desinstalar ranger"
+      descriptionIT: "Disinstalla ranger"
+      descriptionFR: "Désinstaller ranger"
   ripgrep:
     description: Fast grep alternative
+    descriptionDE: "Schnelle Alternative zu grep"
+    descriptionES: "Alternativa rápida a grep"
+    descriptionIT: "Alternativa veloce a grep"
+    descriptionFR: "Alternative rapide à grep"
     category: System Utilities
     file: ripgrep.sh
     os_family:
@@ -2553,14 +4822,30 @@ scripts:
     - name: install
       parameter: install
       description: Install ripgrep
+      descriptionDE: "ripgrep installieren"
+      descriptionES: "Instalar ripgrep"
+      descriptionIT: "Installa ripgrep"
+      descriptionFR: "Installer ripgrep"
     - name: update
       parameter: update
       description: Update ripgrep
+      descriptionDE: "ripgrep aktualisieren"
+      descriptionES: "Actualizar ripgrep"
+      descriptionIT: "Aggiorna ripgrep"
+      descriptionFR: "Mettre à jour ripgrep"
     - name: uninstall
       parameter: uninstall
       description: Uninstall ripgrep
+      descriptionDE: "ripgrep deinstallieren"
+      descriptionES: "Desinstalar ripgrep"
+      descriptionIT: "Disinstalla ripgrep"
+      descriptionFR: "Désinstaller ripgrep"
   rsync:
     description: File transfer utility
+    descriptionDE: "Werkzeug für Dateiübertragungen"
+    descriptionES: "Utilidad para transferir archivos"
+    descriptionIT: "Strumento per trasferire file"
+    descriptionFR: "Outil de transfert de fichiers"
     category: Essential Tools
     file: rsync.sh
     os_family:
@@ -2573,14 +4858,30 @@ scripts:
     - name: install
       parameter: install
       description: Install rsync
+      descriptionDE: "rsync installieren"
+      descriptionES: "Instalar rsync"
+      descriptionIT: "Installa rsync"
+      descriptionFR: "Installer rsync"
     - name: update
       parameter: update
       description: Update rsync
+      descriptionDE: "rsync aktualisieren"
+      descriptionES: "Actualizar rsync"
+      descriptionIT: "Aggiorna rsync"
+      descriptionFR: "Mettre à jour rsync"
     - name: uninstall
       parameter: uninstall
       description: Uninstall rsync
+      descriptionDE: "rsync deinstallieren"
+      descriptionES: "Desinstalar rsync"
+      descriptionIT: "Disinstalla rsync"
+      descriptionFR: "Désinstaller rsync"
   tldr:
     description: Simplified man pages
+    descriptionDE: "Vereinfachte Handbuchseiten"
+    descriptionES: "Páginas de manual simplificadas"
+    descriptionIT: "Pagine di manuale semplificate"
+    descriptionFR: "Pages de manuel simplifiées"
     category: System Utilities
     file: tldr.sh
     os_family:
@@ -2593,14 +4894,30 @@ scripts:
     - name: install
       parameter: install
       description: Install tldr
+      descriptionDE: "tldr installieren"
+      descriptionES: "Instalar tldr"
+      descriptionIT: "Installa tldr"
+      descriptionFR: "Installer tldr"
     - name: update
       parameter: update
       description: Update tldr
+      descriptionDE: "tldr aktualisieren"
+      descriptionES: "Actualizar tldr"
+      descriptionIT: "Aggiorna tldr"
+      descriptionFR: "Mettre à jour tldr"
     - name: uninstall
       parameter: uninstall
       description: Uninstall tldr
+      descriptionDE: "tldr deinstallieren"
+      descriptionES: "Desinstalar tldr"
+      descriptionIT: "Disinstalla tldr"
+      descriptionFR: "Désinstaller tldr"
   uv:
     description: Fast Python installer
+    descriptionDE: "Schneller Python-Installer"
+    descriptionES: "Instalador rápido de Python"
+    descriptionIT: "Installer veloce per Python"
+    descriptionFR: "Installateur rapide pour Python"
     category: Package Managers
     file: uv.sh
     os_family:
@@ -2613,14 +4930,30 @@ scripts:
     - name: install
       parameter: install
       description: Install uv
+      descriptionDE: "uv installieren"
+      descriptionES: "Instalar uv"
+      descriptionIT: "Installa uv"
+      descriptionFR: "Installer uv"
     - name: update
       parameter: update
       description: Update uv
+      descriptionDE: "uv aktualisieren"
+      descriptionES: "Actualizar uv"
+      descriptionIT: "Aggiorna uv"
+      descriptionFR: "Mettre à jour uv"
     - name: uninstall
       parameter: uninstall
       description: Uninstall uv
+      descriptionDE: "uv deinstallieren"
+      descriptionES: "Desinstalar uv"
+      descriptionIT: "Disinstalla uv"
+      descriptionFR: "Désinstaller uv"
   yarn:
     description: JavaScript package manager
+    descriptionDE: "Paketmanager für JavaScript"
+    descriptionES: "Gestor de paquetes de JavaScript"
+    descriptionIT: "Gestore di pacchetti per JavaScript"
+    descriptionFR: "Gestionnaire de paquets pour JavaScript"
     category: Package Managers
     file: yarn.sh
     os_family:
@@ -2633,14 +4966,30 @@ scripts:
     - name: install
       parameter: install
       description: Install yarn
+      descriptionDE: "yarn installieren"
+      descriptionES: "Instalar yarn"
+      descriptionIT: "Installa yarn"
+      descriptionFR: "Installer yarn"
     - name: update
       parameter: update
       description: Update yarn
+      descriptionDE: "yarn aktualisieren"
+      descriptionES: "Actualizar yarn"
+      descriptionIT: "Aggiorna yarn"
+      descriptionFR: "Mettre à jour yarn"
     - name: uninstall
       parameter: uninstall
       description: Uninstall yarn
+      descriptionDE: "yarn deinstallieren"
+      descriptionES: "Desinstalar yarn"
+      descriptionIT: "Disinstalla yarn"
+      descriptionFR: "Désinstaller yarn"
   yazi:
     description: Terminal file manager
+    descriptionDE: "Dateimanager für das Terminal"
+    descriptionES: "Gestor de archivos para la terminal"
+    descriptionIT: "Gestore di file per il terminale"
+    descriptionFR: "Gestionnaire de fichiers pour le terminal"
     category: System Utilities
     file: yazi.sh
     os_family:
@@ -2653,14 +5002,30 @@ scripts:
     - name: install
       parameter: install
       description: Install yazi
+      descriptionDE: "yazi installieren"
+      descriptionES: "Instalar yazi"
+      descriptionIT: "Installa yazi"
+      descriptionFR: "Installer yazi"
     - name: update
       parameter: update
       description: Update yazi
+      descriptionDE: "yazi aktualisieren"
+      descriptionES: "Actualizar yazi"
+      descriptionIT: "Aggiorna yazi"
+      descriptionFR: "Mettre à jour yazi"
     - name: uninstall
       parameter: uninstall
       description: Uninstall yazi
+      descriptionDE: "yazi deinstallieren"
+      descriptionES: "Desinstalar yazi"
+      descriptionIT: "Disinstalla yazi"
+      descriptionFR: "Désinstaller yazi"
   zoxide:
     description: Smart cd command
+    descriptionDE: "Intelligenter cd-Befehl"
+    descriptionES: "Comando cd inteligente"
+    descriptionIT: "Comando cd intelligente"
+    descriptionFR: "Commande cd intelligente"
     category: System Utilities
     file: zoxide.sh
     os_family:
@@ -2673,9 +5038,21 @@ scripts:
     - name: install
       parameter: install
       description: Install zoxide
+      descriptionDE: "zoxide installieren"
+      descriptionES: "Instalar zoxide"
+      descriptionIT: "Installa zoxide"
+      descriptionFR: "Installer zoxide"
     - name: update
       parameter: update
       description: Update zoxide
+      descriptionDE: "zoxide aktualisieren"
+      descriptionES: "Actualizar zoxide"
+      descriptionIT: "Aggiorna zoxide"
+      descriptionFR: "Mettre à jour zoxide"
     - name: uninstall
       parameter: uninstall
       description: Uninstall zoxide
+      descriptionDE: "zoxide deinstallieren"
+      descriptionES: "Desinstalar zoxide"
+      descriptionIT: "Disinstalla zoxide"
+      descriptionFR: "Désinstaller zoxide"

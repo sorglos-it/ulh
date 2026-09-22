@@ -45,6 +45,7 @@ ulh/                              # clone target, default: ~/ulh
 │   │   ├── colors.sh             # ANSI colors (single source of truth)
 │   │   ├── core.sh               # msg_* helpers, OS detection for the menu
 │   │   ├── execute.sh            # prompts, answer.yaml/autoscript, runs the script
+│   │   ├── lang.sh               # languages: t, yq_l10n, lang_switch (menu key l)
 │   │   ├── menu.sh               # menu rendering + navigation loops
 │   │   ├── repos.sh              # custom repo clone/pull/auth
 │   │   ├── update.sh             # self-update via git
@@ -56,10 +57,12 @@ ulh/                              # clone target, default: ~/ulh
 │   ├── templates/
 │   │   ├── script-template.sh    # copy this to start a new script
 │   │   └── demo-*                # the demo repository, copied to data/ on first start
+│   ├── lang/                     # texts of the menu: de, en, fr, it, es (one YAML each)
 │   ├── config/                   # YOUR settings (git-ignored, only *.example in git)
 │   │   ├── repo.yaml.example     # template for repo.yaml
 │   │   ├── repo.yaml             # your custom repositories
-│   │   └── answer.yaml           # prompt defaults + autoscript flags (optional)
+│   │   ├── answer.yaml           # prompt defaults + autoscript flags (optional)
+│   │   └── settings.yaml         # your language (menu key l), from settings.yaml.example
 │   ├── data/                     # YOUR runtime data (git-ignored)
 │   │   ├── keys/                 # SSH keys for private repos
 │   │   ├── repos/<path>/         # custom repos (own config.yaml + scripts/)
@@ -94,6 +97,8 @@ its actions, sudo requirement and supported distributions.
 | change how prompts behave | `apps/cli/classes/execute.sh` |
 | change the menu layout | `apps/cli/classes/menu.sh` |
 | add your own script repo | `apps/cli/config/repo.yaml` + `apps/cli/classes/repos.sh` |
+| change the language | key `l` in the menu, `--lang de`, or `apps/cli/config/settings.yaml` |
+| translate a text of the menu | `apps/cli/lang/<xx>.yaml` (same keys in all five files) |
 
 **Grep cheat sheet** (run from the ulh directory):
 
@@ -105,7 +110,8 @@ grep -n "description:" apps/cli/assets/catalog.yaml | grep -i vnc   # search all
 
 ### Execution Flow
 
-1. `ulh.sh` starts → sets UTF-8 locale, loads the libraries from `classes/`
+1. `ulh.sh` starts → notes the system language, sets UTF-8 locale, loads the
+   libraries from `classes/`, picks the language (`--lang`, `settings.yaml`, `$LANG`)
 2. Auto-update check → git fetch + pull (if updates exist, `exec` restart)
 3. Your files → moves an old `custom/` folder once, creates missing files in `config/` and `data/`
 4. Load the catalog → `assets/catalog.yaml`
@@ -130,6 +136,7 @@ ulh.sh -> menu.sh (pick script + action, or search with s / /term)
 | `~/ulh/` | default install location (`tools/install.sh` clones here) |
 | `~/ulh/apps/cli/config/repo.yaml` | your custom repositories, never overwritten by updates |
 | `~/ulh/apps/cli/config/answer.yaml` | your prompt defaults, never overwritten by updates |
+| `~/ulh/apps/cli/config/settings.yaml` | your language (menu key `l`), never overwritten by updates |
 | `~/ulh/apps/cli/data/keys/` | SSH keys for private custom repos (`chmod 600`) |
 | `~/ulh/apps/cli/data/repos/<path>/` | custom repo with its own `config.yaml` and `scripts/` |
 | `~/ulh/apps/cli/vendor/yq/yq-<arch>` | bundled yq, picked automatically by architecture |
@@ -193,6 +200,10 @@ it - put your own scripts into a [custom repository](#custom-repositories).
 scripts:
   curl:
     description: "HTTP requests utility"
+    descriptionDE: "Werkzeug für HTTP-Anfragen"
+    descriptionES: "Utilidad para peticiones HTTP"
+    descriptionIT: "Strumento per richieste HTTP"
+    descriptionFR: "Outil de requêtes HTTP"
     category: "Essential Tools"
     file: "curl.sh"
     os_family:
@@ -206,6 +217,10 @@ scripts:
       - name: "install"
         parameter: "install"
         description: "Install curl"
+        descriptionDE: "curl installieren"
+        descriptionES: "Instalar curl"
+        descriptionIT: "Installa curl"
+        descriptionFR: "Installer curl"
         prompts: []
       
       - name: "update"
@@ -244,13 +259,21 @@ scripts:
 - `file` - Script file in `apps/cli/assets/scripts/`
 - `sudo:` - Elevate with sudo (presence-based, optional)
 - `os_family` - Supported distributions (optional)
-- `os_only` - Single distro (optional, overrides os_family)
+- `os_only` - Only these distros: one value or a list (optional, overrides os_family)
 - `os_exclude` - Blacklist distros (optional)
 
 **Prompt Types:**
 - `text` - Free input
-- `yes/no` - Boolean
+- `yes/no` - Boolean: shows `[Y/n]` or `[y/N]` in the current language and takes
+  y/j/o/s or n in any language; the script always gets `yes` or `no`. A trailing
+  `(yes/no, default: ...)` in the question is not shown, the hint says the same.
 - `number` - Numeric input
+
+**Languages:** `description`, `question` and the category names are English. The
+translations sit right below them, the language as suffix `DE`, `ES`, `IT`, `FR`:
+`descriptionDE`, `questionFR`, and under `categories:` also `nameIT`. ulh shows the
+current language and falls back to English. `bash apps/cli/tests/run.sh` fails when
+a description, question or category lacks one of the four.
 
 After changing the catalog, refresh the script reference: `bash tools/gen-scripts-doc.sh`.
 
@@ -507,7 +530,9 @@ repositories:
 
 Without git: leave `url: ""` and put the folder into `apps/cli/data/repos/` yourself.
 
-**Note:** Custom repos use `config.yaml` (not custom.yaml), same layout as ulh's catalog.
+**Note:** Custom repos use `config.yaml` (not custom.yaml), same layout as ulh's catalog -
+including the translations (`descriptionDE`, `questionDE` ... right below the English
+text). Without them, the English text shows in every language.
 
 ### ulh's helpers in your scripts
 
@@ -712,9 +737,13 @@ All menus use consistent 80-character box formatting:
    [menu items here]
 |
 +==============================================================================+
-|   q) Quit                                   ubuntu (debian) · v25.10 |
+|  s) Search  (or /term)                                                       |
+|  l) Language: English                                                        |
+|  q) Quit                                           ubuntu (debian) · v25.10  |
 +==============================================================================+
 ```
+
+The texts of header, footer and messages come from `apps/cli/lang/<xx>.yaml`.
 
 ### Navigation
 
@@ -727,9 +756,15 @@ All menus use consistent 80-character box formatting:
 - Context-aware: Back button only if coming from repo selector
 - Actions: Select category → show scripts, or `s` / `/term` → search
 
+**Language** (every menu)
+- `l` switches to the next language: de → en → fr → it → es → de
+- Saved in `apps/cli/config/settings.yaml`, so it counts for the next start too
+- `--lang xx` on the command line wins for one start
+
 **Search** (repository selector, category list and script list)
 - Trigger: `s` for a prompt, or type `/term` directly at any `Choose:` prompt
-- Matches: script name + description + category, case-insensitive substring
+- Matches: script name + description + category, case-insensitive substring -
+  in the current language and in English
 - Filtered: only scripts compatible with the running distro and present on disk
 - Result: pick a number → jumps straight into that script's action menu
 - Inside the results: `s` starts a new search, `b` returns to the previous menu
@@ -883,7 +918,8 @@ execute_custom_repo_action  # Run custom repo script
 
 **`prompt_by_type(question, type, default, autoscript_mode)`**
 - If autoscript + default present: return default directly
-- Else: show interactive prompt with `[default]` shown
+- Else: show interactive prompt with `[default]` shown; yes/no as `[Y/n]` / `[y/N]`
+  in the current language
 - Validates: yes/no, number, text, required/optional
 - Returns user input or default
 
@@ -894,7 +930,17 @@ update_auto             # On start: pull if behind, then restart ulh
 update_check            # --check-update
 update_apply            # --update
 userdata_migrate        # Move an old custom/ folder to config/ and data/
-userdata_init           # Create repo.yaml, the demo repo and data/lib/ if missing
+userdata_init           # Create repo.yaml, settings.yaml, the demo repo and data/lib/ if missing
+```
+
+### Languages (classes/lang.sh)
+
+```bash
+t key [arg...]          # Text of the current language, {0} {1} ... replaced by the args
+yq_l10n '.path.field'   # yq expression "fieldDE // field": current language, English fallback
+lang_init [xx]          # --lang, else config/settings.yaml, else $LANG, else English
+lang_switch             # Menu key l: next language, saved in config/settings.yaml
+lang_is_yes / lang_is_no  # yes/no typed in any of the five languages
 ```
 
 ### Library Map
@@ -907,6 +953,7 @@ userdata_init           # Create repo.yaml, the demo repo and data/lib/ if missi
 | `classes/yaml.sh` | reads the catalog through yq | `yaml_load`, `yaml_scripts`, `yaml_scripts_by_cat`, `yaml_all_descriptions`, `yaml_action_*`, `yaml_prompt_*` |
 | `classes/menu.sh` | renders and navigates the menus | `menu_main`, `menu_category`, `menu_actions`, `menu_search`, `menu_header/footer` |
 | `classes/execute.sh` | collects answers and runs the script | `execute_action`, `prompt_by_type`, `get_answer_default`, `has_all_answers` |
+| `classes/lang.sh` | languages and texts (`lang/*.yaml`) | `t`, `yq_l10n`, `lang_init`, `lang_switch`, `lang_is_yes` |
 | `classes/repos.sh` | custom repositories | `repo_init`, `repo_sync_all`, `repo_list_enabled`, `repo_get_path` |
 | `classes/update.sh` | self-update via git | `update_auto`, `update_check`, `update_apply` |
 | `classes/userdata.sh` | your files in `config/` and `data/` | `userdata_migrate`, `userdata_init` |
