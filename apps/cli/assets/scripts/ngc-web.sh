@@ -345,10 +345,17 @@ put_file() {
 		return 0
 	fi
 	tmp="$(mktemp -- "${dst}.XXXXXX")"
-	cat -- "$src" >"$tmp"
-	chown root:root -- "$tmp"
-	chmod "$mode" -- "$tmp"
-	mv -f -- "$tmp" "$dst"
+	# All four steps or none: a full disk must not leave half a file lying
+	# next to the real one, where the next run would find it again.
+	if ! {
+		cat -- "$src" >"$tmp" &&
+			chown root:root -- "$tmp" &&
+			chmod "$mode" -- "$tmp" &&
+			mv -f -- "$tmp" "$dst"
+	}; then
+		rm -f -- "$tmp"
+		log_error "Die Datei ${dst} ließ sich nicht schreiben. Ist die Festplatte voll?"
+	fi
 	CHANGED=1
 	log_info "geschrieben: ${dst}"
 }
