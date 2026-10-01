@@ -52,6 +52,30 @@ ngc_host() (
     ngc_load
     valid_host "$1"
 )
+ngc_site() (
+    ngc_load
+    NGC_HOSTNAME="ngc.example.org"
+    render_site
+)
+ngc_asset_walls() (
+    ngc_load
+    asset_walls
+)
+ngc_template_walls() (
+    ngc_load
+    template_walls "$1"
+)
+ngc_check_template() (
+    ngc_load
+    VHOST_TEMPLATE="$1"
+    check_vhost_template 2>&1
+)
+ngc_keep_site() (
+    ngc_load
+    SITE_FILE="$1"
+    SITE_KEPT="${1}.before-ulh"
+    keep_foreign_site 2>&1
+)
 
 # ---------------------------------------------------------------- the balancer
 # config.BalancerFile of NGC. This is the template of the NGC repository
@@ -169,5 +193,108 @@ for h in 'a;id' '$(id)' '`id`' 'a b' 'a|b' 'a>b' "a'b" 'a"b' '*' '-a'; do
 done
 check "ngc-web refuses hosts with shell characters" test "$shell" = 0
 
-unset -f ngc_load ngc_balancer ngc_webjson ngc_answers ngc_host
-unset ngcdir API1 API2 PIN1 PIN2 good bad shell
+# ------------------------------------------------- the walls of the virtual host
+# The files below /assets/ are handed out by Apache, so no PHP of the interface
+# ever sees those answers and their headers have to stand in the virtual host.
+# This is the hole that was here before: /assets/ used to be taken out of the
+# rewrite, so a MISSING file there was answered by Apache with no header at all.
+#
+# The same four walls stand once more in the NGC repository, in
+# apps/web/templates/apache-vhost.conf. Changes there belong here too - and
+# check_vhost_template of the script says so on a server that has both.
+ngc_site > "${ngcdir}/site.got"
+
+# Four headers have to reach an answer below /assets/: three out of the assets
+# block, Strict-Transport-Security out of the host, where it covers every answer.
+walls_in_site() {
+    sed -n "\#^    <Directory ${1}/public/assets>\$#,\#^    </Directory>\$#p" "${ngcdir}/site.got" |
+        grep -E '^        Header always set '
+    grep -E '^    Header always set ' "${ngcdir}/site.got"
+}
+ngcroot="$(grep -m1 '^NGC_ROOT=' "${ngcdir}/body.sh" | cut -d'"' -f2)"
+walls_in_site "$ngcroot" |
+    sed -E 's/^ *Header always set ([A-Za-z-]+) "(.*)"$/\1 \2/' | sort > "${ngcdir}/walls.site"
+ngc_asset_walls > "${ngcdir}/walls.list"
+check "every wall of asset_walls really stands in the virtual host" \
+    cmp -s "${ngcdir}/walls.list" "${ngcdir}/walls.site"
+check "there are four of them" test "$(grep -c . "${ngcdir}/walls.site")" = 4
+# Each one by name, so a missing line names itself instead of only moving a count.
+for w in X-Content-Type-Options Cross-Origin-Resource-Policy \
+         Content-Security-Policy Strict-Transport-Security; do
+    check "an answer below /assets/ carries ${w}" grep -q "^${w} " "${ngcdir}/walls.site"
+done
+# The one that is the opposite of obvious: without script-src 'self' the module
+# worker that holds the typed password does not run on WebKit, so no password
+# login works in Safari. The NGC repository measured that on both engines.
+check "the policy of the asset files keeps the password worker working" \
+    grep -qF "Content-Security-Policy default-src 'none'; script-src 'self'" "${ngcdir}/walls.site"
+
+# A missing file below /assets/ has to reach the single entry point, which then
+# answers 404 with all the headers of the interface. That is FallbackResource;
+# the rewrite that used to stand here let Apache answer such a path itself.
+check "the web root routes with FallbackResource" \
+    grep -q '^        FallbackResource /index.php$' "${ngcdir}/site.got"
+check "nothing takes /assets/ out of the routing any more" \
+    not grep -q 'REQUEST_URI} !\^/(assets' "${ngcdir}/site.got"
+# FallbackResource comes with mod_dir. Without the module Apache refuses the
+# whole file, so the module list has to name it.
+check "the module list names dir, which brings FallbackResource" \
+    grep -qE '^NGC_MODULES=\(.*\bdir\b' "${ngcdir}/body.sh"
+# Everything beside public/ is denied a second time, which survives a typo in
+# DocumentRoot.
+check "everything beside public/ is denied as well" \
+    grep -q "^    <Directory ${ngcroot}>\$" "${ngcdir}/site.got"
+check "and it is denied, not granted" \
+    test "$(sed -n "\#^    <Directory ${ngcroot}>\$#,\#^    </Directory>\$#p" "${ngcdir}/site.got" |
+        grep -c '^        Require all denied$')" = 1
+
+# -------------------------------------------- the second version, and its drift
+# The NGC repository ships the same four walls as a template of its own. A
+# release unpacks it beside the interface - whether it really carries the file is
+# not settled, so the script never reads its virtual host from there. It does
+# compare, and says so when the two have drifted apart.
+cat > "${ngcdir}/tpl.conf" <<'EOF'
+    <Directory "/var/www/ngc/public/assets">
+        Header always set X-Content-Type-Options "nosniff"
+        Header always set Cross-Origin-Resource-Policy "same-origin"
+        Header always set Content-Security-Policy "default-src 'none'; script-src 'self'"
+        Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains"
+    </Directory>
+EOF
+ngc_template_walls "${ngcdir}/tpl.conf" > "${ngcdir}/walls.tpl"
+check "the walls of the NGC template are read as the same four" \
+    cmp -s "${ngcdir}/walls.list" "${ngcdir}/walls.tpl"
+check "and the same template is called the same" \
+    grep -q 'the same' <(ngc_check_template "${ngcdir}/tpl.conf")
+
+grep -v 'Cross-Origin-Resource-Policy' "${ngcdir}/tpl.conf" > "${ngcdir}/tpl-short.conf"
+check "a template with one wall fewer is named as different" \
+    grep -q 'other protective settings' <(ngc_check_template "${ngcdir}/tpl-short.conf")
+# A line the reader does not understand must not become a silent match: it would
+# make a green run out of an installation with a hole.
+printf 'Header always set X-Content-Type-Options nosniff\n' > "${ngcdir}/tpl-odd.conf"
+check "a Header line it cannot read ends template_walls with 1" \
+    not ngc_template_walls "${ngcdir}/tpl-odd.conf"
+check "and check_vhost_template says so instead of calling it the same" \
+    grep -q 'could not be read line by line' <(ngc_check_template "${ngcdir}/tpl-odd.conf")
+# No file at all is the normal case today, and it may say nothing.
+check "no template on the server means no message" \
+    test -z "$(ngc_check_template "${ngcdir}/nothing-here.conf")"
+
+# ------------------------------------------- a virtual host written by somebody
+# The script writes this file on every install and configure. A server somebody
+# hardened by hand must not lose that work without a word.
+printf '# hand written\n<VirtualHost *:443>\n</VirtualHost>\n' > "${ngcdir}/foreign.conf"
+check "a virtual host of somebody else is kept and named" \
+    grep -q 'did not write' <(ngc_keep_site "${ngcdir}/foreign.conf")
+check "and its copy is really there" test -f "${ngcdir}/foreign.conf.before-ulh"
+# Our own file carries its own name in the first line, so it is replaced in
+# silence - that is what "Never edit by hand" in the second line says.
+sed "1s|.*|# ${ngcdir}/own.conf|" "${ngcdir}/site.got" > "${ngcdir}/own.conf"
+check "the script says nothing about a file it wrote itself" \
+    test -z "$(ngc_keep_site "${ngcdir}/own.conf")"
+check "and keeps no copy of it" not test -e "${ngcdir}/own.conf.before-ulh"
+
+unset -f ngc_load ngc_balancer ngc_webjson ngc_answers ngc_host ngc_site \
+    ngc_asset_walls ngc_template_walls ngc_check_template ngc_keep_site walls_in_site
+unset ngcdir API1 API2 PIN1 PIN2 good bad shell w ngcroot

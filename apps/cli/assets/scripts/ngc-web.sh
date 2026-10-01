@@ -9,6 +9,10 @@
 # (github.com/sorglos-it/nextgencloud), rules "TLS intern, nie ungeprueft",
 # "Hosts und Adressen" and "Lastverteilung in Apache".
 #
+# The virtual host it writes is the SECOND version of the walls that NGC also
+# ships as apps/web/templates/apache-vhost.conf. Why there are two, and why
+# this script does not simply read that one: the comment of render_site.
+#
 # The prompts of assets/catalog.yaml carry the answers of that contract, in
 # this order (ulh joins them with commas, so no answer may hold a comma -
 # that is why the two lists are separated by spaces):
@@ -58,6 +62,14 @@ NGC_STAGE="/var/lib/ngc/staged"                 # config.StageDir: release files
 NGC_KEPT="/var/lib/ngc/web"                     # uninstall keeps the configuration here
 SITE_FILE="/etc/apache2/sites-available/ngc-web.conf"
 MD_FILE="/etc/apache2/conf-available/ngc-md.conf"
+# A virtual host that was not written by this script is kept here before it is
+# replaced. Apache includes sites-enabled/*.conf only, so a file in
+# sites-available that does not end in .conf is never read by anybody.
+SITE_KEPT="${SITE_FILE}.before-ulh"
+# NGC ships the walls of this virtual host as a template of its own; a release
+# unpacks it to here. The script never needs the file - it only compares, see
+# check_vhost_template.
+VHOST_TEMPLATE="${NGC_ROOT}/templates/apache-vhost.conf"
 
 # Packages: Apache and PHP for the interface, openssl and jq for the check of
 # the program files, curl to fetch the release, ca-certificates so that check
@@ -66,7 +78,15 @@ NGC_PACKAGES=(apache2 php-fpm openssl jq curl ca-certificates)
 
 # Apache modules the virtual host and the balancer need. mod_md (Let's
 # Encrypt) comes on top, only in that mode.
-NGC_MODULES=(ssl rewrite headers proxy proxy_http proxy_wstunnel proxy_balancer
+#
+# dir is in the list for FallbackResource, which mod_dir brings. On Debian and
+# Ubuntu it is switched on from the start, so the line below usually does
+# nothing - and on the one machine where somebody switched it off, the
+# alternative is Apache refusing the whole file with "Invalid command
+# 'FallbackResource'". It costs nothing to name it; it costs a site not to.
+# rewrite stays: the virtual host for port 80 still needs it to keep the path
+# of Let's Encrypt free.
+NGC_MODULES=(ssl rewrite headers dir proxy proxy_http proxy_wstunnel proxy_balancer
 	lbmethod_byrequests proxy_fcgi setenvif)
 
 # Where the release files come from. The address carries no trust at all: the
@@ -971,8 +991,28 @@ render_md() {
 }
 
 # render_site writes the virtual host: HTTPS with TLS 1.3 and AES-256-GCM
-# only, the web root is public/ and nothing above it, and /api/ goes to the
-# balancer.
+# only, the web root is public/ and nothing above it, /api/ goes to the
+# balancer, and the files Apache hands out itself carry walls of their own.
+#
+# THIS IS THE SECOND VERSION OF THESE WALLS. The first one is
+# apps/web/templates/apache-vhost.conf in the NGC repository
+# (github.com/sorglos-it/nextgencloud, 406 lines), and the reason for every
+# single header stands there as a comment - read it before changing one here.
+# Why there are two at all: a release of ngc-web unpacks that template to
+# ${NGC_ROOT}/templates/apache-vhost.conf, so a script could copy it from
+# there and there would be one version. As this is written nothing in the NGC
+# repository builds the release archive yet, so nobody can say whether a
+# release carries that file: verify_release above checks the archive as one
+# file - signature, SHA-256 and size - and says nothing about what is in it,
+# and unpack_release demands only public/index.php. A script that read its
+# virtual host out of the release would therefore leave the admin with no
+# virtual host at all on the first release that does not carry it. So this
+# script writes its own, and check_vhost_template compares the two whenever
+# the file does turn up.
+#
+# The four walls below /assets/ are the same four the template sets. Three of
+# them stand in the assets block; Strict-Transport-Security stands once at the
+# host, where it reaches every answer - see the comment there.
 render_site() {
 	printf '%s\n' \
 		'# /etc/apache2/sites-available/ngc-web.conf' \
@@ -999,25 +1039,94 @@ render_site() {
 		'    # this name and these two lines step aside; they are what the' \
 		'    # server starts with until then.' \
 		"    SSLCertificateFile    ${NGC_CERT}" \
-		"    SSLCertificateKeyFile ${NGC_KEY}"
+		"    SSLCertificateKeyFile ${NGC_KEY}" \
+		'' \
+		'    # The server says nothing about itself. Two halves of this are not' \
+		'    # here because Apache allows neither in a virtual host:' \
+		'    # ServerTokens Prod belongs in the server-wide configuration and' \
+		'    # expose_php = Off in php.ini. This script changes no file of' \
+		'    # another package, so those two stay for the admin.' \
+		'    ServerSignature Off'
 	printf '%s\n' \
 		'' \
 		'    # The same value the interface sends with every page, so the two' \
-		'    # can never disagree; static files get it from here.' \
+		'    # can never disagree. It stands HERE and not in the assets block' \
+		'    # below, although the template of NGC has it there: at the host it' \
+		'    # reaches every answer, the files below /assets/ included, and' \
+		'    # written in both places the same answer could end up carrying it' \
+		'    # twice. One place, every answer.' \
 		'    Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains"' \
+		'' \
+		'    # What may not be served, said twice: once by DocumentRoot naming' \
+		'    # public/ and nothing else, and once here. The second time is the' \
+		'    # one that survives a typo in the first. The rule is everything' \
+		"    # beside public/ - classes/, config/, data/, templates/, assets/," \
+		'    # VERSION - and not a list, so whatever is added later is covered' \
+		'    # too. index.php goes on reading those files off the file system;' \
+		'    # that is PHP opening a file, not a request Apache answers.' \
+		"    <Directory ${NGC_ROOT}>" \
+		'        Require all denied' \
+		'        AllowOverride None' \
+		'        Options None' \
+		'    </Directory>' \
 		'' \
 		"    <Directory ${NGC_ROOT}/public>" \
 		'        Require all granted' \
-		'        Options -Indexes' \
+		'        # No .htaccess anywhere: a file in the tree must not be able to' \
+		'        # loosen what stands here.' \
 		'        AllowOverride None' \
+		'        # No directory listing, and no symbolic link out of the web' \
+		'        # root. The price: a link in public/ instead of the file is' \
+		'        # refused - the release of NGC holds no links, this script' \
+		'        # refuses an archive that does (unpack_release).' \
+		'        Options -Indexes -FollowSymLinks -ExecCGI -Includes' \
+		'        # Every path that exists as neither a file nor a directory' \
+		'        # below public/ goes to the single entry point. This replaces' \
+		'        # the rewrite that used to stand here and took /assets/ out of' \
+		'        # itself: a MISSING file under /assets/ was then answered by' \
+		'        # Apache alone, with none of the walls below. Now it reaches' \
+		'        # index.php, which answers 404 with every header the interface' \
+		'        # sends. /api/ needs no exception either - the balancer takes' \
+		'        # those requests over before any file is looked for.' \
+		'        FallbackResource /index.php' \
 		'    </Directory>' \
 		'' \
-		'    # Everything outside /assets/ and /api/ is handed to the single' \
-		'    # entry point, so no file that happens to lie in the web root is' \
-		'    # ever served or run.' \
-		'    RewriteEngine On' \
-		'    RewriteCond %{REQUEST_URI} !^/(assets|api)/' \
-		'    RewriteRule !^/index\.php$ /index.php [L]' \
+		'    # THE WALLS FOR THE FILES APACHE HANDS OUT ITSELF - the .js, the' \
+		'    # .css, the vendored code. No PHP of the interface ever sees those' \
+		'    # answers, so their headers stand here. They are not the headers of' \
+		'    # a page: the reason for each one is in' \
+		'    # apps/web/templates/apache-vhost.conf of the NGC repository, and' \
+		'    # one of them is the opposite of obvious. In short:' \
+		'    #   nosniff        one vendored LICENSE has no extension and goes' \
+		'    #                  out with no Content-Type at all.' \
+		'    #   resource       these files belong to the shell; what can be' \
+		'    #                  embedded can be measured.' \
+		'    #   policy         a policy of its own, NOT the one the page sends.' \
+		'    #                  For a .js a document fetches it does nothing -' \
+		'    #                  the policy of the document governs that. It is' \
+		'    #                  here for the one file where it does: the module' \
+		'    #                  worker that holds the typed password while it' \
+		'    #                  derives the key, assets/js/auth/argon2-worker.js.' \
+		'    #                  A worker is governed by its OWN answer. Leaving' \
+		'    #                  connect-src out is what walls it in, and' \
+		"    #                  script-src 'self' is what keeps it working:" \
+		"    #                  with default-src 'none' alone WebKit refuses the" \
+		'    #                  static import of the worker, so no password login' \
+		'    #                  works in Safari - Chromium lets it through and' \
+		'    #                  shows nothing. Measured twice, on both engines.' \
+		'    #                  The policy of the page itself would be wrong' \
+		'    #                  here: it allows connect-src, and a worker that' \
+		'    #                  may connect is the one thing this must not be.' \
+		'    # Deliberately absent: Cross-Origin-Opener-Policy,' \
+		'    # Permissions-Policy and Referrer-Policy govern a document or the' \
+		'    # requests an object makes, and nothing below /assets/ is a' \
+		'    # document or makes a request. A header that fences nothing feigns' \
+		'    # a wall, and that is worse than no header.' \
+		"    <Directory ${NGC_ROOT}/public/assets>" \
+		'        Header always set X-Content-Type-Options "nosniff"' \
+		'        Header always set Cross-Origin-Resource-Policy "same-origin"' \
+		"        Header always set Content-Security-Policy \"default-src 'none'; script-src 'self'\"" \
+		'    </Directory>' \
 		'' \
 		'    # The API servers: the balancer and its TLS settings, written from' \
 		'    # /etc/ngc/web.json.' \
@@ -1026,6 +1135,89 @@ render_site() {
 		'    ErrorLog ${APACHE_LOG_DIR}/ngc-web-error.log' \
 		'    CustomLog ${APACHE_LOG_DIR}/ngc-web-access.log combined' \
 		'</VirtualHost>'
+}
+
+# asset_walls prints the walls that must end up on an answer below /assets/,
+# one "name value" per line, sorted. It is read twice: the lines of render_site
+# above are measured against it by the test of this script, and
+# check_vhost_template compares it with the template of NGC. So there is one
+# list in this file, not three.
+asset_walls() {
+	printf '%s\n' \
+		"Content-Security-Policy default-src 'none'; script-src 'self'" \
+		'Cross-Origin-Resource-Policy same-origin' \
+		'Strict-Transport-Security max-age=63072000; includeSubDomains' \
+		'X-Content-Type-Options nosniff' | sort
+}
+
+# template_walls prints the same form out of a file written like the template of
+# NGC: every "Header always set <name> <value>" it holds, sorted, with the
+# quotes around the value taken off. A line it cannot read makes it END WITH 1
+# instead of dropping that line - a wall silently skipped would turn a
+# difference into a match, and then the comparison below would say "the same"
+# about two lists that are not.
+template_walls() {
+	local file="$1"
+	grep -E '^[[:space:]]*Header[[:space:]]+always[[:space:]]+set[[:space:]]' \
+		"$file" >"${WORK}/walls.raw" || return 1
+	sed -E 's/^[[:space:]]*Header[[:space:]]+always[[:space:]]+set[[:space:]]+([A-Za-z-]+)[[:space:]]+"([^"]*)"[[:space:]]*$/\1 \2/' \
+		<"${WORK}/walls.raw" >"${WORK}/walls.parsed" || return 1
+	# A line the pattern did not match still begins with Header, because the
+	# pattern is anchored at the start and the replacement never is.
+	if grep -qE '^[[:space:]]*Header' "${WORK}/walls.parsed"; then
+		return 1
+	fi
+	sort "${WORK}/walls.parsed"
+}
+
+# check_vhost_template says it out loud when the two versions of these walls
+# have drifted apart. It never stops the setup and never reads the virtual host
+# out of the file: see the comment of render_site for why there are two
+# versions at all. Nothing happens when the file is not there, which is the
+# normal case today.
+check_vhost_template() {
+	if [ ! -f "$VHOST_TEMPLATE" ]; then
+		return 0
+	fi
+	asset_walls >"${WORK}/walls.ours"
+	if ! template_walls "$VHOST_TEMPLATE" >"${WORK}/walls.theirs" ||
+		[ ! -s "${WORK}/walls.theirs" ]; then
+		log_warn "The file ${VHOST_TEMPLATE} could not be read line by line. The web server is set up with the settings of this script; nothing is missing. If this comes again, report it at github.com/sorglos-it/ulh/issues."
+		return 0
+	fi
+	if cmp -s -- "${WORK}/walls.ours" "${WORK}/walls.theirs"; then
+		log_info "The protective settings of this script and the ones NGC ships are the same."
+		return 0
+	fi
+	# Named, not repaired: which of the two is the newer one cannot be decided
+	# here, and guessing would be worse than saying so.
+	log_warn "NGC ships other protective settings for the files of the interface than this script writes. The web server is set up and works, with the settings of this script. Both lists are below; please report them at github.com/sorglos-it/ulh/issues, so the two can be brought together."
+	printf '  this script writes:\n'
+	sed 's/^/    /' "${WORK}/walls.ours"
+	printf '  NGC ships (%s):\n' "$VHOST_TEMPLATE"
+	sed 's/^/    /' "${WORK}/walls.theirs"
+}
+
+# keep_foreign_site saves a virtual host this script did not write before it is
+# replaced. The file stays the script's - every install and configure writes it
+# anew, which is what keeps one truth on the machine - but a server somebody
+# hardened by hand must not lose that work without a word. The copy keeps a
+# name Apache never reads: only sites-enabled/*.conf is included.
+#
+# What it recognises, and nothing more: the first line, which this script writes
+# and names itself in. Somebody who edits the lines BELOW it and leaves that one
+# alone is not noticed, and their change is gone on the next run. That is what
+# "Never edit by hand" in the second line is there to say.
+keep_foreign_site() {
+	if [ ! -f "$SITE_FILE" ]; then
+		return 0
+	fi
+	if head -n 1 -- "$SITE_FILE" | grep -qxF "# ${SITE_FILE}"; then
+		return 0 # written by this script, nothing to keep
+	fi
+	cp -p -- "$SITE_FILE" "$SITE_KEPT" || log_error "The file ${SITE_FILE} could not be copied to ${SITE_KEPT}. Is the disk full?"
+	chmod 0600 -- "$SITE_KEPT"
+	log_warn "There was already a virtual host in ${SITE_FILE} that this script did not write. It is replaced now; the old one is kept as ${SITE_KEPT}. Anything you added there by hand - another certificate, PHP over a socket - has to go into it again."
 }
 
 # ============================================================
@@ -1055,7 +1247,9 @@ configure_all() {
 	put_file "${WORK}/apache-apis.conf" "$NGC_BALANCER" 0644
 
 	render_site >"${WORK}/ngc-web.conf"
+	keep_foreign_site
 	put_file "${WORK}/ngc-web.conf" "$SITE_FILE" 0644
+	check_vhost_template
 
 	ensure_modules
 	ensure_php
@@ -1114,6 +1308,12 @@ uninstall_ngc_web() {
 		fi
 	fi
 	log_info "The virtual host and ${NGC_ROOT} are gone. Apache itself stays installed."
+	# The copy of a virtual host somebody wrote by hand is theirs, not ours, so
+	# it is never deleted here - not even with purge, which only deletes the
+	# files this script itself made.
+	if [ -f "$SITE_KEPT" ]; then
+		log_info "Your own earlier virtual host is still there as ${SITE_KEPT}. Delete it yourself when you no longer need it."
+	fi
 
 	# Only the files of ngc-web, never the whole /etc/ngc: on a server with
 	# several roles api.json, controller.json and trust-anchor.json lie there
