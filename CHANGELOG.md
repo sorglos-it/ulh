@@ -9,9 +9,15 @@
   imported, the certificate of every API server checked against the fingerprint
   the admin typed, and Apache's balancer for `/api/`. `install`, `configure` and
   `uninstall`; a second run of `install` changes nothing that is already right,
-  and Apache is reloaded only after `apachectl configtest`. What this one
-  script prints is German: NGC asks for that, its target group installs in
-  German.
+  and Apache is reloaded only after `apachectl configtest`. Its menu entry, its
+  three actions and all six questions are in the catalog in five languages; what
+  the script itself prints is English, as in every other script. The program
+  files come from a release of NGC, or from `/var/lib/ngc/staged` when a
+  `release.json` lies there - and until NGC publishes its first release, that
+  second way is the only one that works.
+- New: `apps/cli/tests/ngc-web.test.sh` runs the parts of `ngc-web` that work
+  without a server: the balancer it writes for Apache byte for byte, `web.json`,
+  and which host names, addresses and fingerprints it refuses.
 - New: five languages - English, German, French, Italian and Spanish. The menu,
   the messages and the descriptions and questions of all 96 scripts. ulh starts in
   the language of the system; the key `l` switches and remembers it

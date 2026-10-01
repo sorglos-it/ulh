@@ -19,12 +19,18 @@
 #   5 apis       NGC_APIS       https://<host>:7443 of every API server
 #   6 api_pins   NGC_API_PINS   the pin of each API, in the same order
 #
-# Messages are German: whoever installs NGC reads them, and the target group
-# is inexperienced. Code, identifiers and comments stay English.
+# Everything this script prints is English, as in every other ulh script. The
+# five languages of ulh sit in assets/catalog.yaml: the menu entry, the actions
+# and all six questions are there in de, en, fr, it and es.
+#
+# The program files come from NGC_RELEASE_BASE, or from /var/lib/ngc/staged when
+# a release.json lies there - put the files in by hand and no network is needed.
+# As long as NGC has published no release at all, that second way is the only
+# one that works.
 
 set -eu
 source "$(dirname "$0")/../../classes/bootstrap.sh"
-# Script entscheidet selbst wann geparst werden soll:
+# The script itself decides when the parameters get parsed:
 parse_parameters "${1:-}"
 
 # The character ranges below are the C ranges, whatever locale the admin runs:
@@ -115,7 +121,7 @@ work_init() {
 # and Apache's configuration.
 need_root() {
 	if [ "$EUID" -ne 0 ]; then
-		log_error "Dieses Skript braucht Root-Rechte. Starte es über ulh oder mit: sudo bash $0 \"<Aktion>\""
+		log_error "This script needs root rights. Start it from ulh, or with: sudo bash $0 \"<action>\""
 	fi
 }
 
@@ -124,7 +130,7 @@ need_root() {
 need_debian() {
 	detect_os
 	if [ "$PKG_TYPE" != "deb" ]; then
-		log_error "NGC richtet sein Webinterface nur auf Debian und Ubuntu ein. Erkannt: ${OS_DISTRO}."
+		log_error "NGC sets up its web interface on Debian and Ubuntu only. Found: ${OS_DISTRO}."
 	fi
 }
 
@@ -243,21 +249,21 @@ read_answers() {
 	local -a urls=() pins=()
 
 	if ! valid_host "$NGC_HOSTNAME"; then
-		log_error "Der Name des Webservers ist nicht erlaubt: '${NGC_HOSTNAME}'. Erlaubt sind ein Name in Kleinbuchstaben (z. B. ngc.example.org) oder eine IPv4-Adresse (z. B. 192.168.1.10). Kein IPv6, keine Adresse mit http:// davor."
+		log_error "This name of the web server is not allowed: '${NGC_HOSTNAME}'. Take a name in lower case (for example ngc.example.org) or an IPv4 address (for example 192.168.1.10). No IPv6, and nothing with http:// in front."
 	fi
 
 	case "$NGC_CERT_MODE" in
 	letsencrypt | selfsigned | import) ;;
 	*)
-		log_error "Für das Zertifikat gibt es drei Wege: letsencrypt, selfsigned oder import. Eingetragen ist: '${NGC_CERT_MODE}'."
+		log_error "There are three ways to a certificate: letsencrypt, selfsigned or import. This is none of them: '${NGC_CERT_MODE}'."
 		;;
 	esac
 	if [ "$NGC_CERT_MODE" = letsencrypt ] && is_ipv4 "$NGC_HOSTNAME"; then
-		log_error "Let's Encrypt gibt es nur für einen Namen, nicht für eine IP-Adresse. Nimm selfsigned, oder richte erst einen Namen ein, der von außen auf diesen Server zeigt."
+		log_error "Let's Encrypt works for a name only, not for an IP address. Take selfsigned, or set up a name that points at this server from the internet."
 	fi
 	if [ "$NGC_CERT_MODE" = import ]; then
-		check_import_file "$NGC_CERT_FILE" "Zertifikat"
-		check_import_file "$NGC_KEY_FILE" "Schlüssel"
+		check_import_file "$NGC_CERT_FILE" "certificate"
+		check_import_file "$NGC_KEY_FILE" "key"
 	fi
 
 	# Passkeys only work with a name, so rp stays out of web.json for an IP
@@ -273,30 +279,30 @@ read_answers() {
 	read -r -a urls <<<"$NGC_APIS"
 	read -r -a pins <<<"$NGC_API_PINS"
 	if [ "${#urls[@]}" -eq 0 ]; then
-		log_error "Es fehlt die Adresse des API-Servers, z. B. https://api-1.example.org:7443. Mehrere trennst du mit einem Leerzeichen."
+		log_error "The address of the API server is missing, for example https://api-1.example.org:7443. Separate several of them with a space."
 	fi
 	if [ "${#urls[@]}" -gt 16 ]; then
-		log_error "Höchstens 16 API-Server, eingetragen sind ${#urls[@]}."
+		log_error "At most 16 API servers, and there are ${#urls[@]}."
 	fi
 	if [ "${#urls[@]}" -ne "${#pins[@]}" ]; then
-		log_error "Zu jeder API-Adresse gehört genau ein Fingerabdruck, in derselben Reihenfolge. Adressen: ${#urls[@]}, Fingerabdrücke: ${#pins[@]}."
+		log_error "Every API address needs exactly one fingerprint, in the same order. Addresses: ${#urls[@]}, fingerprints: ${#pins[@]}."
 	fi
 
 	for i in "${!urls[@]}"; do
 		url="${urls[$i]}"
 		pin="${pins[$i]}"
 		if ! valid_web_url "$url"; then
-			log_error "Die Adresse der API ist nicht erlaubt: '${url}'. Erwartet wird https://<name oder IPv4>:<port>, z. B. https://api-1.example.org:7443."
+			log_error "This address of an API is not allowed: '${url}'. Expected is https://<name or IPv4>:<port>, for example https://api-1.example.org:7443."
 		fi
 		if ! valid_pin "$pin"; then
-			log_error "Der Fingerabdruck der API ${url} ist nicht erlaubt: '${pin}'. Erwartet werden 43 Zeichen, genau so wie ngc-api sie am Ende anzeigt."
+			log_error "The fingerprint of the API ${url} is not allowed: '${pin}'. Expected are the 43 characters ngc-api shows at the end, exactly as they are there."
 		fi
 		# The same address twice would let Apache balance over it twice and
 		# trust two keys for one server (config.Web.Validate).
 		j=0
 		while [ "$j" -lt "${#APIS[@]}" ]; do
 			if [ "${APIS[$j]}" = "$url" ]; then
-				log_error "Die Adresse ${url} steht zweimal in der Liste."
+				log_error "The address ${url} is in the list twice."
 			fi
 			j=$((j + 1))
 		done
@@ -311,10 +317,10 @@ check_import_file() {
 	local f="${1:-}" what="$2"
 	case "$f" in
 	/*) ;;
-	*) log_error "Beim Weg 'import' braucht es den vollen Pfad zum ${what}, also mit / am Anfang. Eingetragen ist: '${f}'." ;;
+	*) log_error "The way 'import' needs the full path to the ${what}, so with a / at the start. This is not one: '${f}'." ;;
 	esac
 	if [ ! -f "$f" ] || [ ! -r "$f" ]; then
-		log_error "Diese Datei gibt es nicht oder sie ist nicht lesbar: ${f}"
+		log_error "There is no such file, or it cannot be read: ${f}"
 	fi
 }
 
@@ -341,7 +347,7 @@ put_file() {
 	if [ -f "$dst" ] && cmp -s -- "$src" "$dst"; then
 		chown root:root -- "$dst"
 		chmod "$mode" -- "$dst"
-		log_info "unverändert: ${dst}"
+		log_info "unchanged: ${dst}"
 		return 0
 	fi
 	tmp="$(mktemp -- "${dst}.XXXXXX")"
@@ -354,10 +360,10 @@ put_file() {
 			mv -f -- "$tmp" "$dst"
 	}; then
 		rm -f -- "$tmp"
-		log_error "Die Datei ${dst} ließ sich nicht schreiben. Ist die Festplatte voll?"
+		log_error "The file ${dst} could not be written. Is the disk full?"
 	fi
 	CHANGED=1
-	log_info "geschrieben: ${dst}"
+	log_info "written: ${dst}"
 }
 
 # ============================================================
@@ -496,30 +502,30 @@ fetch_release() {
 	local dir="$1"
 	RELEASE_NAME=""
 	if [ -f "${NGC_STAGE}/release.json" ]; then
-		log_info "Benutze die Release-Dateien aus ${NGC_STAGE}."
+		log_info "Using the release files from ${NGC_STAGE}."
 		cp -f -- "${NGC_STAGE}/release.json" "${dir}/release.json"
 		if ! release_payload "$dir"; then
-			log_error "Die Datei ${NGC_STAGE}/release.json ist beschädigt."
+			log_error "The file ${NGC_STAGE}/release.json is damaged."
 		fi
-		RELEASE_NAME="$(release_file)" || log_error "In ${NGC_STAGE}/release.json steht kein Eintrag für ngc-web."
+		RELEASE_NAME="$(release_file)" || log_error "There is no entry for ngc-web in ${NGC_STAGE}/release.json."
 		if [ ! -f "${NGC_STAGE}/${RELEASE_NAME}" ]; then
-			log_error "In ${NGC_STAGE} fehlt die Datei ${RELEASE_NAME}."
+			log_error "The file ${RELEASE_NAME} is missing in ${NGC_STAGE}."
 		fi
 		cp -f -- "${NGC_STAGE}/${RELEASE_NAME}" "${dir}/${RELEASE_NAME}"
 		return 0
 	fi
 
-	log_info "Lade die Programmdateien von ${NGC_RELEASE_BASE} ..."
+	log_info "Loading the program files from ${NGC_RELEASE_BASE} ..."
 	if ! download "${NGC_RELEASE_BASE}/release.json" "${dir}/release.json"; then
 		return 1
 	fi
 	if ! release_payload "$dir"; then
-		log_error "Die geladene release.json ist beschädigt. Versuche es später noch einmal."
+		log_error "The release.json that arrived is damaged. Try again later."
 	fi
 	# Only the name comes out of the payload, never the address: so a tampered
 	# release.json cannot point the download anywhere else, and the signature
 	# check right after decides everything else.
-	RELEASE_NAME="$(release_file)" || log_error "In release.json steht kein Eintrag für ngc-web. Die Datei passt nicht zu diesem Skript."
+	RELEASE_NAME="$(release_file)" || log_error "There is no entry for ngc-web in release.json. That file does not belong to this script."
 	download "${NGC_RELEASE_BASE}/${RELEASE_NAME}" "${dir}/${RELEASE_NAME}"
 }
 
@@ -540,30 +546,30 @@ install_release() {
 
 	case "$NGC_RELEASE_KEY" in
 	*REPLACE-THIS-LINE*)
-		log_error "Dieses Skript hat noch keinen echten Release-Schlüssel von NGC. Ohne ihn kann niemand prüfen, ob die Programmdateien echt sind - deshalb bricht die Einrichtung hier ab. Bitte eine neuere Fassung von ulh holen."
+		log_error "This script has no real release key of NGC yet. Without it nobody can check whether the program files are genuine, so the setup stops here. Please get a newer version of ulh."
 		;;
 	esac
 
 	if ! fetch_release "$dir"; then
 		if [ -f "${NGC_ROOT}/public/index.php" ] && [ -f "$NGC_SEQ" ]; then
-			log_warn "Die Programmdateien konnten nicht geladen werden. Es bleibt bei den schon geprüften Dateien in ${NGC_ROOT}."
+			log_warn "The program files could not be loaded. It stays with the files in ${NGC_ROOT}, which were checked before."
 			return 0
 		fi
-		log_error "Die Programmdateien konnten nicht geladen werden. Prüfe die Internetverbindung, oder lege release.json und die Datei von ngc-web nach ${NGC_STAGE}."
+		log_error "The program files could not be loaded. Check the internet connection, or put release.json and the file of ngc-web into ${NGC_STAGE} by hand. As long as NGC has published no release, that folder is the only way that works."
 	fi
 
 	if ! verify_release "$dir"; then
-		log_error "Die Programmdateien sind nicht echt unterschrieben (Grund oben). Es wird nichts installiert. Lade ulh neu und versuche es noch einmal; bleibt es dabei, melde es unter github.com/sorglos-it/ulh/issues."
+		log_error "The program files are not signed by NGC (the reason is above). Nothing is installed. Get ulh again and try once more; if it stays that way, report it at github.com/sorglos-it/ulh/issues."
 	fi
-	log_info "Die Unterschrift der Programmdateien stimmt."
+	log_info "The signature of the program files is good."
 
 	# Never a release older than the one installed; the same number may come
 	# again to repair an installation (shared/ulh.md). The number is read out
 	# of the payload verify_release just confirmed, not out of the one that was
 	# decoded before the signature was checked.
-	seq="$(jq -er '.seq | numbers' <"$WORK/v.payload.json")" || log_error "In release.json fehlt die Nummer des Release."
+	seq="$(jq -er '.seq | numbers' <"$WORK/v.payload.json")" || log_error "The number of the release is missing in release.json."
 	case "$seq" in
-	'' | *[!0-9]*) log_error "Die Nummer des Release ist keine Zahl." ;;
+	'' | *[!0-9]*) log_error "The number of the release is not a number." ;;
 	esac
 	have=0
 	if [ -f "$NGC_SEQ" ]; then
@@ -571,10 +577,10 @@ install_release() {
 		have="${have:-0}"
 	fi
 	if [ "$seq" -lt "$have" ]; then
-		log_error "Das geladene Release ${seq} ist älter als das installierte ${have}. Ein Rückschritt wird nicht eingespielt."
+		log_error "The release ${seq} that arrived is older than the installed ${have}. A step backwards is not installed."
 	fi
 	if [ "$seq" -eq "$have" ] && [ -f "${NGC_ROOT}/public/index.php" ]; then
-		log_info "Das Webinterface ist schon in dieser Fassung da (Release ${seq})."
+		log_info "The web interface is here in this version already (release ${seq})."
 		return 0
 	fi
 
@@ -591,28 +597,28 @@ install_release() {
 unpack_release() {
 	local tarball="$1" entry
 	if ! tar -tf "$tarball" >"${WORK}/entries" 2>/dev/null; then
-		log_error "Die geladene Datei ist kein Archiv, das sich lesen lässt."
+		log_error "The file that arrived is no archive that can be read."
 	fi
 	while IFS= read -r entry; do
 		case "$entry" in
 		/* | .. | ../* | */../* | */.. | '')
-			log_error "Das Archiv enthält einen Pfad, der aus dem Zielordner führt. Es wird nichts entpackt."
+			log_error "The archive holds a path that leads out of the target folder. Nothing is unpacked."
 			;;
 		esac
 	done <"${WORK}/entries"
 	# Only files and folders: the first letter of tar's long listing is the
 	# kind, so l (link), h (hard link), b, c, p and s are refused.
 	if tar -tvf "$tarball" 2>/dev/null | grep -qv '^[-d]'; then
-		log_error "Das Archiv enthält Verknüpfungen oder Gerätedateien. Es wird nichts entpackt."
+		log_error "The archive holds links or device files. Nothing is unpacked."
 	fi
 
 	rm -rf -- "${NGC_ROOT}.new"
 	mkdir -p -- "${NGC_ROOT}.new"
 	tar -xf "$tarball" -C "${NGC_ROOT}.new" --no-same-owner --no-same-permissions ||
-		log_error "Das Archiv ließ sich nicht entpacken."
+		log_error "The archive could not be unpacked."
 	if [ ! -f "${NGC_ROOT}.new/public/index.php" ]; then
 		rm -rf -- "${NGC_ROOT}.new"
-		log_error "Im Archiv fehlt public/index.php. Es passt nicht zu diesem Skript."
+		log_error "public/index.php is missing in the archive. It does not belong to this script."
 	fi
 
 	# root owns everything, Apache only reads: the interface needs no write
@@ -628,7 +634,7 @@ unpack_release() {
 	mv -- "${NGC_ROOT}.new" "$NGC_ROOT"
 	rm -rf -- "${NGC_ROOT}.old"
 	CHANGED=1
-	log_info "Das Webinterface liegt in ${NGC_ROOT}, erreichbar ist nur ${NGC_ROOT}/public."
+	log_info "The web interface is in ${NGC_ROOT}; only ${NGC_ROOT}/public can be reached from outside."
 }
 
 # ============================================================
@@ -644,14 +650,14 @@ ensure_packages() {
 		fi
 	done
 	if [ "${#missing[@]}" -eq 0 ]; then
-		log_info "Apache, PHP und die Prüfwerkzeuge sind schon installiert."
+		log_info "Apache, PHP and the tools for the check are installed already."
 		return 0
 	fi
-	log_info "Installiere: ${missing[*]}"
+	log_info "Installing: ${missing[*]}"
 	# PKG_UPDATE and PKG_INSTALL are commands with options, so they are meant
 	# to split into words here; the package names stay quoted.
 	$PKG_UPDATE || true
-	$PKG_INSTALL "${missing[@]}" || log_error "Diese Pakete ließen sich nicht installieren: ${missing[*]}"
+	$PKG_INSTALL "${missing[@]}" || log_error "These packages could not be installed: ${missing[*]}"
 }
 
 ensure_modules() {
@@ -662,7 +668,7 @@ ensure_modules() {
 	fi
 	for m in "${mods[@]}"; do
 		if [ ! -e "/etc/apache2/mods-enabled/${m}.load" ]; then
-			a2enmod -q "$m" || log_error "Das Apache-Modul ${m} ließ sich nicht einschalten."
+			a2enmod -q "$m" || log_error "The Apache module ${m} could not be switched on."
 			CHANGED=1
 		fi
 	done
@@ -681,14 +687,14 @@ ensure_php() {
 		fi
 	done
 	if [ -z "$PHP_CONF" ]; then
-		log_error "PHP für Apache wurde nicht gefunden (/etc/apache2/conf-available/php*-fpm.conf fehlt). Installiere das Paket php-fpm und starte die Einrichtung erneut."
+		log_error "PHP for Apache was not found (/etc/apache2/conf-available/php*-fpm.conf is missing). Install the package php-fpm and run the setup again."
 	fi
 	if [ ! -e "/etc/apache2/conf-enabled/${PHP_CONF}.conf" ]; then
-		a2enconf -q "$PHP_CONF" || log_error "PHP (${PHP_CONF}) ließ sich in Apache nicht einschalten."
+		a2enconf -q "$PHP_CONF" || log_error "PHP (${PHP_CONF}) could not be switched on in Apache."
 		CHANGED=1
 	fi
 	systemctl enable --now "${PHP_CONF}.service" ||
-		log_error "Der Dienst ${PHP_CONF} ließ sich nicht starten."
+		log_error "The service ${PHP_CONF} could not be started."
 	log_info "PHP: ${PHP_CONF}"
 }
 
@@ -696,20 +702,20 @@ ensure_php() {
 # no other site answers for this server.
 ensure_site() {
 	if [ ! -e /etc/apache2/sites-enabled/ngc-web.conf ]; then
-		a2ensite -q ngc-web || log_error "Der virtuelle Host von NGC ließ sich nicht einschalten."
+		a2ensite -q ngc-web || log_error "The virtual host of NGC could not be switched on."
 		CHANGED=1
 	fi
 	if [ -e /etc/apache2/sites-enabled/000-default.conf ]; then
-		a2dissite -q 000-default || log_error "Die Standardseite von Apache ließ sich nicht abschalten."
+		a2dissite -q 000-default || log_error "The default site of Apache could not be switched off."
 		CHANGED=1
 	fi
 	if [ "$NGC_CERT_MODE" = letsencrypt ]; then
 		if [ ! -e /etc/apache2/conf-enabled/ngc-md.conf ]; then
-			a2enconf -q ngc-md || log_error "Die Einstellungen für Let's Encrypt ließen sich nicht einschalten."
+			a2enconf -q ngc-md || log_error "The settings for Let's Encrypt could not be switched on."
 			CHANGED=1
 		fi
 	elif [ -e /etc/apache2/conf-enabled/ngc-md.conf ]; then
-		a2disconf -q ngc-md || log_error "Die Einstellungen für Let's Encrypt ließen sich nicht abschalten."
+		a2disconf -q ngc-md || log_error "The settings for Let's Encrypt could not be switched off."
 		CHANGED=1
 	fi
 }
@@ -722,21 +728,21 @@ apache_apply() {
 		# Apache is not running at all, so a second run of install repairs
 		# that too - a stopped web server is not something that is right.
 		if ! apachectl configtest; then
-			log_error "Apache sagt, diese Einstellungen sind nicht in Ordnung (Meldung oben). Er wurde nicht gestartet."
+			log_error "Apache says these settings are not in order (its message is above). It was not started."
 		fi
-		systemctl enable --now apache2 || log_error "Apache ließ sich nicht starten."
-		log_info "Apache läuft und startet künftig mit dem Server."
+		systemctl enable --now apache2 || log_error "Apache could not be started."
+		log_info "Apache is running, and from now on it starts with the server."
 		return 0
 	fi
 	if [ "$CHANGED" -eq 0 ]; then
-		log_info "Es hat sich nichts geändert, Apache bleibt wie er ist."
+		log_info "Nothing changed, Apache stays as it is."
 		return 0
 	fi
 	if ! apachectl configtest; then
-		log_error "Apache sagt, diese Einstellungen sind nicht in Ordnung (Meldung oben). Er wurde nicht neu geladen, die Seite läuft also weiter wie bisher."
+		log_error "Apache says these settings are not in order (its message is above). It was not reloaded, so the site keeps running as before."
 	fi
-	systemctl reload apache2 || log_error "Apache ließ sich nicht neu laden."
-	log_info "Apache hat die neuen Einstellungen übernommen."
+	systemctl reload apache2 || log_error "Apache could not be reloaded."
+	log_info "Apache has taken the new settings."
 }
 
 # ============================================================
@@ -771,7 +777,7 @@ cert_fits() {
 ensure_cert_selfsigned() {
 	local san
 	if cert_fits; then
-		log_info "Das eigene Zertifikat passt noch, es bleibt wie es ist."
+		log_info "The certificate of this server still fits, it stays as it is."
 		return 0
 	fi
 	if is_ipv4 "$NGC_HOSTNAME"; then
@@ -788,13 +794,13 @@ ensure_cert_selfsigned() {
 		-addext "keyUsage=critical,digitalSignature,keyAgreement" \
 		-addext "extendedKeyUsage=serverAuth" \
 		-keyout "${WORK}/web.key" -out "${WORK}/web.crt" >/dev/null 2>&1 ||
-		log_error "Das Zertifikat ließ sich nicht erzeugen."
+		log_error "The certificate could not be made."
 	put_file "${WORK}/web.crt" "$NGC_CERT" 0644
 	put_file "${WORK}/web.key" "$NGC_KEY" 0600
 	# Not in letsencrypt mode: there this certificate is only what the server
 	# starts with, and mod_md says what happens after that.
 	if [ "$NGC_CERT_MODE" = selfsigned ]; then
-		log_warn "Das Zertifikat ist selbst erzeugt: der Browser warnt beim ersten Aufruf. Es gilt 397 Tage; danach in ulh noch einmal 'Einrichten' aufrufen."
+		log_warn "This certificate is self-signed, so the browser warns the first time. It holds for 397 days; after that call 'Set up the web interface' in ulh once more."
 	fi
 }
 
@@ -803,23 +809,23 @@ ensure_cert_import() {
 	# keyboard, so a key with a password would be no help here either. Only the
 	# public part ever leaves openssl, never the key itself.
 	if ! openssl pkey -in "$NGC_KEY_FILE" -passin pass: -pubout -out "${WORK}/key.pub" >/dev/null 2>&1; then
-		log_error "Der Schlüssel ${NGC_KEY_FILE} lässt sich nicht lesen. Ist er mit einem Passwort geschützt? Apache kann einen solchen Schlüssel nicht benutzen."
+		log_error "The key ${NGC_KEY_FILE} cannot be read. Is it protected by a password? Apache cannot use such a key."
 	fi
 	if ! openssl x509 -in "$NGC_CERT_FILE" -noout -pubkey >"${WORK}/cert.pub" 2>/dev/null; then
-		log_error "${NGC_CERT_FILE} ist kein Zertifikat im PEM-Format."
+		log_error "${NGC_CERT_FILE} is no certificate in PEM form."
 	fi
 	# Each key on its own into DER and then compared byte for byte: a step that
 	# failed must not turn into a match, which it would with a hash over
 	# nothing on both sides.
 	openssl pkey -pubin -in "${WORK}/cert.pub" -outform DER -out "${WORK}/cert.spki" >/dev/null 2>&1 ||
-		log_error "Der öffentliche Schlüssel in ${NGC_CERT_FILE} lässt sich nicht lesen."
+		log_error "The public key in ${NGC_CERT_FILE} cannot be read."
 	openssl pkey -pubin -in "${WORK}/key.pub" -outform DER -out "${WORK}/key.spki" >/dev/null 2>&1 ||
-		log_error "Der Schlüssel ${NGC_KEY_FILE} lässt sich nicht lesen."
+		log_error "The key ${NGC_KEY_FILE} cannot be read."
 	if ! cmp -s -- "${WORK}/cert.spki" "${WORK}/key.spki"; then
-		log_error "Das Zertifikat und der Schlüssel gehören nicht zusammen. Prüfe, ob du die richtigen beiden Dateien angegeben hast."
+		log_error "The certificate and the key do not belong together. Check whether you named the right two files."
 	fi
 	if ! openssl x509 -in "$NGC_CERT_FILE" -noout -checkend 0 >/dev/null 2>&1; then
-		log_warn "Dieses Zertifikat ist abgelaufen. Der Browser wird warnen."
+		log_warn "This certificate has run out. The browser will warn."
 	fi
 	cp -f -- "$NGC_CERT_FILE" "${WORK}/web.crt"
 	cp -f -- "$NGC_KEY_FILE" "${WORK}/web.key"
@@ -836,7 +842,7 @@ ensure_cert_letsencrypt() {
 	ensure_cert_selfsigned
 	render_md >"${WORK}/ngc-md.conf"
 	put_file "${WORK}/ngc-md.conf" "$MD_FILE" 0644
-	log_warn "Let's Encrypt braucht, dass ${NGC_HOSTNAME} aus dem Internet auf diesen Server zeigt und Port 80 offen ist. Apache holt das Zertifikat wenige Minuten nach dem Start. Warnt der Browser danach noch, zeigt 'journalctl -u apache2' den Grund."
+	log_warn "Let's Encrypt needs ${NGC_HOSTNAME} to point at this server from the internet, and port 80 to be open. Apache fetches the certificate a few minutes after the start. If the browser still warns after that, 'journalctl -u apache2' says why."
 }
 
 # ============================================================
@@ -856,16 +862,16 @@ sync_api_trust() {
 		hp="${url#https://}"
 		host="${hp%:*}"
 		port="${hp##*:}"
-		log_info "Hole das Zertifikat von ${url} ..."
+		log_info "Fetching the certificate of ${url} ..."
 		if ! fetch_cert "$host" "$port" "${WORK}/api.pem"; then
-			log_error "Die API ${url} antwortet nicht mit TLS 1.3 und AES-256-GCM. Läuft ngc-api dort schon, und ist Port ${port} offen?"
+			log_error "The API ${url} does not answer with TLS 1.3 and AES-256-GCM. Is ngc-api running there, and is port ${port} open?"
 		fi
 		pin="$(pin_of_cert "${WORK}/api.pem")" ||
-			log_error "Das Zertifikat von ${url} ließ sich nicht lesen."
+			log_error "The certificate of ${url} could not be read."
 		if [ "$pin" != "$want" ]; then
-			log_error "Der Fingerabdruck von ${url} passt nicht. Eingetragen: ${want} - die API zeigt: ${pin}. Hier wird abgebrochen: mit einem falschen Fingerabdruck wäre die Verschlüsselung wertlos. Vergleiche Zeichen für Zeichen mit der Ausgabe von ngc-api; stimmt sie wirklich nicht, antwortet dort nicht die API, die du meinst."
+			log_error "The fingerprint of ${url} does not match. Given: ${want} - the API shows: ${pin}. This is where it stops: with a wrong fingerprint the whole encryption would be worthless. Compare it character by character with what ngc-api printed; if it really does not match, the server answering there is not the API you mean."
 		fi
-		log_info "Fingerabdruck stimmt: ${url}"
+		log_info "Fingerprint matches: ${url}"
 		cat "${WORK}/api.pem" >>"${WORK}/trust.pem"
 	done
 	ensure_dir "$NGC_TLS" 0755
@@ -894,7 +900,10 @@ fetch_cert() {
 # "rp" is missing when the server is called by its IP address, where passkeys
 # cannot work anyway. Indentation and line breaks are the ones config.SaveWeb
 # makes (two spaces, every list on its own lines), because the controller with
-# role web writes this same file later and the file should not jump about.
+# role web writes this same file later and the file should not jump about. The
+# example in shared/testdata/config/web.json is formatted by hand and keeps a
+# list of one origin on a single line, which Go never does: what the writer
+# does decides here, not what the test data look like.
 render_web_json() {
 	local i last
 	printf '{\n  "apis": [\n'
@@ -1058,7 +1067,7 @@ install_ngc_web() {
 	need_root
 	need_debian
 	work_init
-	log_section "NGC-Webinterface einrichten"
+	log_section "Setting up the NGC web interface"
 	read_answers
 	ensure_packages
 	install_release
@@ -1070,10 +1079,10 @@ configure_ngc_web() {
 	need_root
 	need_debian
 	work_init
-	log_section "NGC-Webinterface einstellen"
+	log_section "Changing the settings of the NGC web interface"
 	read_answers
 	if [ ! -f "${NGC_ROOT}/public/index.php" ]; then
-		log_error "In ${NGC_ROOT} liegt noch kein Webinterface. Rufe zuerst 'Einrichten' auf."
+		log_error "There is no web interface in ${NGC_ROOT} yet. Call 'Set up the web interface' first."
 	fi
 	configure_all
 	show_next_steps
@@ -1083,7 +1092,7 @@ uninstall_ngc_web() {
 	local f
 	need_root
 	need_debian
-	log_section "NGC-Webinterface entfernen"
+	log_section "Removing the NGC web interface"
 
 	if [ -e /etc/apache2/sites-enabled/ngc-web.conf ]; then
 		a2dissite -q ngc-web || true
@@ -1104,7 +1113,7 @@ uninstall_ngc_web() {
 			systemctl reload apache2 || true
 		fi
 	fi
-	log_info "Der virtuelle Host und ${NGC_ROOT} sind weg. Apache selbst bleibt installiert."
+	log_info "The virtual host and ${NGC_ROOT} are gone. Apache itself stays installed."
 
 	# Only the files of ngc-web, never the whole /etc/ngc: on a server with
 	# several roles api.json, controller.json and trust-anchor.json lie there
@@ -1115,7 +1124,7 @@ uninstall_ngc_web() {
 			rm -f -- "$f"
 		done
 		rm -rf -- "$NGC_KEPT"
-		log_warn "Gelöscht: web.json, api-trust.pem und das Zertifikat des Webservers."
+		log_warn "Deleted: web.json, api-trust.pem and the certificate of the web server."
 	else
 		# Kept data stays under /var/lib/ngc/, so a new installation finds it
 		# again (shared/ulh.md).
@@ -1125,23 +1134,23 @@ uninstall_ngc_web() {
 				cp -p -- "$f" "${NGC_KEPT}/"
 			fi
 		done
-		log_info "Aufgehoben: web.json und die Zertifikate bleiben in ${NGC_ETC} liegen, eine Kopie davon unter ${NGC_KEPT}."
+		log_info "Kept: web.json and the certificates stay in ${NGC_ETC}, with a copy of them under ${NGC_KEPT}."
 	fi
-	log_info "Fertig."
+	log_info "Done."
 }
 
 show_next_steps() {
 	local scheme_host="https://${NGC_HOSTNAME}"
 	printf '\n'
-	log_info "Fertig. So geht es weiter:"
-	printf '  1. %s im Browser aufrufen.\n' "$scheme_host"
-	printf '  2. Den Einmal-Code eingeben, den ngc-api auf dem ersten API-Server\n'
-	printf '     am Ende angezeigt hat, und das erste Admin-Konto anlegen.\n'
-	printf '  3. Danach auf diesem Server den Controller koppeln (ulh, Eintrag\n'
-	printf '     ngc-controller). Erst er hält die Vertrauensliste aktuell.\n'
+	log_info "Done. What comes next:"
+	printf '  1. Open %s in a browser.\n' "$scheme_host"
+	printf '  2. Type in the setup code that ngc-api printed at the end on the\n'
+	printf '     first API server, and make the first admin account.\n'
+	printf '  3. Then pair the controller on this server (ulh, entry\n'
+	printf '     ngc-controller). Only it keeps the trust list up to date.\n'
 	if [ -z "$RP_ID" ]; then
 		printf '\n'
-		log_warn "Dieser Server wird über eine IP-Adresse aufgerufen. Passkeys gehen so nicht, die Anmeldung läuft mit Passwort."
+		log_warn "This server is called by an IP address. Passkeys cannot work that way, so logging in runs with a password."
 	fi
 }
 
