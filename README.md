@@ -4,7 +4,7 @@
 [![Donate](https://img.shields.io/badge/Donate-PayPal-00457C.svg?logo=paypal)](https://www.paypal.com/donate/?hosted_button_id=6CDEVZGJWTNQQ)
 
 A menu for the Linux terminal that installs, updates, configures and removes software:
-96 scripts for Debian, Ubuntu, Red Hat, Arch, SUSE, Alpine and Proxmox. Pick a number,
+97 scripts for Debian, Ubuntu, Red Hat, Arch, SUSE, Alpine and Proxmox. Pick a number,
 answer a few questions, done - ulh keeps itself up to date.
 
 | Folder | Purpose | Language | Start | Build |
@@ -80,13 +80,13 @@ The search matches script name, description and category (case-insensitive) and
 only lists scripts that work on your distribution. `s` inside the results starts a
 new search, `b` goes back, `q` quits.
 
-What the 96 scripts cover (network, web servers, databases, containers, languages,
+What the 97 scripts cover (network, web servers, databases, containers, languages,
 editors, shells, monitoring, backup, system management ...): **[docs/scripts.md](docs/scripts.md)**.
 
 ## Languages
 
 ulh speaks English, German, French, Italian and Spanish: the menu, the messages and
-the descriptions and questions of all 96 scripts. It starts in the language of the
+the descriptions and questions of all 97 scripts. It starts in the language of the
 system (`$LANG`), otherwise in English.
 
 - Press **`l`** in any menu for the next language - ulh remembers it in
@@ -171,7 +171,7 @@ ulh as root.
 | Document | What is in it |
 |---|---|
 | [Guide](docs/guide.md) | folders, catalog, answer.yaml, custom repositories, writing scripts, troubleshooting |
-| [Scripts](docs/scripts.md) | all 96 scripts with actions, sudo and distributions |
+| [Scripts](docs/scripts.md) | all 97 scripts with actions, sudo and distributions |
 | [Changes](CHANGELOG.md) | version history |
 | [Backstory](docs/backstory.md) | how "unknown linux helper" got its name - featuring Kevin and the Unknown Man |
 

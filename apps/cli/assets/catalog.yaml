@@ -173,6 +173,16 @@ categories:
     descriptionIT: "Elaborare e convertire file multimediali"
     nameFR: "Multimédia"
     descriptionFR: "Traitement et conversion de médias"
+  NextGenCloud:
+    description: Servers of a NextGenCloud installation
+    nameDE: "NextGenCloud"
+    descriptionDE: "Server einer NextGenCloud-Anlage"
+    nameES: "NextGenCloud"
+    descriptionES: "Servidores de una instalación NextGenCloud"
+    nameIT: "NextGenCloud"
+    descriptionIT: "Server di un impianto NextGenCloud"
+    nameFR: "NextGenCloud"
+    descriptionFR: "Serveurs d'une installation NextGenCloud"
 scripts:
   curl:
     description: HTTP requests utility
@@ -5056,3 +5066,143 @@ scripts:
       descriptionES: "Desinstalar zoxide"
       descriptionIT: "Disinstalla zoxide"
       descriptionFR: "Désinstaller zoxide"
+  ngc-web:
+    description: NextGenCloud web interface on Apache
+    descriptionDE: "Webinterface von NextGenCloud auf Apache"
+    descriptionES: "Interfaz web de NextGenCloud en Apache"
+    descriptionIT: "Interfaccia web di NextGenCloud su Apache"
+    descriptionFR: "Interface web de NextGenCloud sur Apache"
+    category: NextGenCloud
+    file: ngc-web.sh
+    sudo:
+    os_family:
+    - debian
+    actions:
+    - name: install
+      parameter: install
+      description: Set up the web interface
+      descriptionDE: "Webinterface einrichten"
+      descriptionES: "Instalar la interfaz web"
+      descriptionIT: "Installa l'interfaccia web"
+      descriptionFR: "Installer l'interface web"
+      prompts:
+      - question: Name or IPv4 address the browser calls?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse ruft der Browser NGC auf?"
+        questionES: "¿Con qué nombre o dirección IPv4 abre el navegador NGC?"
+        questionIT: "Con quale nome o indirizzo IPv4 il browser apre NGC?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 le navigateur ouvre-t-il NGC ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: 'Certificate: letsencrypt, selfsigned or import?'
+        questionDE: "Zertifikat: letsencrypt, selfsigned oder import?"
+        questionES: "Certificado: letsencrypt, selfsigned o import?"
+        questionIT: "Certificato: letsencrypt, selfsigned o import?"
+        questionFR: "Certificat : letsencrypt, selfsigned ou import ?"
+        variable: NGC_CERT_MODE
+        type: text
+        default: selfsigned
+      - question: Only for import - full path to the certificate (PEM)?
+        questionDE: "Nur bei import: vollständiger Pfad zum Zertifikat (PEM)?"
+        questionES: "Solo con import: ruta completa del certificado (PEM)?"
+        questionIT: "Solo con import: percorso completo del certificato (PEM)?"
+        questionFR: "Seulement avec import : chemin complet du certificat (PEM) ?"
+        variable: NGC_CERT_FILE
+        type: text
+        default: ''
+      - question: Only for import - full path to its key (PEM)?
+        questionDE: "Nur bei import: vollständiger Pfad zum Schlüssel (PEM)?"
+        questionES: "Solo con import: ruta completa de la clave (PEM)?"
+        questionIT: "Solo con import: percorso completo della chiave (PEM)?"
+        questionFR: "Seulement avec import : chemin complet de la clé (PEM) ?"
+        variable: NGC_KEY_FILE
+        type: text
+        default: ''
+      - question: Addresses of the API servers, several separated by a space?
+        questionDE: "Adressen der API-Server, z. B. https://api-1.example.org:7443 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Direcciones de los servidores API, p. ej. https://api-1.example.org:7443 (varias separadas por un espacio)?"
+        questionIT: "Indirizzi dei server API, per es. https://api-1.example.org:7443 (più di uno separati da uno spazio)?"
+        questionFR: "Adresses des serveurs API, par ex. https://api-1.example.org:7443 (plusieurs séparées par une espace) ?"
+        variable: NGC_APIS
+        type: text
+        default: ''
+      - question: Their fingerprints, in the same order, separated by a space?
+        questionDE: "Fingerabdrücke der API-Server in derselben Reihenfolge (mit Leerzeichen trennen)?"
+        questionES: "Huellas de los servidores API en el mismo orden (separadas por un espacio)?"
+        questionIT: "Impronte dei server API nello stesso ordine (separate da uno spazio)?"
+        questionFR: "Empreintes des serveurs API dans le même ordre (séparées par une espace) ?"
+        variable: NGC_API_PINS
+        type: text
+        default: ''
+    - name: configure
+      parameter: configure
+      description: Change certificate or API servers
+      descriptionDE: "Zertifikat oder API-Server ändern"
+      descriptionES: "Cambiar el certificado o los servidores API"
+      descriptionIT: "Cambiare il certificato o i server API"
+      descriptionFR: "Changer le certificat ou les serveurs API"
+      prompts:
+      - question: Name or IPv4 address the browser calls?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse ruft der Browser NGC auf?"
+        questionES: "¿Con qué nombre o dirección IPv4 abre el navegador NGC?"
+        questionIT: "Con quale nome o indirizzo IPv4 il browser apre NGC?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 le navigateur ouvre-t-il NGC ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: 'Certificate: letsencrypt, selfsigned or import?'
+        questionDE: "Zertifikat: letsencrypt, selfsigned oder import?"
+        questionES: "Certificado: letsencrypt, selfsigned o import?"
+        questionIT: "Certificato: letsencrypt, selfsigned o import?"
+        questionFR: "Certificat : letsencrypt, selfsigned ou import ?"
+        variable: NGC_CERT_MODE
+        type: text
+        default: selfsigned
+      - question: Only for import - full path to the certificate (PEM)?
+        questionDE: "Nur bei import: vollständiger Pfad zum Zertifikat (PEM)?"
+        questionES: "Solo con import: ruta completa del certificado (PEM)?"
+        questionIT: "Solo con import: percorso completo del certificato (PEM)?"
+        questionFR: "Seulement avec import : chemin complet du certificat (PEM) ?"
+        variable: NGC_CERT_FILE
+        type: text
+        default: ''
+      - question: Only for import - full path to its key (PEM)?
+        questionDE: "Nur bei import: vollständiger Pfad zum Schlüssel (PEM)?"
+        questionES: "Solo con import: ruta completa de la clave (PEM)?"
+        questionIT: "Solo con import: percorso completo della chiave (PEM)?"
+        questionFR: "Seulement avec import : chemin complet de la clé (PEM) ?"
+        variable: NGC_KEY_FILE
+        type: text
+        default: ''
+      - question: Addresses of the API servers, several separated by a space?
+        questionDE: "Adressen der API-Server, z. B. https://api-1.example.org:7443 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Direcciones de los servidores API, p. ej. https://api-1.example.org:7443 (varias separadas por un espacio)?"
+        questionIT: "Indirizzi dei server API, per es. https://api-1.example.org:7443 (più di uno separati da uno spazio)?"
+        questionFR: "Adresses des serveurs API, par ex. https://api-1.example.org:7443 (plusieurs séparées par une espace) ?"
+        variable: NGC_APIS
+        type: text
+        default: ''
+      - question: Their fingerprints, in the same order, separated by a space?
+        questionDE: "Fingerabdrücke der API-Server in derselben Reihenfolge (mit Leerzeichen trennen)?"
+        questionES: "Huellas de los servidores API en el mismo orden (separadas por un espacio)?"
+        questionIT: "Impronte dei server API nello stesso ordine (separate da uno spazio)?"
+        questionFR: "Empreintes des serveurs API dans le même ordre (séparées par une espace) ?"
+        variable: NGC_API_PINS
+        type: text
+        default: ''
+    - name: uninstall
+      parameter: uninstall
+      description: Remove the web interface
+      descriptionDE: "Webinterface entfernen"
+      descriptionES: "Quitar la interfaz web"
+      descriptionIT: "Rimuovere l'interfaccia web"
+      descriptionFR: "Supprimer l'interface web"
+      prompts:
+      - question: Delete the configuration and the certificate too?
+        questionDE: "Einstellungen und Zertifikat mit löschen? Nein hebt sie unter /var/lib/ngc/ auf"
+        questionES: "¿Borrar también la configuración y el certificado? No los guarda en /var/lib/ngc/"
+        questionIT: "Cancellare anche le impostazioni e il certificato? No le conserva in /var/lib/ngc/"
+        questionFR: "Supprimer aussi la configuration et le certificat ? Non les conserve dans /var/lib/ngc/"
+        variable: NGC_PURGE
+        type: yes/no
+        default: 'no'

@@ -2,6 +2,16 @@
 
 ## Unreleased – 2026-09-22
 
+- New: `ngc-web` sets up the web interface of a NextGenCloud installation
+  (new category NextGenCloud, Debian and Ubuntu, `sudo`): Apache and PHP from
+  the package sources, the interface in `/var/www/ngc/` with only its `public/`
+  reachable from outside, the certificate from Let's Encrypt, self-signed or
+  imported, the certificate of every API server checked against the fingerprint
+  the admin typed, and Apache's balancer for `/api/`. `install`, `configure` and
+  `uninstall`; a second run of `install` changes nothing that is already right,
+  and Apache is reloaded only after `apachectl configtest`. What this one
+  script prints is German: NGC asks for that, its target group installs in
+  German.
 - New: five languages - English, German, French, Italian and Spanish. The menu,
   the messages and the descriptions and questions of all 96 scripts. ulh starts in
   the language of the system; the key `l` switches and remembers it

@@ -5,7 +5,7 @@ menu() { ( cd "$ULH" && printf '%b' "$1" | bash apps/cli/ulh.sh --no-update 2>&1
 out="$(menu 'q\n')"; rc=$?
 check "menu starts and quits (exit 0)" test "$rc" = 0
 check "shows the version" grep -q "VERSION: $(tr -d '[:space:]' < "${ULH}/apps/cli/VERSION")" <<< "$out"
-check "shows 16 categories" test "$(grep -cE '^\|  +[0-9]+\) ' <<< "$out")" = 16
+check "shows 17 categories" test "$(grep -cE '^\|  +[0-9]+\) ' <<< "$out")" = 17
 
 out="$(menu '5\n1\nb\nb\nq\n')"
 check "category -> script -> actions" grep -q 'build-essential - ' <<< "$out"
