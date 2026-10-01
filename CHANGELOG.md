@@ -15,9 +15,25 @@
   files come from a release of NGC, or from `/var/lib/ngc/staged` when a
   `release.json` lies there - and until NGC publishes its first release, that
   second way is the only one that works.
+- `ngc-web`: the files Apache hands out itself - every `.js`, `.css` and the
+  vendored code below `/assets/` - now carry four protective headers of their
+  own (`X-Content-Type-Options`, `Cross-Origin-Resource-Policy`, a
+  `Content-Security-Policy` written for a file and not for a page, and
+  `Strict-Transport-Security`). No PHP of the interface ever sees those answers,
+  so nothing else could have set them. The routing is `FallbackResource` instead
+  of a rewrite that took `/assets/` out of itself: a missing file there used to
+  be answered by Apache alone, with no header at all, and now reaches the single
+  entry point, which answers 404 with every header the interface sends.
+  Everything beside `public/` is denied a second time, `.htaccess` and symbolic
+  links are off, and `ServerSignature` is off. The same four headers stand once
+  more in the NGC repository (`apps/web/templates/apache-vhost.conf`); `ngc-web`
+  compares the two on a server that has both and says so when they differ.
+  A virtual host somebody wrote by hand is kept as
+  `ngc-web.conf.before-ulh` before it is replaced, instead of vanishing.
 - New: `apps/cli/tests/ngc-web.test.sh` runs the parts of `ngc-web` that work
   without a server: the balancer it writes for Apache byte for byte, `web.json`,
-  and which host names, addresses and fingerprints it refuses.
+  the four protective headers of the virtual host and its routing, and which
+  host names, addresses and fingerprints it refuses.
 - New: five languages - English, German, French, Italian and Spanish. The menu,
   the messages and the descriptions and questions of all 96 scripts. ulh starts in
   the language of the system; the key `l` switches and remembers it
