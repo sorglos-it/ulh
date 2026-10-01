@@ -784,7 +784,11 @@ ensure_cert_selfsigned() {
 		log_error "Das Zertifikat ließ sich nicht erzeugen."
 	put_file "${WORK}/web.crt" "$NGC_CERT" 0644
 	put_file "${WORK}/web.key" "$NGC_KEY" 0600
-	log_warn "Das Zertifikat ist selbst erzeugt: der Browser warnt beim ersten Aufruf. Es gilt 397 Tage; danach in ulh noch einmal 'Einrichten' aufrufen."
+	# Not in letsencrypt mode: there this certificate is only what the server
+	# starts with, and mod_md says what happens after that.
+	if [ "$NGC_CERT_MODE" = selfsigned ]; then
+		log_warn "Das Zertifikat ist selbst erzeugt: der Browser warnt beim ersten Aufruf. Es gilt 397 Tage; danach in ulh noch einmal 'Einrichten' aufrufen."
+	fi
 }
 
 ensure_cert_import() {
@@ -817,11 +821,15 @@ ensure_cert_import() {
 }
 
 ensure_cert_letsencrypt() {
-	# mod_md fetches and renews the certificate itself and hands it to Apache,
-	# so the virtual host names no certificate file in this mode.
+	# mod_md fetches the certificate itself and renews it, and for a managed
+	# domain it hands Apache its own instead of the files of the virtual host.
+	# The self-signed one is made all the same: with it the server starts and
+	# answers right away, and if the certificate from Let's Encrypt does not
+	# arrive, the browser warns instead of the site being down.
+	ensure_cert_selfsigned
 	render_md >"${WORK}/ngc-md.conf"
 	put_file "${WORK}/ngc-md.conf" "$MD_FILE" 0644
-	log_warn "Let's Encrypt braucht, dass ${NGC_HOSTNAME} aus dem Internet auf diesen Server zeigt und Port 80 offen ist. Apache holt das Zertifikat kurz nach dem Start; bis dahin warnt der Browser."
+	log_warn "Let's Encrypt braucht, dass ${NGC_HOSTNAME} aus dem Internet auf diesen Server zeigt und Port 80 offen ist. Apache holt das Zertifikat wenige Minuten nach dem Start. Warnt der Browser danach noch, zeigt 'journalctl -u apache2' den Grund."
 }
 
 # ============================================================
@@ -970,16 +978,12 @@ render_site() {
 		'    SSLEngine on' \
 		'    SSLProtocol -all +TLSv1.3' \
 		'    SSLCipherSuite TLSv1.3 TLS_AES_256_GCM_SHA384' \
-		'    SSLHonorCipherOrder on'
-	if [ "$NGC_CERT_MODE" != letsencrypt ]; then
-		printf '%s\n' \
-			"    SSLCertificateFile    ${NGC_CERT}" \
-			"    SSLCertificateKeyFile ${NGC_KEY}"
-	else
-		printf '%s\n' \
-			'    # mod_md hands Apache the certificate of this name, see' \
-			'    # /etc/apache2/conf-available/ngc-md.conf.'
-	fi
+		'    SSLHonorCipherOrder on' \
+		"    # With Let's Encrypt mod_md hands Apache its own certificate for" \
+		'    # this name and these two lines step aside; they are what the' \
+		'    # server starts with until then.' \
+		"    SSLCertificateFile    ${NGC_CERT}" \
+		"    SSLCertificateKeyFile ${NGC_KEY}"
 	printf '%s\n' \
 		'' \
 		'    # The same value the interface sends with every page, so the two' \
