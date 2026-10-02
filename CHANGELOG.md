@@ -2,6 +2,15 @@
 
 ## Unreleased – 2026-09-22
 
+- New: `ngc-db` - the database of a NextGenCloud installation. MariaDB with
+  Galera, TLS 1.3 against the CA of the installation for clients and for the
+  replication, and MariaDB's own encryption at rest (AES-256 through
+  file_key_management). The first server makes the CA and prints its
+  certificate; every other server makes its own key, shows only its request,
+  and gets the certificate with the action `sign` on the first server - a
+  private key never leaves its machine. Actions: install, configure, sign,
+  uninstall. `backup` and `restore` follow.
+  New category `NextGenCloud` in the catalog, in all five languages.
 - New: five languages - English, German, French, Italian and Spanish. The menu,
   the messages and the descriptions and questions of all 96 scripts. ulh starts in
   the language of the system; the key `l` switches and remembers it

@@ -173,6 +173,16 @@ categories:
     descriptionIT: "Elaborare e convertire file multimediali"
     nameFR: "Multimédia"
     descriptionFR: "Traitement et conversion de médias"
+  NextGenCloud:
+    description: Servers of a NextGenCloud installation
+    nameDE: "NextGenCloud"
+    descriptionDE: "Server einer NextGenCloud-Anlage"
+    nameES: "NextGenCloud"
+    descriptionES: "Servidores de una instalación NextGenCloud"
+    nameIT: "NextGenCloud"
+    descriptionIT: "Server di un impianto NextGenCloud"
+    nameFR: "NextGenCloud"
+    descriptionFR: "Serveurs d'une installation NextGenCloud"
 scripts:
   curl:
     description: HTTP requests utility
@@ -5056,3 +5066,183 @@ scripts:
       descriptionES: "Desinstalar zoxide"
       descriptionIT: "Disinstalla zoxide"
       descriptionFR: "Désinstaller zoxide"
+  ngc-db:
+    description: NextGenCloud database with Galera and TLS
+    descriptionDE: "Datenbank von NextGenCloud mit Galera und TLS"
+    descriptionES: "Base de datos de NextGenCloud con Galera y TLS"
+    descriptionIT: "Database di NextGenCloud con Galera e TLS"
+    descriptionFR: "Base de données de NextGenCloud avec Galera et TLS"
+    category: NextGenCloud
+    file: ngc-db.sh
+    sudo:
+    os_family:
+    - debian
+    actions:
+    - name: install
+      parameter: install
+      description: Set up the database
+      descriptionDE: "Datenbank einrichten"
+      descriptionES: "Instalar la base de datos"
+      descriptionIT: "Installa il database"
+      descriptionFR: "Installer la base de données"
+      prompts:
+      - question: Name or IPv4 address of this database server?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse ist dieser Datenbankserver erreichbar?"
+        questionES: "¿Con qué nombre o dirección IPv4 se alcanza este servidor de base de datos?"
+        questionIT: "Con quale nome o indirizzo IPv4 si raggiunge questo server di database?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 ce serveur de base de données est-il joignable ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: 'All database servers as host:port, several separated by a space?'
+        questionDE: "Alle Datenbankserver als host:port, z. B. db-1.example.org:3306 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Todos los servidores de base de datos como host:port, p. ej. db-1.example.org:3306 (varios separados por un espacio)?"
+        questionIT: "Tutti i server di database come host:port, per es. db-1.example.org:3306 (più di uno separati da uno spazio)?"
+        questionFR: "Tous les serveurs de base de données sous la forme host:port, par ex. db-1.example.org:3306 (plusieurs séparés par une espace) ?"
+        variable: NGC_NODES
+        type: text
+        default: ''
+      - question: Is this the first database server (yes) or does it join (no)?
+        questionDE: "Ist das der erste Datenbankserver (yes) oder tritt er bei (no)?"
+        questionES: "¿Es este el primer servidor de base de datos (yes) o se une (no)?"
+        questionIT: "È questo il primo server di database (yes) o si aggiunge (no)?"
+        questionFR: "Est-ce le premier serveur de base de données (yes) ou rejoint-il (no) ?"
+        variable: NGC_BOOTSTRAP
+        type: text
+        default: no
+      - question: Password of the account ngc (reads and writes)?
+        questionDE: "Passwort des Kontos ngc (liest und schreibt)?"
+        questionES: "¿Contraseña de la cuenta ngc (lee y escribe)?"
+        questionIT: "Password dell'account ngc (legge e scrive)?"
+        questionFR: "Mot de passe du compte ngc (lit et écrit) ?"
+        variable: NGC_PASSWORD_NGC
+        type: text
+        default: ''
+      - question: Password of the account ngc_migrate (changes the schema)?
+        questionDE: "Passwort des Kontos ngc_migrate (ändert das Schema)?"
+        questionES: "¿Contraseña de la cuenta ngc_migrate (cambia el esquema)?"
+        questionIT: "Password dell'account ngc_migrate (cambia lo schema)?"
+        questionFR: "Mot de passe du compte ngc_migrate (change le schéma) ?"
+        variable: NGC_PASSWORD_MIGRATE
+        type: text
+        default: ''
+      - question: Folder for the key of the CA, first server only?
+        questionDE: "Ordner für den Schlüssel der CA, nur beim ersten Server?"
+        questionES: "¿Carpeta para la clave de la CA, solo en el primer servidor?"
+        questionIT: "Cartella per la chiave della CA, solo sul primo server?"
+        questionFR: "Dossier pour la clé de la CA, seulement sur le premier serveur ?"
+        variable: NGC_CA_DIR
+        type: text
+        default: /etc/ngc/db-ca
+    - name: configure
+      parameter: configure
+      description: Change nodes or passwords
+      descriptionDE: "Knoten oder Passwörter ändern"
+      descriptionES: "Cambiar los nodos o las contraseñas"
+      descriptionIT: "Cambiare i nodi o le password"
+      descriptionFR: "Changer les nœuds ou les mots de passe"
+      prompts:
+      - question: Name or IPv4 address of this database server?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse ist dieser Datenbankserver erreichbar?"
+        questionES: "¿Con qué nombre o dirección IPv4 se alcanza este servidor de base de datos?"
+        questionIT: "Con quale nome o indirizzo IPv4 si raggiunge questo server di database?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 ce serveur de base de données est-il joignable ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: 'All database servers as host:port, several separated by a space?'
+        questionDE: "Alle Datenbankserver als host:port, z. B. db-1.example.org:3306 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Todos los servidores de base de datos como host:port, p. ej. db-1.example.org:3306 (varios separados por un espacio)?"
+        questionIT: "Tutti i server di database come host:port, per es. db-1.example.org:3306 (più di uno separati da uno spazio)?"
+        questionFR: "Tous les serveurs de base de données sous la forme host:port, par ex. db-1.example.org:3306 (plusieurs séparés par une espace) ?"
+        variable: NGC_NODES
+        type: text
+        default: ''
+      - question: Is this the first database server (yes) or does it join (no)?
+        questionDE: "Ist das der erste Datenbankserver (yes) oder tritt er bei (no)?"
+        questionES: "¿Es este el primer servidor de base de datos (yes) o se une (no)?"
+        questionIT: "È questo il primo server di database (yes) o si aggiunge (no)?"
+        questionFR: "Est-ce le premier serveur de base de données (yes) ou rejoint-il (no) ?"
+        variable: NGC_BOOTSTRAP
+        type: text
+        default: no
+      - question: Password of the account ngc (reads and writes)?
+        questionDE: "Passwort des Kontos ngc (liest und schreibt)?"
+        questionES: "¿Contraseña de la cuenta ngc (lee y escribe)?"
+        questionIT: "Password dell'account ngc (legge e scrive)?"
+        questionFR: "Mot de passe du compte ngc (lit et écrit) ?"
+        variable: NGC_PASSWORD_NGC
+        type: text
+        default: ''
+      - question: Password of the account ngc_migrate (changes the schema)?
+        questionDE: "Passwort des Kontos ngc_migrate (ändert das Schema)?"
+        questionES: "¿Contraseña de la cuenta ngc_migrate (cambia el esquema)?"
+        questionIT: "Password dell'account ngc_migrate (cambia lo schema)?"
+        questionFR: "Mot de passe du compte ngc_migrate (change le schéma) ?"
+        variable: NGC_PASSWORD_MIGRATE
+        type: text
+        default: ''
+      - question: Folder for the key of the CA, first server only?
+        questionDE: "Ordner für den Schlüssel der CA, nur beim ersten Server?"
+        questionES: "¿Carpeta para la clave de la CA, solo en el primer servidor?"
+        questionIT: "Cartella per la chiave della CA, solo sul primo server?"
+        questionFR: "Dossier pour la clé de la CA, seulement sur le premier serveur ?"
+        variable: NGC_CA_DIR
+        type: text
+        default: /etc/ngc/db-ca
+    - name: sign
+      parameter: sign
+      description: Issue the certificate of another node
+      descriptionDE: "Zertifikat eines weiteren Knotens ausstellen"
+      descriptionES: "Emitir el certificado de otro nodo"
+      descriptionIT: "Emettere il certificato di un altro nodo"
+      descriptionFR: "Délivrer le certificat d'un autre nœud"
+      prompts:
+      - question: Name or IPv4 address of this database server?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse ist dieser Datenbankserver erreichbar?"
+        questionES: "¿Con qué nombre o dirección IPv4 se alcanza este servidor de base de datos?"
+        questionIT: "Con quale nome o indirizzo IPv4 si raggiunge questo server di database?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 ce serveur de base de données est-il joignable ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: 'All database servers as host:port, several separated by a space?'
+        questionDE: "Alle Datenbankserver als host:port, z. B. db-1.example.org:3306 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Todos los servidores de base de datos como host:port, p. ej. db-1.example.org:3306 (varios separados por un espacio)?"
+        questionIT: "Tutti i server di database come host:port, per es. db-1.example.org:3306 (più di uno separati da uno spazio)?"
+        questionFR: "Tous les serveurs de base de données sous la forme host:port, par ex. db-1.example.org:3306 (plusieurs séparés par une espace) ?"
+        variable: NGC_NODES
+        type: text
+        default: ''
+      - question: Is this the first database server (yes) or does it join (no)?
+        questionDE: "Ist das der erste Datenbankserver (yes) oder tritt er bei (no)?"
+        questionES: "¿Es este el primer servidor de base de datos (yes) o se une (no)?"
+        questionIT: "È questo il primo server di database (yes) o si aggiunge (no)?"
+        questionFR: "Est-ce le premier serveur de base de données (yes) ou rejoint-il (no) ?"
+        variable: NGC_BOOTSTRAP
+        type: text
+        default: no
+      - question: Full path to the request (CSR) of that node?
+        questionDE: "Vollständiger Pfad zur Anfrage (CSR) dieses Knotens?"
+        questionES: "¿Ruta completa de la solicitud (CSR) de ese nodo?"
+        questionIT: "Percorso completo della richiesta (CSR) di quel nodo?"
+        questionFR: "Chemin complet de la demande (CSR) de ce nœud ?"
+        variable: NGC_CSR
+        type: text
+        default: ''
+    - name: uninstall
+      parameter: uninstall
+      description: Remove the database configuration
+      descriptionDE: "Datenbank-Konfiguration entfernen"
+      descriptionES: "Quitar la configuración de la base de datos"
+      descriptionIT: "Rimuovere la configurazione del database"
+      descriptionFR: "Supprimer la configuration de la base de données"
+      prompts:
+      - question: 'Remove packages, keys and the CA as well (yes/no)?'
+        questionDE: "Auch Pakete, Schlüssel und die CA entfernen (yes/no)?"
+        questionES: "¿Quitar también los paquetes, las claves y la CA (yes/no)?"
+        questionIT: "Rimuovere anche i pacchetti, le chiavi e la CA (yes/no)?"
+        questionFR: "Supprimer aussi les paquets, les clés et la CA (yes/no) ?"
+        variable: NGC_PURGE
+        type: text
+        default: 'no'
