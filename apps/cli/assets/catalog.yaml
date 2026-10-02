@@ -5238,11 +5238,11 @@ scripts:
       descriptionIT: "Rimuovere la configurazione del database"
       descriptionFR: "Supprimer la configuration de la base de données"
       prompts:
-      - question: 'Remove packages, keys and the CA as well (yes/no)?'
-        questionDE: "Auch Pakete, Schlüssel und die CA entfernen (yes/no)?"
-        questionES: "¿Quitar también los paquetes, las claves y la CA (yes/no)?"
-        questionIT: "Rimuovere anche i pacchetti, le chiavi e la CA (yes/no)?"
-        questionFR: "Supprimer aussi les paquets, les clés et la CA (yes/no) ?"
+      - question: 'Remove packages, keys and the CA as well? The data then cannot be read any more (yes/no)'
+        questionDE: "Auch Pakete, Schlüssel und die CA entfernen? Die Daten sind danach nicht mehr lesbar (yes/no)"
+        questionES: "¿Quitar también los paquetes, las claves y la CA? Después los datos ya no se podrán leer (yes/no)"
+        questionIT: "Rimuovere anche i pacchetti, le chiavi e la CA? Dopo, i dati non saranno più leggibili (yes/no)"
+        questionFR: "Supprimer aussi les paquets, les clés et la CA ? Les données ne seront plus lisibles ensuite (yes/no)"
         variable: NGC_PURGE
         type: text
         default: 'no'

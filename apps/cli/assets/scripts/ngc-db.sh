@@ -18,7 +18,10 @@
 #
 # The prompts of assets/catalog.yaml carry the answers, in this order (ulh joins
 # them with commas, so no answer may hold a comma - that is why the node list is
-# separated by spaces and a password with a comma is refused):
+# separated by spaces and a password with a comma is refused). install,
+# configure and sign check them all in read_answers before they are used;
+# uninstall is asked for NGC_PURGE alone and checks NGC_CA_DIR itself, right
+# before it would delete it:
 #   1 hostname          NGC_HOSTNAME          name or IPv4 address of THIS node
 #   2 nodes             NGC_NODES             <host>:<port> of every node
 #   3 bootstrap         NGC_BOOTSTRAP         yes on the first node, else no
@@ -207,6 +210,18 @@ put_file() {
 	log_info "written: ${path}"
 }
 
+# put_secret moves a file that was made in WORK to its place, with its owner
+# and mode set BEFORE the move. WORK is 0700 and belongs to root, so a key is
+# never for one moment readable where it will lie: a chmod after the write
+# leaves exactly that window open.
+put_secret() {
+	local from="$1" to="$2"
+	chown mysql:mysql "$from"
+	chmod 0400 "$from"
+	mv -f "$from" "$to"
+	CHANGED=1
+}
+
 # ============================================================
 # THE ANSWERS
 # ============================================================
@@ -284,12 +299,14 @@ read_answers() {
 # THE TWO TEMPLATES
 # ============================================================
 
-# render_galera prints the configuration of this node. SST_PASS has to be read
-# in before (load_sst_password); it is never put on a command line.
-# the template
+# render_galera prints the configuration of this node: the template
 # apps/server-db/templates/galera.cnf of the NGC repository with its four marks
-# replaced. $1 is what wsrep_cluster_address gets, so the very first start of
-# the bootstrap node can pass an empty list.
+# (@NODE_NAME@, @NODE_ADDRESS@, @CLUSTER_ADDRESS@, @SST_PASSWORD@) replaced.
+# The cluster name is not a mark: it is ngc for every installation, and no
+# answer of ulh fills it.
+# SST_PASS has to be read in before (load_sst_password); it is never put on a
+# command line. $1 is what wsrep_cluster_address gets, so the very first start
+# of the bootstrap node can pass an empty list.
 render_galera() {
 	local cluster_address="$1"
 	cat <<EOF
@@ -433,11 +450,10 @@ ensure_sst_password() {
 	fi
 	# 32 bytes as hex: no character that the configuration file or the shell
 	# would read as something of its own.
-	openssl rand -hex 32 | tr -d '\n' > "${SST_FILE}.new" ||
+	work_init
+	openssl rand -hex 32 | tr -d '\n' > "${WORK}/sst.pass" ||
 		log_error "Could not make the password for the copy to a new node."
-	chown mysql:mysql "${SST_FILE}.new"
-	chmod 0400 "${SST_FILE}.new"
-	mv -f "${SST_FILE}.new" "$SST_FILE"
+	put_secret "${WORK}/sst.pass" "$SST_FILE"
 	load_sst_password
 	log_info "password for the copy to a new node: made"
 }
@@ -459,12 +475,11 @@ ensure_encryption_keys() {
 	printf '1;%s\n' "$(openssl rand -hex 32)" > "$plain"
 	openssl rand -base64 48 | tr -d '\n' > "$pass"
 	openssl enc -aes-256-cbc -pbkdf2 -md sha256 -salt \
-		-in "$plain" -out "${NGC_KEYS}/keys.enc" -pass "file:${pass}" ||
+		-in "$plain" -out "${WORK}/keys.enc" -pass "file:${pass}" ||
 		log_error "Could not encrypt the key file."
-	cp "$pass" "${NGC_KEYS}/keyfile.key"
 	shred -u "$plain" 2>/dev/null || rm -f "$plain"
-	chown mysql:mysql "${NGC_KEYS}/keys.enc" "${NGC_KEYS}/keyfile.key"
-	chmod 0400 "${NGC_KEYS}/keys.enc" "${NGC_KEYS}/keyfile.key"
+	put_secret "${WORK}/keys.enc" "${NGC_KEYS}/keys.enc"
+	put_secret "$pass" "${NGC_KEYS}/keyfile.key"
 	CHANGED=1
 	log_info "encryption keys made: AES-256 through a 32 byte key"
 }
@@ -497,10 +512,10 @@ ensure_node_key() {
 	if [ -s "${NGC_TLS}/node.key" ]; then
 		return 0
 	fi
-	openssl genpkey -algorithm ed25519 -out "${NGC_TLS}/node.key" ||
+	work_init
+	openssl genpkey -algorithm ed25519 -out "${WORK}/node.key" ||
 		log_error "Could not make the key of this node."
-	chown mysql:mysql "${NGC_TLS}/node.key"
-	chmod 0400 "${NGC_TLS}/node.key"
+	put_secret "${WORK}/node.key" "${NGC_TLS}/node.key"
 	CHANGED=1
 	log_info "key of this node made"
 }
@@ -706,9 +721,17 @@ prepare() {
 	read_answers || log_error "An answer is not in order. Nothing was changed."
 	work_init
 	ensure_dir "$NGC_ETC" root:root 0755
-	ensure_dir "$NGC_TLS" root:root 0700
-	ensure_dir "$NGC_KEYS" root:root 0700
+	# root:mysql 0710, not root:root 0700. MariaDB runs as mysql and has to
+	# read ssl_cert, ssl_key, the CA and both file_key_management files that
+	# lie in here; through a folder it may not enter, the chown on those files
+	# would be worth nothing, and the server would come up without TLS or stop
+	# at the encryption. 0710 gives mysql the way through and no listing, and
+	# nobody else anything at all.
+	ensure_dir "$NGC_TLS" root:mysql 0710
+	ensure_dir "$NGC_KEYS" root:mysql 0710
 	if [ "$BOOTSTRAP" = 1 ]; then
+		# This one stays root:root 0700: the private key of the CA is the
+		# whole trust of the installation, and MariaDB never reads it.
 		ensure_dir "$NGC_CA_DIR" root:root 0700
 	fi
 	render_ca_cnf "$NGC_HOSTNAME" | put_file "$CA_CNF" root:root 0600
@@ -751,6 +774,7 @@ configure_ngc_db() {
 
 sign_ngc_db() {
 	need_root
+	need_debian
 	read_answers || log_error "An answer is not in order. Nothing was signed."
 	[ -n "$NGC_CSR" ] || log_error "Name the file with the request: sign,NGC_CSR=/pfad/node.csr"
 	[ -f "$NGC_CSR" ] || log_error "No such file: ${NGC_CSR}"
@@ -766,15 +790,24 @@ sign_ngc_db() {
 uninstall_ngc_db() {
 	need_root
 	need_debian
+	# uninstall does not run read_answers - the catalog asks it for purge
+	# alone - so the one path it would delete is checked right here. An rm -rf
+	# on a path nobody looked at is not a thing to leave to the environment.
+	if ! valid_dir "$NGC_CA_DIR"; then
+		log_error "The folder of the CA is not an absolute path without two dots: ${NGC_CA_DIR}. Nothing was removed."
+	fi
 	log_warn "Removing MariaDB of NextGenCloud from this server."
 	systemctl stop mariadb > /dev/null 2>&1 || true
 	systemctl disable mariadb > /dev/null 2>&1 || true
 	rm -f "$CONF_FILE"
 	if [ "$NGC_PURGE" = yes ]; then
+		# The warning comes BEFORE the deletion. After it, it is a log entry
+		# and no warning: the key pair of /etc/ngc/db-keys is the only way to
+		# read the data of this server, and it is about to be gone.
+		log_warn "Now removing ${NGC_KEYS}, ${NGC_TLS} and ${NGC_CA_DIR}. Without the key pair of ${NGC_KEYS} the data in /var/lib/mysql cannot be read any more - not by this server and not by any other one. Put the pair away first if you are not sure."
 		$PKG_UNINSTALL "${NGC_PACKAGES[@]}" || log_warn "Not every package could be removed."
 		rm -rf "$NGC_TLS" "$NGC_KEYS" "$NGC_CA_DIR"
-		log_warn "Keys, certificates and the CA are gone. Without the key pair of ${NGC_KEYS} the data of this server cannot be read any more."
-		log_info "Removed. /var/lib/mysql was left alone: delete it by hand if you really want the data gone."
+		log_info "Removed. /var/lib/mysql was left alone, but it cannot be read any more: delete it by hand if you want the space back."
 	else
 		log_info "Configuration removed. Packages, keys, certificates and the data were kept; run uninstall with purge=yes to remove them too."
 	fi

@@ -73,11 +73,9 @@ db_cluster() (
 
 # ------------------------------------------------- 60-ngc.cnf: the lines that carry
 db_galera > "${dbdir}/galera.got"
-missing=0
-while IFS= read -r line; do
-    [[ -n "$line" ]] || continue
-    grep -qxF "$line" "${dbdir}/galera.got" || { missing=$((missing + 1)); echo "    missing: ${line}"; }
-done <<'EOF'
+cat > "${dbdir}/pinned.txt" <<'EOF'
+[mysqld]
+[mariabackup]
 require_secure_transport=ON
 tls_version=TLSv1.3
 ssl_ca=/etc/ngc/db-tls/ca.crt
@@ -98,8 +96,33 @@ innodb_autoinc_lock_mode=2
 max_allowed_packet=128M
 wsrep_sst_method=mariabackup
 sql_mode=STRICT_ALL_TABLES,NO_ENGINE_SUBSTITUTION
+wsrep_provider=/usr/lib/galera/libgalera_smm.so
+wsrep_cluster_name=ngc
+file_key_management_filename=/etc/ngc/db-keys/keys.enc
+file_key_management_filekey=FILE:/etc/ngc/db-keys/keyfile.key
 EOF
-check "60-ngc.cnf carries every line of galera.cnf (whole lines)" test "$missing" = 0
+missing=0
+while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    grep -qxF "$line" "${dbdir}/galera.got" || { missing=$((missing + 1)); echo "    missing: ${line}"; }
+done < "${dbdir}/pinned.txt"
+check "60-ngc.cnf carries every pinned line of galera.cnf (whole lines)" test "$missing" = 0
+
+# The other way round, and this is what makes "every line" checkable instead of
+# a promise: a line the script writes that nobody pins fails the test. The six
+# lines skipped here are the ones that carry a value of this node; each has its
+# own check further down.
+unpinned=0
+while IFS= read -r line; do
+    case "$line" in
+    '' | '#'*) continue ;;
+    wsrep_provider_options=* | wsrep_cluster_address=* | wsrep_node_name=* | \
+        wsrep_node_address=* | wsrep_sst_auth=* | bind-address=*) continue ;;
+    esac
+    grep -qxF "$line" "${dbdir}/pinned.txt" ||
+        { unpinned=$((unpinned + 1)); echo "    not pinned: ${line}"; }
+done < "${dbdir}/galera.got"
+check "every other line the script writes is pinned by this test" test "$unpinned" = 0
 
 # The three ssl_* lines above also stand in [mariabackup]. So they are counted
 # per section as well: a line only in [mariabackup] would leave the server's own
@@ -269,5 +292,60 @@ check "no password goes on a mariadb command line" \
 check "the accounts are made from a file, not from -e" \
     grep -q 'mariadb --protocol=socket < "\$sql"' "${dbdir}/body.sh"
 
+# ------------------------------------------------- the folders MariaDB walks through
+# MariaDB runs as mysql. The keys and certificates in these two folders belong
+# to mysql, so mysql has to get through the folder as well: root:root 0700
+# would make every chown below it worthless, and the server would come up
+# without TLS or stop at the encryption. 0710 is the way through without a
+# listing.
+check "db-tls belongs to root:mysql and is 0710" \
+    grep -qF 'ensure_dir "$NGC_TLS" root:mysql 0710' "${dbdir}/body.sh"
+check "db-keys belongs to root:mysql and is 0710" \
+    grep -qF 'ensure_dir "$NGC_KEYS" root:mysql 0710' "${dbdir}/body.sh"
+# And the other way round: the private key of the CA is the trust of the whole
+# installation, and MariaDB has no business with it.
+check "the folder of the CA stays closed to mysql (root:root 0700)" \
+    grep -qF 'ensure_dir "$NGC_CA_DIR" root:root 0700' "${dbdir}/body.sh"
+check "and it is the only folder left that closed" \
+    test "$(grep -c 'ensure_dir .* root:root 0700' "${dbdir}/body.sh")" = 1
+
+# ------------------------------------------------- a key is never open for a moment
+# Owner and mode are set before the move, inside WORK, which is 0700 and
+# root's. A chmod after the write leaves a window in which the key lies
+# readable where it will stay.
+check "all four key files go into place through put_secret" \
+    test "$(grep -c '^	put_secret ' "${dbdir}/body.sh")" = 4
+check "put_secret moves last, after chown and chmod" \
+    test "$(sed -n '/^put_secret() {/,/^}/p' "${dbdir}/body.sh" | grep -cE '^	(chown|chmod).*"\$from"')" = 2
+check "no key file is chmod-ed after it lies in its place" \
+    not grep -qE 'chmod 0400 "\$\{NGC_(KEYS|TLS)\}' "${dbdir}/body.sh"
+
+# ------------------------------------------------- uninstall: warn first, then delete
+# A warning after the deletion is a log entry, not a warning.
+warn_line="$(grep -n 'cannot be read any more - not by this server' "${dbdir}/body.sh" | head -n1 | cut -d: -f1)"
+rm_line="$(grep -n 'rm -rf "\$NGC_TLS"' "${dbdir}/body.sh" | head -n1 | cut -d: -f1)"
+check "uninstall warns about the data BEFORE it removes the keys" \
+    test -n "$warn_line" -a -n "$rm_line" -a "${warn_line:-0}" -lt "${rm_line:-0}"
+# uninstall does not run read_answers, so it checks the one path it deletes.
+chk_line="$(sed -n '/^uninstall_ngc_db() {/,/^}/p' "${dbdir}/body.sh" | grep -n 'valid_dir "\$NGC_CA_DIR"' | head -n1 | cut -d: -f1)"
+# The command, not the comment above it: "An rm -rf on a path nobody looked
+# at" stands two lines earlier and matched first, which made this check red for
+# the wrong reason.
+del_line="$(sed -n '/^uninstall_ngc_db() {/,/^}/p' "${dbdir}/body.sh" | grep -nE '^	+rm -rf ' | head -n1 | cut -d: -f1)"
+check "uninstall checks the folder of the CA before it removes it" \
+    test -n "$chk_line" -a -n "$del_line" -a "${chk_line:-0}" -lt "${del_line:-0}"
+# The question the human answers has to name the consequence, in every language.
+purge_q="$("$YQ" -r '.scripts."ngc-db".actions[] | select(.name == "uninstall") | .prompts[0]
+    | [.question, .questionDE, .questionES, .questionIT, .questionFR] | .[]' "${ULH}/apps/cli/assets/catalog.yaml")"
+check "the purge question names the data in all five languages" \
+    test "$(grep -cE 'read any more|nicht mehr lesbar|no se podr|non saranno|plus lisibles' <<< "$purge_q")" = 5
+
+# ------------------------------------------------- every action says what it needs
+check "root is checked for install/configure, sign and uninstall" \
+    test "$(grep -c '^	need_root$' "${dbdir}/body.sh")" = 3
+check "the distribution is checked for the same three" \
+    test "$(grep -c '^	need_debian$' "${dbdir}/body.sh")" = 3
+
 unset -f db_load db_galera db_cacnf db_answers db_host db_cluster
-unset dbdir NODE1 NODE2 NODE3 PASS1 PASS2 missing head back prov forbidden good bad shell o
+unset dbdir NODE1 NODE2 NODE3 PASS1 PASS2 missing unpinned head back prov forbidden good bad shell o
+unset warn_line rm_line chk_line del_line purge_q line
