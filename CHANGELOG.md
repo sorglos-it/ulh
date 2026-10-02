@@ -25,11 +25,19 @@
   be answered by Apache alone, with no header at all, and now reaches the single
   entry point, which answers 404 with every header the interface sends.
   Everything beside `public/` is denied a second time, `.htaccess` and symbolic
-  links are off, and `ServerSignature` is off. The same four headers stand once
-  more in the NGC repository (`apps/web/templates/apache-vhost.conf`); `ngc-web`
-  compares the two on a server that has both and says so when they differ.
+  links are off, and `ServerSignature` is off.
   A virtual host somebody wrote by hand is kept as
   `ngc-web.conf.before-ulh` before it is replaced, instead of vanishing.
+- `ngc-web` no longer writes a virtual host of its own: it takes the one NGC
+  ships with its release (`templates/apache-vhost.conf`, unpacked to
+  `/var/www/ngc/templates/apache-vhost.conf`), fills in the name of this server
+  and writes that. So there is one version of those settings and not two, and a
+  change NGC makes to a header reaches every machine with the next release.
+  Before anything is written the file is held against what this version of
+  `ngc-web` expects - the four protective headers, the paths of this setup, and
+  the name left open twice; a release that fails any of it is refused by name
+  and nothing is changed, so a server that runs keeps the virtual host it has.
+  A release too old to carry the file cannot be set up and says so.
 - New: `apps/cli/tests/ngc-web.test.sh` runs the parts of `ngc-web` that work
   without a server: the balancer it writes for Apache byte for byte, `web.json`,
   the four protective headers of the virtual host and its routing, and which

@@ -55,6 +55,7 @@ ngc_host() (
 ngc_site() (
     ngc_load
     NGC_HOSTNAME="ngc.example.org"
+    VHOST_TEMPLATE="$1"
     render_site
 )
 ngc_asset_walls() (
@@ -65,10 +66,17 @@ ngc_template_walls() (
     ngc_load
     template_walls "$1"
 )
-ngc_check_template() (
+# ensure_vhost_template ends the script with log_error, so every call runs in
+# its own subshell: the exit code is the verdict and the text is the message a
+# human reads.
+ngc_ensure_tpl() (
     ngc_load
     VHOST_TEMPLATE="$1"
-    check_vhost_template 2>&1
+    ensure_vhost_template 2>&1
+)
+ngc_name_filled() (
+    ngc_load
+    ensure_name_filled "$1" 2>&1
 )
 ngc_keep_site() (
     ngc_load
@@ -196,23 +204,91 @@ check "ngc-web refuses hosts with shell characters" test "$shell" = 0
 # ------------------------------------------------- the walls of the virtual host
 # The files below /assets/ are handed out by Apache, so no PHP of the interface
 # ever sees those answers and their headers have to stand in the virtual host.
-# This is the hole that was here before: /assets/ used to be taken out of the
+# This is the hole that was here before: /assets/ used to be taken out of a
 # rewrite, so a MISSING file there was answered by Apache with no header at all.
 #
-# The same four walls stand once more in the NGC repository, in
-# apps/web/templates/apache-vhost.conf. Changes there belong here too - and
-# check_vhost_template of the script says so on a server that has both.
-ngc_site > "${ngcdir}/site.got"
-
-# Four headers have to reach an answer below /assets/: three out of the assets
-# block, Strict-Transport-Security out of the host, where it covers every answer.
-walls_in_site() {
-    sed -n "\#^    <Directory ${1}/public/assets>\$#,\#^    </Directory>\$#p" "${ngcdir}/site.got" |
-        grep -E '^        Header always set '
-    grep -E '^    Header always set ' "${ngcdir}/site.got"
-}
+# There is ONE version of those walls now, and it is NGC's: the script writes
+# the template of the release with the name of this server filled in. The file
+# below stands in for that template - it cannot be the real one, which lives in
+# the NGC repository, so every path in it comes out of this script's own
+# constants and cannot drift away from them unnoticed.
 ngcroot="$(grep -m1 '^NGC_ROOT=' "${ngcdir}/body.sh" | cut -d'"' -f2)"
-walls_in_site "$ngcroot" |
+ngccert="$(grep -m1 '^NGC_CERT=' "${ngcdir}/body.sh" | cut -d'"' -f2)"
+ngckey="$(grep -m1 '^NGC_KEY=' "${ngcdir}/body.sh" | cut -d'"' -f2)"
+ngcbal="$(grep -m1 '^NGC_BALANCER=' "${ngcdir}/body.sh" | cut -d'"' -f2)"
+cat > "${ngcdir}/tpl.conf" <<EOF
+# The Apache virtual host of the NGC web interface.
+<VirtualHost *:80>
+    ServerName NGC-HOSTNAME
+    DocumentRoot "/var/www/html"
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} !^/\\.well-known/acme-challenge/
+    RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [R=308,L]
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName NGC-HOSTNAME
+    SSLEngine on
+    SSLCertificateFile    ${ngccert}
+    SSLCertificateKeyFile ${ngckey}
+    SSLProtocol -all +TLSv1.3
+    ServerSignature Off
+    DocumentRoot "${ngcroot}/public"
+    <Directory "${ngcroot}">
+        Require all denied
+        AllowOverride None
+        Options None
+    </Directory>
+    <Directory "${ngcroot}/public">
+        Require all granted
+        AllowOverride None
+        Options -Indexes -FollowSymLinks -ExecCGI -Includes
+        FallbackResource /index.php
+    </Directory>
+    <Directory "${ngcroot}/public/assets">
+        Header always set X-Content-Type-Options "nosniff"
+        Header always set Cross-Origin-Resource-Policy "same-origin"
+        Header always set Content-Security-Policy "default-src 'none'; script-src 'self'"
+        Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains"
+    </Directory>
+    Include ${ngcbal}
+</VirtualHost>
+EOF
+check "the stand-in template is one this script accepts" \
+    ngc_ensure_tpl "${ngcdir}/tpl.conf"
+
+ngc_site "${ngcdir}/tpl.conf" > "${ngcdir}/site.got"
+sed 's/NGC-HOSTNAME/ngc.example.org/g' "${ngcdir}/tpl.conf" > "${ngcdir}/tpl.filled"
+# Everything after the header of the script has to be the template, byte for
+# byte. The header is counted and not guessed, so a line added to it does not
+# quietly make this comparison compare less.
+hdr=$(( $(grep -c '' "${ngcdir}/site.got") - $(grep -c '' "${ngcdir}/tpl.filled") ))
+head -n "$hdr" "${ngcdir}/site.got" > "${ngcdir}/site.head"
+tail -n +$((hdr + 1)) "${ngcdir}/site.got" > "${ngcdir}/site.body"
+check "the virtual host is the template of the release, byte for byte" \
+    cmp -s "${ngcdir}/tpl.filled" "${ngcdir}/site.body"
+check "and the script adds nothing to it but comments" \
+    test "$(grep -c '^#' "${ngcdir}/site.head")" = "$hdr"
+check "whose first line names the file, so keep_foreign_site knows it again" \
+    grep -qxF "# $(grep -m1 '^SITE_FILE=' "${ngcdir}/body.sh" | cut -d'"' -f2)" \
+        <(head -n 1 "${ngcdir}/site.head")
+# The one value that is filled in. A placeholder left standing would make
+# Apache answer under the name of whoever wrote the template.
+check "no placeholder for the name is left in the virtual host" \
+    not grep -q 'NGC-HOSTNAME' "${ngcdir}/site.got"
+check "and the script refuses a file that still has one" \
+    not ngc_name_filled "${ngcdir}/tpl.conf"
+check "whose message says the name could not be filled in" \
+    grep -q 'could not be filled into' <(ngc_name_filled "${ngcdir}/tpl.conf")
+check "while the file it wrote passes that same check" \
+    ngc_name_filled "${ngcdir}/site.got"
+check "both virtual hosts answer to the name that was answered" \
+    test "$(grep -c '^    ServerName ngc.example.org$' "${ngcdir}/site.got")" = 2
+
+# Four headers have to reach an answer below /assets/, and they stand in the
+# assets block of the template.
+sed -n "\\#^    <Directory \"${ngcroot}/public/assets\">\$#,\\#^    </Directory>\$#p" \
+    "${ngcdir}/site.got" | grep -E '^        Header always set ' |
     sed -E 's/^ *Header always set ([A-Za-z-]+) "(.*)"$/\1 \2/' | sort > "${ngcdir}/walls.site"
 ngc_asset_walls > "${ngcdir}/walls.list"
 check "every wall of asset_walls really stands in the virtual host" \
@@ -243,43 +319,64 @@ check "the module list names dir, which brings FallbackResource" \
 # Everything beside public/ is denied a second time, which survives a typo in
 # DocumentRoot.
 check "everything beside public/ is denied as well" \
-    grep -q "^    <Directory ${ngcroot}>\$" "${ngcdir}/site.got"
+    grep -q "^    <Directory \"${ngcroot}\">\$" "${ngcdir}/site.got"
 check "and it is denied, not granted" \
-    test "$(sed -n "\#^    <Directory ${ngcroot}>\$#,\#^    </Directory>\$#p" "${ngcdir}/site.got" |
+    test "$(sed -n "\\#^    <Directory \"${ngcroot}\">\$#,\\#^    </Directory>\$#p" "${ngcdir}/site.got" |
         grep -c '^        Require all denied$')" = 1
 
-# -------------------------------------------- the second version, and its drift
-# The NGC repository ships the same four walls as a template of its own. A
-# release unpacks it beside the interface - whether it really carries the file is
-# not settled, so the script never reads its virtual host from there. It does
-# compare, and says so when the two have drifted apart.
-cat > "${ngcdir}/tpl.conf" <<'EOF'
-    <Directory "/var/www/ngc/public/assets">
-        Header always set X-Content-Type-Options "nosniff"
-        Header always set Cross-Origin-Resource-Policy "same-origin"
-        Header always set Content-Security-Policy "default-src 'none'; script-src 'self'"
-        Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains"
-    </Directory>
-EOF
-ngc_template_walls "${ngcdir}/tpl.conf" > "${ngcdir}/walls.tpl"
-check "the walls of the NGC template are read as the same four" \
-    cmp -s "${ngcdir}/walls.list" "${ngcdir}/walls.tpl"
-check "and the same template is called the same" \
-    grep -q 'the same' <(ngc_check_template "${ngcdir}/tpl.conf")
-
+# ------------------------------------- a template this script must NOT pass on
+# Every case below ENDS the setup. Nothing is written then: a server that runs
+# keeps the virtual host it has, and the message says what to do.
+#
+# 1 No file at all - a release older than the packer that puts it in.
+check "a release without the file is refused" \
+    not ngc_ensure_tpl "${ngcdir}/not-here.conf"
+check "and the message names the missing file and the way out" \
+    grep -q 'does not bring the Apache settings' <(ngc_ensure_tpl "${ngcdir}/not-here.conf")
+# 2 A wall is missing. Installing that in silence is how the hole came to be.
 grep -v 'Cross-Origin-Resource-Policy' "${ngcdir}/tpl.conf" > "${ngcdir}/tpl-short.conf"
-check "a template with one wall fewer is named as different" \
-    grep -q 'other protective settings' <(ngc_check_template "${ngcdir}/tpl-short.conf")
-# A line the reader does not understand must not become a silent match: it would
-# make a green run out of an installation with a hole.
-printf 'Header always set X-Content-Type-Options nosniff\n' > "${ngcdir}/tpl-odd.conf"
+check "a template with one wall fewer is refused" \
+    not ngc_ensure_tpl "${ngcdir}/tpl-short.conf"
+check "and the message names the wall that is missing" \
+    grep -q "do not carry the protective setting 'Cross-Origin-Resource-Policy same-origin'" \
+        <(ngc_ensure_tpl "${ngcdir}/tpl-short.conf")
+# A Header line the reader does not understand must not become a silent match.
+sed 's/"nosniff"/nosniff/' "${ngcdir}/tpl.conf" > "${ngcdir}/tpl-odd.conf"
 check "a Header line it cannot read ends template_walls with 1" \
     not ngc_template_walls "${ngcdir}/tpl-odd.conf"
-check "and check_vhost_template says so instead of calling it the same" \
-    grep -q 'could not be read line by line' <(ngc_check_template "${ngcdir}/tpl-odd.conf")
-# No file at all is the normal case today, and it may say nothing.
-check "no template on the server means no message" \
-    test -z "$(ngc_check_template "${ngcdir}/nothing-here.conf")"
+check "and it is refused instead of being called complete" \
+    grep -q 'could not be read line by line' <(ngc_ensure_tpl "${ngcdir}/tpl-odd.conf")
+# One wall MORE is not refused: NGC may add one, and this script must not be in
+# the way of that. It is said out loud, and the setup goes on.
+sed "\\#^        Header always set X-Content-Type-Options#a\\        Header always set Referrer-Policy \"no-referrer\"" \
+    "${ngcdir}/tpl.conf" > "${ngcdir}/tpl-more.conf"
+check "a template with one wall more is taken" ngc_ensure_tpl "${ngcdir}/tpl-more.conf"
+check "and says that it brings five" \
+    grep -q 'brings 5 protective settings' <(ngc_ensure_tpl "${ngcdir}/tpl-more.conf")
+# 3 Other paths: a template built for a different web root would hand out a
+# tree nobody here set up.
+for part in "DocumentRoot \"${ngcroot}/public\"|the web root" \
+            "<Directory \"${ngcroot}\">|the folder above it" \
+            "<Directory \"${ngcroot}/public/assets\">|the assets block" \
+            "SSLCertificateFile    ${ngccert}|the certificate" \
+            "Include ${ngcbal}|the balancer" \
+            "FallbackResource /index.php|the routing"; do
+    grep -vF "${part%%|*}" "${ngcdir}/tpl.conf" > "${ngcdir}/tpl-path.conf"
+    check "a template without ${part##*|} is refused" \
+        not ngc_ensure_tpl "${ngcdir}/tpl-path.conf"
+done
+check "and the message says it was made for another server" \
+    grep -q 'made for a different server' \
+        <(grep -vF "Include ${ngcbal}" "${ngcdir}/tpl.conf" > "${ngcdir}/tpl-path.conf"
+          ngc_ensure_tpl "${ngcdir}/tpl-path.conf")
+# 4 The name has to be open, twice: port 80 and port 443.
+sed '0,/^    ServerName NGC-HOSTNAME$/s//    ServerName ngc.somebody.else/' \
+    "${ngcdir}/tpl.conf" > "${ngcdir}/tpl-name.conf"
+check "a template that leaves the name open only once is refused" \
+    not ngc_ensure_tpl "${ngcdir}/tpl-name.conf"
+check "and the message says the name cannot be filled in" \
+    grep -q 'do not leave the name of the server open twice' \
+        <(ngc_ensure_tpl "${ngcdir}/tpl-name.conf")
 
 # ------------------------------------------- a virtual host written by somebody
 # The script writes this file on every install and configure. A server somebody
