@@ -821,6 +821,39 @@ dump_database() {
 	log_error "Could not write a complete dump of ngc in three attempts. Nothing was put into the backup folder."
 }
 
+# list_tables prints the base tables of the database $1, one per line. $1 is a
+# name this script made itself (ngc, ngc_restore_<stamp>, ngc_before_<stamp>),
+# never one that came from outside.
+list_tables() {
+	mariadb --protocol=socket -N -B -e \
+		"SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = '$1' AND TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_NAME"
+}
+
+# valid_table - a name this script is willing to put between backticks. The
+# table names of a restore come out of the backup file, so they come from
+# outside: a name with a backtick in it would end the quoting of the RENAME
+# statement below and start something of its own. Letters, digits and the
+# underscore, as MariaDB's unquoted names allow, and nothing else.
+valid_table() {
+	case "${1:-}" in
+	'' | *[!a-zA-Z0-9_]*) return 1 ;;
+	esac
+	[ "${#1}" -le 64 ]
+}
+
+# drop_database removes a database this script made itself a moment ago. It is
+# the way back out of a restore that failed before anything was renamed - at
+# that point ngc has not been touched at all.
+drop_database() {
+	work_init
+	local sql="${WORK}/drop.sql"
+	umask 077
+	printf 'DROP DATABASE IF EXISTS `%s`;\n' "$1" > "$sql"
+	mariadb --protocol=socket < "$sql" ||
+		log_warn "The half-loaded database ${1} could not be removed. It is in the way of nothing, but it takes up space: remove it by hand with DROP DATABASE \`${1}\`."
+	rm -f "$sql"
+}
+
 # checksum_file prints the name of the checksum that belongs to a backup.
 checksum_file() {
 	printf '%s.sha256' "$1"
@@ -970,6 +1003,11 @@ backup_ngc_db() {
 	log_info "checksum: $(checksum_file "$target")"
 	printf '\n'
 	log_warn "Without that passphrase nobody opens this file again - not you and not NextGenCloud. There is no second way in: keep it somewhere other than beside the backup."
+	# Nothing here removes an old backup, and nothing anywhere else does
+	# either. A script that may be the last thing still working does not
+	# delete backups - but the human has to know that, or the disk fills up
+	# without a word.
+	log_warn "Every run of backup writes one more file into ${NGC_BACKUP_DIR} and removes none. Nothing cleans that folder up: look at it now and then, and if you want a rule, write one on purpose."
 }
 
 restore_ngc_db() {
@@ -1007,16 +1045,31 @@ restore_ngc_db() {
 	if ! tail -n 5 "$plain" | grep -q '^-- Dump completed'; then
 		log_error "The dump in this file carries no end mark, so it is not complete. Putting it back would leave the database missing its last tables. Nothing was changed."
 	fi
+	# The dump is loaded into a database of this script's choosing, so it may
+	# not pick one of its own: a CREATE DATABASE or a USE inside it would step
+	# straight out of that database and write wherever it likes. backup never
+	# writes either of them (it dumps one database without --databases), so a
+	# file that carries one is not a file this script wrote.
+	if grep -qiE '^[[:space:]]*(CREATE[[:space:]]+DATABASE|CREATE[[:space:]]+SCHEMA|USE[[:space:]])' "$plain"; then
+		log_error "This dump names a database of its own (CREATE DATABASE or USE). A backup of ngc-db does not; this file is not one. Nothing was changed."
+	fi
+	# DEFINER= is how a view, a trigger, a routine or an event says which
+	# account it runs as. backup dumps none of them (--routines=FALSE
+	# --events=FALSE, and NGC has no views and no triggers), so a file that
+	# carries one would run code here that nobody asked for.
+	if grep -qi 'DEFINER[[:space:]]*=' "$plain"; then
+		log_error "This dump carries a view, a trigger or a routine (DEFINER=). A backup of ngc-db carries only tables and rows. Nothing was changed."
+	fi
 	# The passphrase has done its work; it goes before the question is asked,
 	# so it is not lying there while a human thinks about the answer.
 	shred -u "$BACKUP_PASS_FILE" 2>/dev/null || rm -f "$BACKUP_PASS_FILE"
 	log_info "a complete dump of MariaDB, $(wc -c < "$plain") bytes"
 
-	# The warning comes BEFORE the deletion, as it does in uninstall. After it,
-	# it is a log entry and no warning: everything that is in ngc right now is
-	# about to be gone, and no copy of it is made here.
+	# The warning comes BEFORE anything is changed, as it does in uninstall.
+	# After the change it is a log entry and no warning.
 	printf '\n'
-	log_warn "Everything that is in the database ngc right now will be deleted and replaced by the backup - on this node and, through Galera, on every other node of the cluster. This cannot be undone, and nothing of the current state is kept. Back it up first if you are not sure."
+	log_warn "The database ngc will be replaced by this backup. THIS DOES NOT STOP AT THIS SERVER: Galera carries every statement to every other node of the cluster, so the data of the whole installation are replaced, not the data of this machine. Everything that is in ngc now is written by nobody again."
+	log_warn "What is in ngc now is kept, under the name this run will print, and only a DROP DATABASE by hand removes it. Until you run that, the installation needs room for both: the old data and the new ones."
 	case "$NGC_RESTORE_CONFIRM" in
 	yes | y | true | 1) ;;
 	*)
@@ -1024,22 +1077,93 @@ restore_ngc_db() {
 		;;
 	esac
 
-	local sql="${WORK}/restore.sql"
+	# Not "DROP DATABASE ngc and load into it". Between that DROP and the last
+	# statement of the dump, ngc is neither the old state nor the new one, and
+	# nothing brings the old one back - and restore is the command people reach
+	# for when something is already broken. So: load into a database of its
+	# own, and only when that worked move the names. At no point is there a
+	# moment in which the old data are gone and the new ones not there.
+	#
+	# The price, and it is a real one: while this runs, the installation needs
+	# room for BOTH copies, and the old one stays until a human removes it.
+	# MariaDB has no RENAME DATABASE, so the names move table by table with
+	# RENAME TABLE. One RENAME TABLE statement is atomic and MariaDB takes the
+	# lock for the whole statement, so all tables of one direction go in one
+	# statement; MariaDB does the pairs left to right, so a failure in the
+	# middle leaves tables in two databases - but it leaves them, it does not
+	# delete them, and the message below says where they are.
+	local stamp fresh kept sql tables old_tables t n=0
+	stamp="$(date -u +%Y%m%d%H%M%S)"
+	fresh="ngc_restore_${stamp}"
+	kept="ngc_before_${stamp}"
+	sql="${WORK}/restore.sql"
 	umask 077
-	# DROP, and not just the dump: the dump drops the tables it carries, and a
-	# table that exists here and not in the backup would survive it and make
-	# the result neither the old state nor the new one.
-	cat > "$sql" <<'SQLEOF'
-DROP DATABASE IF EXISTS ngc;
-CREATE DATABASE ngc CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
-USE ngc;
-SQLEOF
-	cat "$plain" >> "$sql"
-	mariadb --protocol=socket < "$sql" ||
-		log_error "Putting the backup back failed in the middle. The database ngc is now neither the old state nor the backup: look at the output above, fix the cause and run restore again with the same file."
+
+	log_info "loading the backup into ${fresh} - ngc is not touched yet"
+	{
+		printf 'CREATE DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;\n' "$fresh"
+		printf 'USE `%s`;\n' "$fresh"
+		cat "$plain"
+	} > "$sql"
+	if ! mariadb --protocol=socket < "$sql"; then
+		drop_database "$fresh"
+		log_error "The backup could not be loaded. The database ngc was NOT touched: it is exactly as it was before this run. Look at the output above and try again."
+	fi
 	shred -u "$plain" 2>/dev/null || rm -f "$plain"
 	shred -u "$sql" 2>/dev/null || rm -f "$sql"
-	log_info "The backup is back in the database ngc."
+
+	# A dump that ran through without a table is not a restore. This is the
+	# step that tells "the name says ngc" from "the data are there".
+	tables="$(list_tables "$fresh")"
+	for t in $tables; do
+		if ! valid_table "$t"; then
+			drop_database "$fresh"
+			log_error "The backup carries a table whose name this script will not put into a statement: ${t}. Nothing of ngc was touched."
+		fi
+		n=$((n + 1))
+	done
+	if [ "$n" -lt 1 ]; then
+		drop_database "$fresh"
+		log_error "The backup loaded without a single table. That is not a backup of ngc. The database ngc was NOT touched."
+	fi
+	log_info "${n} tables came out of the backup"
+
+	# ngc has to exist for its tables to be moved out of it, and it may not
+	# exist for the new ones to be moved in - so: make it if it is missing,
+	# move what is in it aside, then move the new ones in.
+	old_tables="$(list_tables ngc)"
+	for t in $old_tables; do
+		if ! valid_table "$t"; then
+			drop_database "$fresh"
+			log_error "The database ngc holds a table whose name this script will not put into a statement: ${t}. Nothing was changed; remove or rename that table by hand first."
+		fi
+	done
+	{
+		printf 'CREATE DATABASE IF NOT EXISTS `ngc` CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;\n'
+		printf 'CREATE DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;\n' "$kept"
+		if [ -n "$old_tables" ]; then
+			printf 'RENAME TABLE'
+			for t in $old_tables; do
+				printf ' `ngc`.`%s` TO `%s`.`%s`,' "$t" "$kept" "$t"
+			done
+			printf ';\n'
+		fi
+		printf 'RENAME TABLE'
+		for t in $tables; do
+			printf ' `%s`.`%s` TO `ngc`.`%s`,' "$fresh" "$t" "$t"
+		done
+		printf ';\n'
+	} | sed 's/,;$/;/' > "$sql"
+	if ! mariadb --protocol=socket < "$sql"; then
+		rm -f "$sql"
+		log_error "Moving the tables onto the name ngc failed. NOTHING WAS DELETED: what was in ngc is in ${kept} or still in ngc, and what came out of the backup is in ${fresh} or already in ngc. Look at the output above, put the names right by hand, and do not run restore again until you have."
+	fi
+	rm -f "$sql"
+	# The now empty database of the load. The OLD data are NOT dropped here -
+	# that is the one irreversible step, and a human does it, not a script.
+	drop_database "$fresh"
+	log_info "The backup is in the database ngc: ${n} tables."
+	log_info "What was in ngc before this run is in ${kept}, untouched."
 
 	printf '\n'
 	printf 'Next steps:\n'
@@ -1052,6 +1176,11 @@ SQLEOF
 	printf '       mariadb --protocol=socket ngc -e "SELECT COUNT(*) FROM ngc_user; SELECT COUNT(*) FROM ngc_blob;"\n'
 	printf '  3. On every other node, see that it took the change:\n'
 	printf "       mariadb --protocol=socket -e \"SHOW STATUS LIKE 'wsrep_cluster_size'\"\n"
+	printf '  4. When you are sure the new state is the right one, and only\n'
+	printf '     then, the old data go - by hand, because this is the step that\n'
+	printf '     cannot be undone:\n'
+	printf '       mariadb --protocol=socket -e "DROP DATABASE \\`%s\\`"\n' "$kept"
+	printf '     Until you do, the installation carries both states.\n'
 }
 
 # ============================================================

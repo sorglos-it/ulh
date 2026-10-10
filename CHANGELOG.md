@@ -14,8 +14,15 @@
   passphrase is asked on the terminal without echo and never becomes an answer,
   and no password ever stands on a command line - the server is reached as root
   over the unix socket. `restore` checks the checksum and the content before it
-  says, in the admin's language, that everything in the database will be gone,
-  and it does nothing without an explicit yes.
+  says, in the admin's language, that the whole cluster is replaced and not
+  just this server, and it does nothing without an explicit yes. It never
+  drops `ngc`: the dump goes into a database of its own, and only when it
+  loaded and brought tables with it do the names move, table by table with
+  `RENAME TABLE` (MariaDB has no `RENAME DATABASE`). What was in `ngc` is kept
+  under `ngc_before_<stamp>` and removed by a human, never by the script - so
+  there is no moment in which the old data are gone and the new ones not there.
+  The price, and it is named: room for both states until someone drops the old
+  one.
   New category `NextGenCloud` in the catalog, in all five languages.
 - New: five languages - English, German, French, Italian and Spanish. The menu,
   the messages and the descriptions and questions of all 96 scripts. ulh starts in

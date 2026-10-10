@@ -370,7 +370,24 @@ db_stub() {
         ( umask 077; printf '%s' "$DBPASS" > "$BACKUP_PASS_FILE" )
     }
     mariadb-dump() { cat "${dbdir}/fake-dump.sql"; }
-    mariadb() { cat > "${dbdir}/loaded.sql"; }
+    # restore talks to the server more than once now: it loads, then asks
+    # which tables came out, then moves the names. So the stub writes every
+    # call and everything it was fed into one transcript, and answers the one
+    # question that has an answer - which tables a database holds. The two
+    # table lists are files, so a case can say what the server found.
+    mariadb() {
+        printf '>> mariadb %s\n' "$*" >> "${dbdir}/transcript.txt"
+        case "$*" in
+        *information_schema*)
+            case "$*" in
+            *"TABLE_SCHEMA = 'ngc'"*) cat "${dbdir}/tables-ngc.txt" ;;
+            *) cat "${dbdir}/tables-fresh.txt" ;;
+            esac
+            ;;
+        *-e*) : ;;
+        *) cat >> "${dbdir}/transcript.txt" ;;
+        esac
+    }
 }
 
 # A dump as mariadb-dump writes one: its own first line, a row with a byte
@@ -386,6 +403,11 @@ INSERT INTO `ngc_blob` VALUES ('1',0x7365637265742d6d61726b6572);
 EOF
 # The same dump with its last line cut off: a dump that stopped in the middle.
 grep -v '^-- Dump completed' "${dbdir}/fake-dump.sql" > "${dbdir}/short-dump.sql"
+
+# What the server reports after the load, and what it already had. The second
+# one matters: restore has to move those aside, not delete them.
+printf 'ngc_blob\nngc_user\n' > "${dbdir}/tables-fresh.txt"
+printf 'ngc_user\n' > "${dbdir}/tables-ngc.txt"
 
 GOODPASS="correct horse battery staple"
 BADPASS="not the passphrase at all"
@@ -435,6 +457,11 @@ check "and so is the passphrase file" not test -e "${dbdir}/work/pass.txt"
 # The sentence a human has to read before they put the file away.
 check "backup says that without the passphrase nobody opens the file again" \
     grep -q 'nobody opens this file again' "${dbdir}/backup.log"
+# It writes one more file every time and removes none. Nothing in ulh cleans
+# that folder up, so the human has to be told - a script that may be the last
+# thing still working does not delete backups.
+check "backup says where the files lie and that nobody tidies them" \
+    bash -c 'grep -q "removes none" "$1" && grep -q "${2}" "$1"' _ "${dbdir}/backup.log" "$store"
 
 # A dump without its end mark is not a backup. Measured on the folder: nothing
 # may be left there.
@@ -464,45 +491,126 @@ check "backup refuses a folder that is not there" \
     not db_backup "$GOODPASS" "/var/backups/ngc-does-not-exist"
 
 # ----------------------------------------------------- restore
-rm -f "${dbdir}/loaded.sql"
+rm -f "${dbdir}/transcript.txt"
 db_restore "$GOODPASS" "$enc" yes > "${dbdir}/restore.log" 2>&1
 restore_code=$?
 check "restore runs through and ends with code 0" test "$restore_code" = 0
-check "what reached the server starts by emptying the database" \
-    bash -c 'head -n1 "$1" | grep -qx "DROP DATABASE IF EXISTS ngc;"' _ "${dbdir}/loaded.sql"
-check "it makes the database with the collation of the installation" \
-    grep -qx 'CREATE DATABASE ngc CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;' "${dbdir}/loaded.sql"
-check "and then carries the whole dump" \
-    grep -q '0x7365637265742d6d61726b6572' "${dbdir}/loaded.sql"
+# The whole point of the safer form: ngc itself is NEVER dropped. Between a
+# DROP DATABASE ngc and the last statement of the dump, ngc would be neither
+# the old state nor the new one, and nothing would bring the old one back.
+# The backticks are in the pattern on purpose: the empty database of the load
+# IS dropped, and that one is called ngc_restore_<stamp>.
+# Both spellings, quoted and not: the first version of this check looked for
+# the backticks only, and the form it is here to catch writes
+# "DROP DATABASE IF EXISTS ngc;" without them - so it was green against the
+# very thing it guards. The pattern ends at the semicolon, so the empty
+# database of the load (ngc_restore_<stamp>, which IS dropped) does not match.
+check "restore never drops the database ngc" \
+    not grep -qiE 'DROP DATABASE( IF EXISTS)? `?ngc`? *;' "${dbdir}/transcript.txt"
+check "the dump goes into a database of its own first" \
+    grep -qE 'CREATE DATABASE `ngc_restore_[0-9]{14}` CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;' "${dbdir}/transcript.txt"
+check "and the whole dump really arrives there" \
+    grep -q '0x7365637265742d6d61726b6572' "${dbdir}/transcript.txt"
+# "The database is called ngc afterwards" would also be green if nothing had
+# been loaded. So: the tables the server reported are the tables that are
+# moved onto the name, each one of them.
+check "every table of the backup is moved onto the name ngc" \
+    test "$(grep -oE '`ngc_restore_[0-9]{14}`\.`[a-z_]+` TO `ngc`\.`[a-z_]+`' \
+        "${dbdir}/transcript.txt" | wc -l)" = 2
+check "the blob table is one of them" \
+    grep -qE '`ngc_restore_[0-9]{14}`\.`ngc_blob` TO `ngc`\.`ngc_blob`' "${dbdir}/transcript.txt"
+check "restore counted the tables and said how many" \
+    grep -q '2 tables came out of the backup' "${dbdir}/restore.log"
+# What was in ngc is moved aside, not deleted, and the old table that is NOT
+# in the backup has to be among the moved ones.
+check "what was in ngc is moved aside into a database of its own" \
+    grep -qE 'CREATE DATABASE `ngc_before_[0-9]{14}`' "${dbdir}/transcript.txt"
+check "the table that was there is moved aside, not dropped" \
+    grep -qE '`ngc`\.`ngc_user` TO `ngc_before_[0-9]{14}`\.`ngc_user`' "${dbdir}/transcript.txt"
+check "and the kept database is never dropped by the script" \
+    not grep -qE 'DROP DATABASE IF EXISTS `ngc_before_' "${dbdir}/transcript.txt"
+check "the empty database of the load is cleaned up" \
+    grep -qE 'DROP DATABASE IF EXISTS `ngc_restore_[0-9]{14}`;' "${dbdir}/transcript.txt"
+check "restore says where the old data are now" \
+    grep -qE 'is in ngc_before_[0-9]{14}, untouched' "${dbdir}/restore.log"
+check "and names the one command that removes them, by hand" \
+    grep -qE 'DROP DATABASE .*ngc_before_[0-9]{14}' "${dbdir}/restore.log"
 check "restore says that the schema still has to be brought up" \
     grep -q 'ngc-api migrate' "${dbdir}/restore.log"
 check "restore leaves no readable dump behind" not test -e "${dbdir}/work/ngc.sql"
 check "and no passphrase file" not test -e "${dbdir}/work/pass.txt"
+# The warning has to say that this is not a local matter.
+check "the warning says that every node of the cluster is hit" \
+    grep -q 'DOES NOT STOP AT THIS SERVER' "${dbdir}/restore.log"
+check "and that the installation needs room for both states" \
+    grep -q 'needs room for both' "${dbdir}/restore.log"
+
+# A load that produced no table at all: that is not a backup, and ngc may not
+# be touched. "test -d" of a database does not exist, so this is the case that
+# tells "the name is there" from "the data are there".
+printf '' > "${dbdir}/tables-fresh.txt"
+rm -f "${dbdir}/transcript.txt"
+db_restore "$GOODPASS" "$enc" yes > "${dbdir}/restore-notables.log" 2>&1
+check "restore refuses a backup that loaded without a table" test "$?" != 0
+check "and moves no name at all" \
+    not grep -q 'RENAME TABLE' "${dbdir}/transcript.txt"
+check "it says ngc was not touched" \
+    grep -q 'was NOT touched' "${dbdir}/restore-notables.log"
+check "and it removes its own half-loaded database" \
+    grep -qE 'DROP DATABASE IF EXISTS `ngc_restore_[0-9]{14}`;' "${dbdir}/transcript.txt"
+
+# A table name out of the backup that would end the quoting of the RENAME
+# statement. The names come from the file, so they come from outside.
+printf 'ngc_blob\nbad`name\n' > "${dbdir}/tables-fresh.txt"
+rm -f "${dbdir}/transcript.txt"
+db_restore "$GOODPASS" "$enc" yes > "${dbdir}/restore-badtable.log" 2>&1
+check "restore refuses a table name it would have to quote" test "$?" != 0
+check "and moves no name then either" \
+    not grep -q 'RENAME TABLE' "${dbdir}/transcript.txt"
+printf 'ngc_blob\nngc_user\n' > "${dbdir}/tables-fresh.txt"
+
+# A dump that names a database of its own would step out of the one this
+# script chose and write wherever it likes.
+for bad_line in 'CREATE DATABASE `other`;' 'USE other;' \
+    'CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v` AS SELECT 1;'; do
+    bad_dir="${dbdir}/bad-$(printf '%s' "$bad_line" | cksum | cut -d' ' -f1)"
+    mkdir -p "$bad_dir"
+    { head -n 3 "${dbdir}/fake-dump.sql"; printf '%s\n' "$bad_line"
+      tail -n 4 "${dbdir}/fake-dump.sql"; } > "${dbdir}/bad-dump.sql"
+    openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -salt \
+        -in "${dbdir}/bad-dump.sql" -out "${bad_dir}/ngc-bad.sql.enc" \
+        -pass "pass:${GOODPASS}" 2>/dev/null
+    ( cd "$bad_dir" && sha256sum ngc-bad.sql.enc > ngc-bad.sql.enc.sha256 )
+    rm -f "${dbdir}/transcript.txt"
+    db_restore "$GOODPASS" "${bad_dir}/ngc-bad.sql.enc" yes > /dev/null 2>&1
+    check "restore refuses a dump that carries: ${bad_line}" test "$?" != 0
+    check "  and does not even start to load it" not test -e "${dbdir}/transcript.txt"
+done
 
 # Without the yes nothing happens at all - and "nothing" is measured on the
 # server side, not on the exit code.
-rm -f "${dbdir}/loaded.sql"
+rm -f "${dbdir}/transcript.txt"
 db_restore "$GOODPASS" "$enc" no > "${dbdir}/restore-no.log" 2>&1
 check "restore without the yes stops" test "$?" != 0
-check "and nothing reached the server" not test -e "${dbdir}/loaded.sql"
+check "and nothing reached the server" not test -e "${dbdir}/transcript.txt"
 check "it warned about the data before it asked" \
-    grep -q 'cannot be undone' "${dbdir}/restore-no.log"
-rm -f "${dbdir}/loaded.sql"
+    grep -q 'DOES NOT STOP AT THIS SERVER' "${dbdir}/restore-no.log"
+rm -f "${dbdir}/transcript.txt"
 db_restore "$GOODPASS" "$enc" maybe > /dev/null 2>&1
-check "an answer that is neither yes nor no counts as no" not test -e "${dbdir}/loaded.sql"
+check "an answer that is neither yes nor no counts as no" not test -e "${dbdir}/transcript.txt"
 
 # A wrong passphrase, a missing checksum, a changed byte: each one stops before
 # the database is touched.
-rm -f "${dbdir}/loaded.sql"
+rm -f "${dbdir}/transcript.txt"
 db_restore "$BADPASS" "$enc" yes > "${dbdir}/restore-badpass.log" 2>&1
 check "restore refuses a wrong passphrase" test "$?" != 0
-check "and touches nothing" not test -e "${dbdir}/loaded.sql"
+check "and touches nothing" not test -e "${dbdir}/transcript.txt"
 
 cp "$enc" "${dbdir}/lonely.sql.enc"
-rm -f "${dbdir}/loaded.sql"
+rm -f "${dbdir}/transcript.txt"
 db_restore "$GOODPASS" "${dbdir}/lonely.sql.enc" yes > "${dbdir}/restore-nosum.log" 2>&1
 check "restore refuses a backup without its checksum" test "$?" != 0
-check "and touches nothing then either" not test -e "${dbdir}/loaded.sql"
+check "and touches nothing then either" not test -e "${dbdir}/transcript.txt"
 
 broken="${dbdir}/broken"
 mkdir -p "$broken"
@@ -510,12 +618,12 @@ cp "$enc" "${broken}/ngc-broken.sql.enc"
 ( cd "$broken" && sha256sum ngc-broken.sql.enc > ngc-broken.sql.enc.sha256 )
 # One byte in the middle, far behind the salt: the checksum has to catch it.
 printf 'X' | dd of="${broken}/ngc-broken.sql.enc" bs=1 seek=40 conv=notrunc status=none
-rm -f "${dbdir}/loaded.sql"
+rm -f "${dbdir}/transcript.txt"
 db_restore "$GOODPASS" "${broken}/ngc-broken.sql.enc" yes > "${dbdir}/restore-broken.log" 2>&1
 check "restore refuses a file whose checksum does not fit" test "$?" != 0
 check "and says so before it asks for the passphrase" \
     grep -q 'checksum does not fit' "${dbdir}/restore-broken.log"
-check "and touches nothing" not test -e "${dbdir}/loaded.sql"
+check "and touches nothing" not test -e "${dbdir}/transcript.txt"
 
 # Something that decrypts cleanly and is not a dump of ngc. A passphrase that
 # is right says nothing about what is inside.
@@ -525,10 +633,10 @@ printf 'this is not a dump\n' > "${dbdir}/notadump.txt"
 openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -salt \
     -in "${dbdir}/notadump.txt" -out "${other}/ngc-other.sql.enc" -pass "pass:${GOODPASS}" 2>/dev/null
 ( cd "$other" && sha256sum ngc-other.sql.enc > ngc-other.sql.enc.sha256 )
-rm -f "${dbdir}/loaded.sql"
+rm -f "${dbdir}/transcript.txt"
 db_restore "$GOODPASS" "${other}/ngc-other.sql.enc" yes > "${dbdir}/restore-other.log" 2>&1
 check "restore refuses a file that is not a dump of MariaDB" test "$?" != 0
-check "and touches nothing" not test -e "${dbdir}/loaded.sql"
+check "and touches nothing" not test -e "${dbdir}/transcript.txt"
 
 # A dump that stopped in the middle, encrypted and with a fitting checksum:
 # only the end mark catches this one.
@@ -537,10 +645,10 @@ mkdir -p "$cut"
 openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -salt \
     -in "${dbdir}/short-dump.sql" -out "${cut}/ngc-cut.sql.enc" -pass "pass:${GOODPASS}" 2>/dev/null
 ( cd "$cut" && sha256sum ngc-cut.sql.enc > ngc-cut.sql.enc.sha256 )
-rm -f "${dbdir}/loaded.sql"
+rm -f "${dbdir}/transcript.txt"
 db_restore "$GOODPASS" "${cut}/ngc-cut.sql.enc" yes > "${dbdir}/restore-cut.log" 2>&1
 check "restore refuses a dump without its end mark" test "$?" != 0
-check "and touches nothing" not test -e "${dbdir}/loaded.sql"
+check "and touches nothing" not test -e "${dbdir}/transcript.txt"
 
 # Again: files that are really there, checksum and all, so only the grammar
 # can refuse them.
@@ -559,13 +667,23 @@ check "restore refuses a path with a space in it" \
 # grep over the whole body took that one - which made this check red for a
 # reason that had nothing to do with restore.
 sed -n '/^restore_ngc_db() {/,/^}/p' "${dbdir}/body.sh" > "${dbdir}/restore.part"
-r_warn="$(grep -n 'Everything that is in the database ngc right now will be deleted' "${dbdir}/restore.part" | head -n1 | cut -d: -f1)"
+r_warn="$(grep -n 'The database ngc will be replaced by this backup' "${dbdir}/restore.part" | head -n1 | cut -d: -f1)"
 r_load="$(grep -n 'mariadb --protocol=socket < "\$sql"' "${dbdir}/restore.part" | head -n1 | cut -d: -f1)"
+r_tables="$(grep -n 'list_tables "\$fresh"' "${dbdir}/restore.part" | head -n1 | cut -d: -f1)"
 check "restore warns about the data BEFORE it loads the dump" \
     test -n "$r_warn" -a -n "$r_load" -a "${r_warn:-0}" -lt "${r_load:-0}"
 r_conf="$(grep -n 'NGC_RESTORE_CONFIRM' "${dbdir}/restore.part" | tail -n1 | cut -d: -f1)"
 check "and it asks for the yes before that line too" \
     test -n "$r_conf" -a -n "$r_load" -a "${r_conf:-0}" -lt "${r_load:-0}"
+# And the table count stands between the load and the rename, not after it:
+# counted afterwards it would be a report, not a condition.
+# The command, not the comment that explains it: the comment above the code
+# says "RENAME TABLE" too, it stands further up, and a plain grep took that
+# one - the same trap the check for uninstall above already fell into once.
+r_ren="$(grep -nF "printf 'RENAME TABLE'" "${dbdir}/restore.part" | head -n1 | cut -d: -f1)"
+check "restore counts the tables after the load and before the rename" \
+    test -n "$r_tables" -a -n "$r_ren" -a "${r_load:-0}" -lt "${r_tables:-0}" \
+        -a "${r_tables:-0}" -lt "${r_ren:-0}"
 
 # No secret on a command line. "-pass pass:" would put the passphrase in the
 # process list of the machine, where every user can read it; "-pass file:" puts
@@ -618,7 +736,8 @@ check "the restore question names the loss in all five languages" \
 
 unset -f db_stub db_backup db_restore
 unset GOODPASS BADPASS store enc empty broken other cut backup_code restore_code
-unset r_warn r_load r_conf back_vars rest_vars restore_q spaced
+unset r_warn r_load r_conf r_tables r_ren back_vars rest_vars restore_q spaced
+unset bad_line bad_dir
 
 unset -f db_load db_galera db_cacnf db_answers db_host db_cluster
 unset dbdir NODE1 NODE2 NODE3 PASS1 PASS2 missing unpinned head back prov forbidden good bad shell o
