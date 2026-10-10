@@ -341,10 +341,284 @@ check "the purge question names the data in all five languages" \
     test "$(grep -cE 'read any more|nicht mehr lesbar|no se podr|non saranno|plus lisibles' <<< "$purge_q")" = 5
 
 # ------------------------------------------------- every action says what it needs
-check "root is checked for install/configure, sign and uninstall" \
-    test "$(grep -c '^	need_root$' "${dbdir}/body.sh")" = 3
-check "the distribution is checked for the same three" \
-    test "$(grep -c '^	need_debian$' "${dbdir}/body.sh")" = 3
+check "root is checked for install/configure, sign, uninstall, backup and restore" \
+    test "$(grep -c '^	need_root$' "${dbdir}/body.sh")" = 5
+check "the distribution is checked for the same five" \
+    test "$(grep -c '^	need_debian$' "${dbdir}/body.sh")" = 5
+
+# ================================================================= backup and restore
+# These run the two actions for real, with four stubs in their place: the
+# server (mariadb, mariadb-dump), the two checks that need a real machine
+# (need_root, need_debian) and the question for the passphrase, which needs a
+# terminal. Everything that carries the weight is the script's own: the dump
+# goes through openssl with the real cipher and the real number of rounds, the
+# checksum is a real sha256sum, and what reaches the server is the text the
+# script built. So a wrong passphrase, a damaged file and a missing yes are
+# measured, not assumed.
+#
+# db_stub defines the stubs AFTER db_load, so they win over the script's own
+# functions of the same name.
+db_stub() {
+    need_root() { :; }
+    need_debian() { :; }
+    mariadb_running() { return 0; }
+    sleep() { :; }
+    # The real one reads the terminal without echo; there is none here. That
+    # ask_passphrase reads without echo is checked separately, further down.
+    ask_passphrase() {
+        BACKUP_PASS_FILE="${WORK}/pass.txt"
+        ( umask 077; printf '%s' "$DBPASS" > "$BACKUP_PASS_FILE" )
+    }
+    mariadb-dump() { cat "${dbdir}/fake-dump.sql"; }
+    mariadb() { cat > "${dbdir}/loaded.sql"; }
+}
+
+# A dump as mariadb-dump writes one: its own first line, a row with a byte
+# that only --hex-blob survives, and its own last line.
+cat > "${dbdir}/fake-dump.sql" <<'EOF'
+-- MariaDB dump 10.19  Distrib 10.11.6-MariaDB, for debian-linux-gnu
+--
+-- Host: localhost    Database: ngc
+DROP TABLE IF EXISTS `ngc_blob`;
+CREATE TABLE `ngc_blob` (`id` varbinary(64) NOT NULL, `data` longblob) ENGINE=InnoDB;
+INSERT INTO `ngc_blob` VALUES ('1',0x7365637265742d6d61726b6572);
+-- Dump completed on 2026-10-10 12:00:00
+EOF
+# The same dump with its last line cut off: a dump that stopped in the middle.
+grep -v '^-- Dump completed' "${dbdir}/fake-dump.sql" > "${dbdir}/short-dump.sql"
+
+GOODPASS="correct horse battery staple"
+BADPASS="not the passphrase at all"
+
+db_backup() (
+    db_load
+    db_stub
+    DBPASS="$1"
+    NGC_BACKUP_DIR="$2"
+    backup_ngc_db
+)
+db_restore() (
+    db_load
+    db_stub
+    DBPASS="$1"
+    NGC_BACKUP_FILE="$2"
+    NGC_RESTORE_CONFIRM="$3"
+    restore_ngc_db
+)
+
+store="${dbdir}/store"
+mkdir -p "$store"
+db_backup "$GOODPASS" "$store" > "${dbdir}/backup.log" 2>&1
+backup_code=$?
+check "backup runs through and ends with code 0" test "$backup_code" = 0
+enc="$(ls "$store"/ngc-*.sql.enc 2>/dev/null | head -n1)"
+check "backup leaves the file and its checksum and nothing else" \
+    test "$(ls "$store" | wc -l)" = 2
+check "the backup file is there" test -n "$enc" -a -s "${enc:-/nonexistent}"
+check "its checksum lies beside it" test -s "${enc:-/nonexistent}.sha256"
+check "the checksum fits the file" \
+    bash -c 'cd "$1" && sha256sum -c --status "$(basename "$2").sha256"' _ "$store" "$enc"
+# The whole point of encrypting it: the bytes of the database are not in there.
+check "the backup carries no readable dump" \
+    not grep -qa 'MariaDB dump' "${enc:-/nonexistent}"
+check "the backup carries no readable row" \
+    not grep -qa 'ngc_blob' "${enc:-/nonexistent}"
+check "openssl can open it again with the passphrase, byte for byte" \
+    bash -c 'openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -in "$1" \
+        -pass "pass:$2" 2>/dev/null | cmp -s - "$3"' _ "$enc" "$GOODPASS" "${dbdir}/fake-dump.sql"
+check "and not with another one" \
+    not bash -c 'openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -in "$1" \
+        -pass "pass:$2" 2>/dev/null | cmp -s - "$3"' _ "$enc" "$BADPASS" "${dbdir}/fake-dump.sql"
+check "the readable dump is gone from the working folder" \
+    not test -e "${dbdir}/work/ngc.sql"
+check "and so is the passphrase file" not test -e "${dbdir}/work/pass.txt"
+# The sentence a human has to read before they put the file away.
+check "backup says that without the passphrase nobody opens the file again" \
+    grep -q 'nobody opens this file again' "${dbdir}/backup.log"
+
+# A dump without its end mark is not a backup. Measured on the folder: nothing
+# may be left there.
+empty="${dbdir}/empty-store"
+mkdir -p "$empty"
+cp "${dbdir}/fake-dump.sql" "${dbdir}/keep-dump.sql"
+cp "${dbdir}/short-dump.sql" "${dbdir}/fake-dump.sql"
+db_backup "$GOODPASS" "$empty" > "${dbdir}/backup-short.log" 2>&1
+check "backup refuses a dump that has no end mark" test "$?" != 0
+check "and leaves nothing behind in the folder" test "$(ls "$empty" | wc -l)" = 0
+check "it says the server was busy or the dump stopped" \
+    grep -q 'the dump carries no end mark' "${dbdir}/backup-short.log"
+cp "${dbdir}/keep-dump.sql" "${dbdir}/fake-dump.sql"
+
+# A folder nobody may back up into. Each of these three EXISTS, so only the
+# grammar can refuse it: with a folder that is simply not there, "test -d"
+# refuses them all, and the check for the grammar would be green with the
+# grammar taken out - measured, it was.
+mkdir -p "${dbdir}/with space"
+check "backup refuses a folder that is not absolute" \
+    not db_backup "$GOODPASS" "."
+check "backup refuses a folder with .., even one that is there" \
+    not db_backup "$GOODPASS" "${store}/../store"
+check "backup refuses a folder with a space in its name" \
+    not db_backup "$GOODPASS" "${dbdir}/with space"
+check "backup refuses a folder that is not there" \
+    not db_backup "$GOODPASS" "/var/backups/ngc-does-not-exist"
+
+# ----------------------------------------------------- restore
+rm -f "${dbdir}/loaded.sql"
+db_restore "$GOODPASS" "$enc" yes > "${dbdir}/restore.log" 2>&1
+restore_code=$?
+check "restore runs through and ends with code 0" test "$restore_code" = 0
+check "what reached the server starts by emptying the database" \
+    bash -c 'head -n1 "$1" | grep -qx "DROP DATABASE IF EXISTS ngc;"' _ "${dbdir}/loaded.sql"
+check "it makes the database with the collation of the installation" \
+    grep -qx 'CREATE DATABASE ngc CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;' "${dbdir}/loaded.sql"
+check "and then carries the whole dump" \
+    grep -q '0x7365637265742d6d61726b6572' "${dbdir}/loaded.sql"
+check "restore says that the schema still has to be brought up" \
+    grep -q 'ngc-api migrate' "${dbdir}/restore.log"
+check "restore leaves no readable dump behind" not test -e "${dbdir}/work/ngc.sql"
+check "and no passphrase file" not test -e "${dbdir}/work/pass.txt"
+
+# Without the yes nothing happens at all - and "nothing" is measured on the
+# server side, not on the exit code.
+rm -f "${dbdir}/loaded.sql"
+db_restore "$GOODPASS" "$enc" no > "${dbdir}/restore-no.log" 2>&1
+check "restore without the yes stops" test "$?" != 0
+check "and nothing reached the server" not test -e "${dbdir}/loaded.sql"
+check "it warned about the data before it asked" \
+    grep -q 'cannot be undone' "${dbdir}/restore-no.log"
+rm -f "${dbdir}/loaded.sql"
+db_restore "$GOODPASS" "$enc" maybe > /dev/null 2>&1
+check "an answer that is neither yes nor no counts as no" not test -e "${dbdir}/loaded.sql"
+
+# A wrong passphrase, a missing checksum, a changed byte: each one stops before
+# the database is touched.
+rm -f "${dbdir}/loaded.sql"
+db_restore "$BADPASS" "$enc" yes > "${dbdir}/restore-badpass.log" 2>&1
+check "restore refuses a wrong passphrase" test "$?" != 0
+check "and touches nothing" not test -e "${dbdir}/loaded.sql"
+
+cp "$enc" "${dbdir}/lonely.sql.enc"
+rm -f "${dbdir}/loaded.sql"
+db_restore "$GOODPASS" "${dbdir}/lonely.sql.enc" yes > "${dbdir}/restore-nosum.log" 2>&1
+check "restore refuses a backup without its checksum" test "$?" != 0
+check "and touches nothing then either" not test -e "${dbdir}/loaded.sql"
+
+broken="${dbdir}/broken"
+mkdir -p "$broken"
+cp "$enc" "${broken}/ngc-broken.sql.enc"
+( cd "$broken" && sha256sum ngc-broken.sql.enc > ngc-broken.sql.enc.sha256 )
+# One byte in the middle, far behind the salt: the checksum has to catch it.
+printf 'X' | dd of="${broken}/ngc-broken.sql.enc" bs=1 seek=40 conv=notrunc status=none
+rm -f "${dbdir}/loaded.sql"
+db_restore "$GOODPASS" "${broken}/ngc-broken.sql.enc" yes > "${dbdir}/restore-broken.log" 2>&1
+check "restore refuses a file whose checksum does not fit" test "$?" != 0
+check "and says so before it asks for the passphrase" \
+    grep -q 'checksum does not fit' "${dbdir}/restore-broken.log"
+check "and touches nothing" not test -e "${dbdir}/loaded.sql"
+
+# Something that decrypts cleanly and is not a dump of ngc. A passphrase that
+# is right says nothing about what is inside.
+other="${dbdir}/other"
+mkdir -p "$other"
+printf 'this is not a dump\n' > "${dbdir}/notadump.txt"
+openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -salt \
+    -in "${dbdir}/notadump.txt" -out "${other}/ngc-other.sql.enc" -pass "pass:${GOODPASS}" 2>/dev/null
+( cd "$other" && sha256sum ngc-other.sql.enc > ngc-other.sql.enc.sha256 )
+rm -f "${dbdir}/loaded.sql"
+db_restore "$GOODPASS" "${other}/ngc-other.sql.enc" yes > "${dbdir}/restore-other.log" 2>&1
+check "restore refuses a file that is not a dump of MariaDB" test "$?" != 0
+check "and touches nothing" not test -e "${dbdir}/loaded.sql"
+
+# A dump that stopped in the middle, encrypted and with a fitting checksum:
+# only the end mark catches this one.
+cut="${dbdir}/cut"
+mkdir -p "$cut"
+openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -salt \
+    -in "${dbdir}/short-dump.sql" -out "${cut}/ngc-cut.sql.enc" -pass "pass:${GOODPASS}" 2>/dev/null
+( cd "$cut" && sha256sum ngc-cut.sql.enc > ngc-cut.sql.enc.sha256 )
+rm -f "${dbdir}/loaded.sql"
+db_restore "$GOODPASS" "${cut}/ngc-cut.sql.enc" yes > "${dbdir}/restore-cut.log" 2>&1
+check "restore refuses a dump without its end mark" test "$?" != 0
+check "and touches nothing" not test -e "${dbdir}/loaded.sql"
+
+# Again: files that are really there, checksum and all, so only the grammar
+# can refuse them.
+spaced="${dbdir}/with space"
+cp "$enc" "${enc}.sha256" "$spaced/" 2>/dev/null
+check "restore refuses a path with .., even one that leads to the file" \
+    not db_restore "$GOODPASS" "${store}/../store/$(basename "${enc:-x}")" yes
+check "restore refuses a path with a space in it" \
+    not db_restore "$GOODPASS" "${spaced}/$(basename "${enc:-x}")" yes
+
+# ----------------------------------------------------- the secrets, read against the code
+# The warning has to stand BEFORE the line that loads the dump; after it, it is
+# a log entry and no warning. Same shape as the check for uninstall above.
+# Counted inside restore_ngc_db, not over the whole body: ensure_database holds
+# the very same "mariadb --protocol=socket < " line, it stands further up, and
+# grep over the whole body took that one - which made this check red for a
+# reason that had nothing to do with restore.
+sed -n '/^restore_ngc_db() {/,/^}/p' "${dbdir}/body.sh" > "${dbdir}/restore.part"
+r_warn="$(grep -n 'Everything that is in the database ngc right now will be deleted' "${dbdir}/restore.part" | head -n1 | cut -d: -f1)"
+r_load="$(grep -n 'mariadb --protocol=socket < "\$sql"' "${dbdir}/restore.part" | head -n1 | cut -d: -f1)"
+check "restore warns about the data BEFORE it loads the dump" \
+    test -n "$r_warn" -a -n "$r_load" -a "${r_warn:-0}" -lt "${r_load:-0}"
+r_conf="$(grep -n 'NGC_RESTORE_CONFIRM' "${dbdir}/restore.part" | tail -n1 | cut -d: -f1)"
+check "and it asks for the yes before that line too" \
+    test -n "$r_conf" -a -n "$r_load" -a "${r_conf:-0}" -lt "${r_load:-0}"
+
+# No secret on a command line. "-pass pass:" would put the passphrase in the
+# process list of the machine, where every user can read it; "-pass file:" puts
+# the path of a 0600 file there.
+check "the passphrase goes to openssl as a file, never as pass:" \
+    not grep -q 'pass "pass:' "${dbdir}/body.sh"
+check "both calls of openssl enc read it out of the file" \
+    test "$(grep -c 'pass "file:\${BACKUP_PASS_FILE}"' "${dbdir}/body.sh")" = 2
+check "the passphrase is read without echo" \
+    grep -q 'read -rs first' "${dbdir}/body.sh"
+check "its file is written under umask 077, not chmod-ed afterwards" \
+    test "$(sed -n '/^ask_passphrase() {/,/^}/p' "${dbdir}/body.sh" | grep -c 'umask 077')" = 1
+check "no chmod ever touches the passphrase file" \
+    not grep -q 'chmod.*BACKUP_PASS_FILE' "${dbdir}/body.sh"
+# The server is reached over the socket as root, so there is no database
+# password in this script at all - the existing check above forbids one on a
+# command line, this one forbids the option anywhere.
+check "mariadb-dump is called over the socket" \
+    grep -q 'mariadb-dump --protocol=socket' "${dbdir}/body.sh"
+check "--hex-blob is there: every blob column of NGC is binary" \
+    grep -q -- '--hex-blob' "${dbdir}/body.sh"
+check "no routine and no event is dumped, so none can run on restore" \
+    test "$(grep -c -- '--routines=FALSE --events=FALSE' "${dbdir}/body.sh")" = 1
+
+# The passphrase must not be an answer: an answer travels through the
+# environment and through config/answer.yaml.
+back_vars="$("$YQ" -r '.scripts."ngc-db".actions[] | select(.name == "backup") | .prompts[].variable' \
+    "${ULH}/apps/cli/assets/catalog.yaml")"
+check "backup asks for the folder and for nothing else" test "$back_vars" = NGC_BACKUP_DIR
+rest_vars="$("$YQ" -r '.scripts."ngc-db".actions[] | select(.name == "restore") | .prompts[].variable' \
+    "${ULH}/apps/cli/assets/catalog.yaml")"
+check "restore asks for the file and for the yes, and for nothing else" \
+    test "$rest_vars" = "NGC_BACKUP_FILE
+NGC_RESTORE_CONFIRM"
+# Whole names, anchored: NGC_PASSWORD_NGC of install is an answer and has to
+# stay one. What may never become an answer is the passphrase of a backup.
+check "no answer of ngc-db carries the passphrase of a backup" \
+    not grep -qixE 'NGC_BACKUP_(PASS|PASSPHRASE|PASSWORD)|NGC_PASSPHRASE' \
+        <("$YQ" -r '.scripts."ngc-db".actions[].prompts[].variable' "${ULH}/apps/cli/assets/catalog.yaml")
+# The yes is a yes/no question, so ulh asks it in the admin's language and
+# hands the script "yes" or "no" whatever was typed.
+check "the confirmation is a yes/no question with the default no" \
+    test "$("$YQ" -r '.scripts."ngc-db".actions[] | select(.name == "restore")
+        | .prompts[1] | .type + " " + .default' "${ULH}/apps/cli/assets/catalog.yaml")" = "yes/no no"
+# And it has to name what is lost, in every language - as the purge question does.
+restore_q="$("$YQ" -r '.scripts."ngc-db".actions[] | select(.name == "restore") | .prompts[1]
+    | [.question, .questionDE, .questionES, .questionIT, .questionFR] | .[]' "${ULH}/apps/cli/assets/catalog.yaml")"
+check "the restore question names the loss in all five languages" \
+    test "$(grep -cE 'gone for good|unwiderruflich weg|se perder|perduti per sempre|perdues' <<< "$restore_q")" = 5
+
+unset -f db_stub db_backup db_restore
+unset GOODPASS BADPASS store enc empty broken other cut backup_code restore_code
+unset r_warn r_load r_conf back_vars rest_vars restore_q spaced
 
 unset -f db_load db_galera db_cacnf db_answers db_host db_cluster
 unset dbdir NODE1 NODE2 NODE3 PASS1 PASS2 missing unpinned head back prov forbidden good bad shell o

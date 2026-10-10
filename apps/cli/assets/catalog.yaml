@@ -5230,6 +5230,46 @@ scripts:
         variable: NGC_CSR
         type: text
         default: ''
+    - name: backup
+      parameter: backup
+      description: Back up the database
+      descriptionDE: "Datenbank sichern"
+      descriptionES: "Copia de seguridad de la base de datos"
+      descriptionIT: "Salvare il database"
+      descriptionFR: "Sauvegarder la base de données"
+      prompts:
+      - question: Folder for the backup file? The passphrase is asked afterwards and not shown
+        questionDE: "Ordner für die Sicherungsdatei? Das Kennwort wird danach gefragt und nicht angezeigt"
+        questionES: "¿Carpeta para el archivo de copia de seguridad? La contraseña se pregunta después y no se muestra"
+        questionIT: "Cartella per il file di sicurezza? La passphrase viene chiesta dopo e non viene mostrata"
+        questionFR: "Dossier pour le fichier de sauvegarde ? La phrase secrète est demandée ensuite et n'est pas affichée"
+        variable: NGC_BACKUP_DIR
+        type: text
+        default: /var/backups/ngc
+    - name: restore
+      parameter: restore
+      description: Put a backup back
+      descriptionDE: "Sicherung zurückspielen"
+      descriptionES: "Restaurar una copia de seguridad"
+      descriptionIT: "Ripristinare una copia di sicurezza"
+      descriptionFR: "Restaurer une sauvegarde"
+      prompts:
+      - question: Full path to the backup file (.sql.enc)?
+        questionDE: "Vollständiger Pfad zur Sicherungsdatei (.sql.enc)?"
+        questionES: "¿Ruta completa del archivo de copia de seguridad (.sql.enc)?"
+        questionIT: "Percorso completo del file di sicurezza (.sql.enc)?"
+        questionFR: "Chemin complet du fichier de sauvegarde (.sql.enc) ?"
+        variable: NGC_BACKUP_FILE
+        type: text
+        default: ''
+      - question: 'Really replace the database ngc with it? The data that are in it now are gone for good (yes/no)'
+        questionDE: "Die Datenbank ngc wirklich dadurch ersetzen? Die Daten, die jetzt darin sind, sind danach unwiderruflich weg (yes/no)"
+        questionES: "¿Reemplazar realmente la base de datos ngc por ella? Los datos que hay ahora se perderán definitivamente (yes/no)"
+        questionIT: "Sostituire davvero il database ngc con essa? I dati che ci sono adesso andranno perduti per sempre (yes/no)"
+        questionFR: "Remplacer vraiment la base de données ngc par elle ? Les données actuelles seront perdues définitivement (yes/no)"
+        variable: NGC_RESTORE_CONFIRM
+        type: yes/no
+        default: 'no'
     - name: uninstall
       parameter: uninstall
       description: Remove the database configuration

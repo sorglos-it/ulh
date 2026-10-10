@@ -9,7 +9,13 @@
   certificate; every other server makes its own key, shows only its request,
   and gets the certificate with the action `sign` on the first server - a
   private key never leaves its machine. Actions: install, configure, sign,
-  uninstall. `backup` and `restore` follow.
+  uninstall, backup, restore. `backup` writes one encrypted file of the
+  database plus its sha256 (AES-256-CBC, PBKDF2 with 600000 rounds); the
+  passphrase is asked on the terminal without echo and never becomes an answer,
+  and no password ever stands on a command line - the server is reached as root
+  over the unix socket. `restore` checks the checksum and the content before it
+  says, in the admin's language, that everything in the database will be gone,
+  and it does nothing without an explicit yes.
   New category `NextGenCloud` in the catalog, in all five languages.
 - New: five languages - English, German, French, Italian and Spanish. The menu,
   the messages and the descriptions and questions of all 96 scripts. ulh starts in

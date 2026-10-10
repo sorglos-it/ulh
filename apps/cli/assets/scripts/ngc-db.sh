@@ -28,12 +28,24 @@
 #   4 password_ngc      NGC_PASSWORD_NGC      the account that reads and writes
 #   5 password_migrate  NGC_PASSWORD_MIGRATE  the account that changes the schema
 #   6 ca_dir            NGC_CA_DIR            where the CA key stays, bootstrap only
+#   7 backup_dir        NGC_BACKUP_DIR        where backup puts the file
+#   8 backup_file       NGC_BACKUP_FILE       the file restore reads
+#   9 restore_confirm   NGC_RESTORE_CONFIRM   yes, or restore does nothing
+#
+# The passphrase of a backup is NOT in that list and never becomes an answer:
+# backup and restore read it themselves from the terminal without echo. An
+# answer travels through the environment and through config/answer.yaml, and a
+# passphrase that lies in a file beside the backup it opens is no passphrase.
 #
 # Everything this script prints is English, as in every other ulh script. The
 # five languages of ulh sit in assets/catalog.yaml.
 #
-# backup and restore are not here yet: they come with task 12 of the database
-# plan, together with the pull request.
+# backup writes one encrypted file of the database ngc plus its checksum;
+# restore puts such a file back, and warns before it does. Neither of them ever
+# puts a secret on a command line: the server is reached as root over the unix
+# socket, so there is no database password to pass at all, and the passphrase of
+# the file goes to openssl as "-pass file:<path>" out of a 0600 file inside the
+# 0700 working folder.
 
 set -eu
 source "$(dirname "$0")/../../classes/bootstrap.sh"
@@ -73,6 +85,9 @@ NGC_PASSWORD_MIGRATE="${NGC_PASSWORD_MIGRATE:-}"
 NGC_CA_DIR="${NGC_CA_DIR:-/etc/ngc/db-ca}"
 NGC_CSR="${NGC_CSR:-}"
 NGC_PURGE="${NGC_PURGE:-no}"
+NGC_BACKUP_DIR="${NGC_BACKUP_DIR:-}"
+NGC_BACKUP_FILE="${NGC_BACKUP_FILE:-}"
+NGC_RESTORE_CONFIRM="${NGC_RESTORE_CONFIRM:-no}"
 
 NODES=()        # the checked <host>:<port> of every node, in the order given
 HOSTS=()        # only their hosts, same order
@@ -712,6 +727,106 @@ show_next_steps() {
 }
 
 # ============================================================
+# BACKUP AND RESTORE
+# ============================================================
+
+# The database is reached as root over the unix socket, exactly as
+# ensure_database does it: root authenticates through unix_socket, so there is
+# no password to hand over and none to keep anywhere. The accounts ngc and
+# ngc_migrate would each need their password passed to the client, and the only
+# places to pass it are a command line (readable in the process list by every
+# user of the machine) or a file - and a password file that lies on the database
+# server buys nothing over the socket that is already there. The plan asks for
+# ngc_migrate; this is the deviation, and that is the reason.
+#
+# The one secret here is the passphrase of the backup file. It is read from the
+# terminal without echo, written into the 0700 working folder with mode 0600 and
+# given to openssl as "-pass file:<path>". Never as "-pass pass:<secret>", which
+# would stand in the process list, and never as an answer of the catalog, which
+# would travel through the environment and through config/answer.yaml.
+
+BACKUP_PASS_FILE=""   # the file in WORK that holds the passphrase, 0600
+
+# valid_file - an absolute path of harmless characters, no "..". The same
+# grammar as valid_dir; a path is a path, and the name is what a reader of
+# restore expects to see checked.
+valid_file() {
+	valid_dir "${1:-}"
+}
+
+# ask_passphrase reads the passphrase without echo and puts it into a file in
+# WORK, mode 0600, set with umask BEFORE the write: a chmod afterwards leaves a
+# window in which the secret lies readable. $1 says how often it is asked:
+#   twice - for backup, so a typo cannot lock the file away for good
+#   once  - for restore, where a wrong one simply fails
+# It reads from the terminal, not from stdin: a human who pipes something in
+# must not hand a passphrase over by accident.
+ask_passphrase() {
+	local mode="${1:-once}" first="" second="" tty=/dev/tty
+	work_init
+	[ -r "$tty" ] || log_error "No terminal to ask the passphrase on. backup and restore need one: the passphrase is never taken from a file or from an answer."
+	printf 'Passphrase of the backup (not shown): ' > "$tty"
+	IFS= read -rs first < "$tty" || true
+	printf '\n' > "$tty"
+	if [ "${#first}" -lt 12 ]; then
+		log_error "The passphrase has to be at least 12 characters long. Nothing was written."
+	fi
+	if [ "$mode" = twice ]; then
+		printf 'Again, to catch a typo: ' > "$tty"
+		IFS= read -rs second < "$tty" || true
+		printf '\n' > "$tty"
+		if [ "$first" != "$second" ]; then
+			log_error "The two passphrases are not the same. Nothing was written."
+		fi
+	fi
+	BACKUP_PASS_FILE="${WORK}/pass.txt"
+	(
+		umask 077
+		printf '%s' "$first" > "$BACKUP_PASS_FILE"
+	)
+	# The shell variables go now; the file lives in WORK and dies with it.
+	first=""
+	second=""
+}
+
+# dump_database writes the dump of ngc to $1. --hex-blob is not a nicety: every
+# blob column of NGC is binary, and without it the bytes come back as broken
+# text. Routines and events are not dumped because NGC has none, and a dump
+# that may create them is a dump that may run code on restore.
+#
+# A busy server is the normal case here, not an error: mariadb-dump takes a
+# consistent read view with --single-transaction, and a DDL statement of a
+# running migration makes it give up. So it is tried three times, and the dump
+# counts as made only when mariadb-dump wrote its own last line. That line is
+# the measurement: a dump cut off in the middle (disk full, connection gone)
+# can still leave exit code 0 behind, and it would come back as a database that
+# is missing its last tables without a word.
+dump_database() {
+	local out="$1" try
+	for try in 1 2 3; do
+		if mariadb-dump --protocol=socket --single-transaction --skip-lock-tables \
+			--hex-blob --routines=FALSE --events=FALSE --default-character-set=utf8mb4 \
+			ngc > "$out" 2> "${WORK}/dump.err"; then
+			if tail -n 5 "$out" | grep -q '^-- Dump completed'; then
+				return 0
+			fi
+			log_warn "Attempt ${try}: the dump carries no end mark, so it is not complete. Trying again."
+		else
+			log_warn "Attempt ${try}: mariadb-dump stopped - the server was busy, or a migration was changing the schema. Trying again."
+		fi
+		sed -n '1,5p' "${WORK}/dump.err" >&2 || true
+		rm -f "$out"
+		sleep 5
+	done
+	log_error "Could not write a complete dump of ngc in three attempts. Nothing was put into the backup folder."
+}
+
+# checksum_file prints the name of the checksum that belongs to a backup.
+checksum_file() {
+	printf '%s.sha256' "$1"
+}
+
+# ============================================================
 # THE ACTIONS
 # ============================================================
 
@@ -813,6 +928,132 @@ uninstall_ngc_db() {
 	fi
 }
 
+backup_ngc_db() {
+	need_root
+	need_debian
+	if ! valid_dir "$NGC_BACKUP_DIR"; then
+		log_error "The folder for the backup has to be an absolute path without \"..\" and without a space: ${NGC_BACKUP_DIR}"
+	fi
+	[ -d "$NGC_BACKUP_DIR" ] || log_error "No such folder: ${NGC_BACKUP_DIR}. Make it first, on the disk the backup is supposed to lie on."
+	mariadb_running || log_error "MariaDB is not running on this node, so there is nothing to read. Start it and try again."
+	log_section "Backing up the database ngc"
+	work_init
+	ask_passphrase twice
+
+	local stamp target plain
+	stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+	target="${NGC_BACKUP_DIR}/ngc-${stamp}.sql.enc"
+	plain="${WORK}/ngc.sql"
+	umask 077
+	dump_database "$plain"
+	log_info "dump written: $(wc -c < "$plain") bytes"
+
+	# 600000 rounds of PBKDF2, so a passphrase that is only good survives being
+	# tried offline for a while. openssl puts the salt into the file itself.
+	openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -salt \
+		-in "$plain" -out "${WORK}/ngc.sql.enc" -pass "file:${BACKUP_PASS_FILE}" ||
+		log_error "Could not encrypt the dump. Nothing was put into ${NGC_BACKUP_DIR}."
+	# The readable dump and the passphrase go before the encrypted file is
+	# moved into place: they lie in WORK, which is 0700 and root's, and they
+	# have no business outliving this line. WORK would take them along at the
+	# end anyway - this is earlier, and earlier is the whole point.
+	shred -u "$plain" 2>/dev/null || rm -f "$plain"
+	shred -u "$BACKUP_PASS_FILE" 2>/dev/null || rm -f "$BACKUP_PASS_FILE"
+
+	chmod 0600 "${WORK}/ngc.sql.enc"
+	mv -f "${WORK}/ngc.sql.enc" "$target"
+	( cd "$NGC_BACKUP_DIR" && sha256sum "$(basename "$target")" ) > "$(checksum_file "$target")" ||
+		log_error "The backup lies in ${target}, but its checksum could not be written."
+	chmod 0644 "$(checksum_file "$target")"
+
+	log_info "backup: ${target}"
+	log_info "checksum: $(checksum_file "$target")"
+	printf '\n'
+	log_warn "Without that passphrase nobody opens this file again - not you and not NextGenCloud. There is no second way in: keep it somewhere other than beside the backup."
+}
+
+restore_ngc_db() {
+	need_root
+	need_debian
+	if ! valid_file "$NGC_BACKUP_FILE"; then
+		log_error "Name the backup as an absolute path without \"..\" and without a space: ${NGC_BACKUP_FILE}"
+	fi
+	[ -f "$NGC_BACKUP_FILE" ] || log_error "No such file: ${NGC_BACKUP_FILE}"
+	mariadb_running || log_error "MariaDB is not running on this node. Start it and try again."
+	log_section "Putting a backup of the database ngc back"
+	work_init
+
+	# The checksum first, and before the passphrase is asked: a file that was
+	# damaged on its way here is not a question for a human.
+	local sums
+	sums="$(checksum_file "$NGC_BACKUP_FILE")"
+	[ -f "$sums" ] || log_error "The checksum is missing: ${sums}. Without it nobody can tell whether the backup arrived whole."
+	( cd "$(dirname "$NGC_BACKUP_FILE")" && sha256sum -c --status "$(basename "$sums")" ) ||
+		log_error "The checksum does not fit: ${NGC_BACKUP_FILE} is not the file that was backed up. Nothing was changed."
+	log_info "checksum fits"
+
+	ask_passphrase once
+	local plain="${WORK}/ngc.sql"
+	umask 077
+	openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 \
+		-in "$NGC_BACKUP_FILE" -out "$plain" -pass "file:${BACKUP_PASS_FILE}" 2> "${WORK}/dec.err" ||
+		log_error "Could not decrypt the backup. Either the passphrase is wrong or the file is not a backup of ngc-db. Nothing was changed."
+	# A wrong passphrase can also leave bytes behind that decrypted without a
+	# complaint, so the content itself is looked at: a dump of MariaDB names
+	# itself in its first line, and a complete one says so again at its end.
+	if ! head -n 1 "$plain" | grep -qE '^-- (MariaDB|MySQL) dump'; then
+		log_error "What came out is not a dump of MariaDB. Either the passphrase is wrong or the file is something else. Nothing was changed."
+	fi
+	if ! tail -n 5 "$plain" | grep -q '^-- Dump completed'; then
+		log_error "The dump in this file carries no end mark, so it is not complete. Putting it back would leave the database missing its last tables. Nothing was changed."
+	fi
+	# The passphrase has done its work; it goes before the question is asked,
+	# so it is not lying there while a human thinks about the answer.
+	shred -u "$BACKUP_PASS_FILE" 2>/dev/null || rm -f "$BACKUP_PASS_FILE"
+	log_info "a complete dump of MariaDB, $(wc -c < "$plain") bytes"
+
+	# The warning comes BEFORE the deletion, as it does in uninstall. After it,
+	# it is a log entry and no warning: everything that is in ngc right now is
+	# about to be gone, and no copy of it is made here.
+	printf '\n'
+	log_warn "Everything that is in the database ngc right now will be deleted and replaced by the backup - on this node and, through Galera, on every other node of the cluster. This cannot be undone, and nothing of the current state is kept. Back it up first if you are not sure."
+	case "$NGC_RESTORE_CONFIRM" in
+	yes | y | true | 1) ;;
+	*)
+		log_error "Not confirmed, so nothing was changed. Run restore again and answer the question with yes."
+		;;
+	esac
+
+	local sql="${WORK}/restore.sql"
+	umask 077
+	# DROP, and not just the dump: the dump drops the tables it carries, and a
+	# table that exists here and not in the backup would survive it and make
+	# the result neither the old state nor the new one.
+	cat > "$sql" <<'SQLEOF'
+DROP DATABASE IF EXISTS ngc;
+CREATE DATABASE ngc CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+USE ngc;
+SQLEOF
+	cat "$plain" >> "$sql"
+	mariadb --protocol=socket < "$sql" ||
+		log_error "Putting the backup back failed in the middle. The database ngc is now neither the old state nor the backup: look at the output above, fix the cause and run restore again with the same file."
+	shred -u "$plain" 2>/dev/null || rm -f "$plain"
+	shred -u "$sql" 2>/dev/null || rm -f "$sql"
+	log_info "The backup is back in the database ngc."
+
+	printf '\n'
+	printf 'Next steps:\n'
+	printf '  1. The schema is the one of the backup. Bring it up to the API that\n'
+	printf '     runs now, on the API server:\n'
+	printf '       ngc-api migrate\n'
+	printf '     ngc-db cannot do that here: ngc-api is not installed on a\n'
+	printf '     database server.\n'
+	printf '  2. Count what came back:\n'
+	printf '       mariadb --protocol=socket ngc -e "SELECT COUNT(*) FROM ngc_user; SELECT COUNT(*) FROM ngc_blob;"\n'
+	printf '  3. On every other node, see that it took the change:\n'
+	printf "       mariadb --protocol=socket -e \"SHOW STATUS LIKE 'wsrep_cluster_size'\"\n"
+}
+
 # ============================================================
 # MAIN
 # ============================================================
@@ -826,6 +1067,12 @@ configure | config)
 	;;
 sign)
 	sign_ngc_db
+	;;
+backup)
+	backup_ngc_db
+	;;
+restore)
+	restore_ngc_db
 	;;
 uninstall)
 	uninstall_ngc_db
