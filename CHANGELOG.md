@@ -2,6 +2,33 @@
 
 ## Unreleased – 2026-09-22
 
+- New: `ngc-controller` sets up the controller of a NextGenCloud installation,
+  which runs on every server of one (new category NextGenCloud, Debian and
+  Ubuntu, `sudo`): the program `ngc-controller` in `/usr/lib/ngc/`, taken only
+  from a release whose signature and checksum fit and never older than the one
+  installed, `/etc/ngc/controller.json` (root, 0600) with the roles of this
+  server and, with the role `db`, the access for the migrations of an update,
+  the service `ngc-controller.service`, and podman from the package sources
+  where the server carries services. The key of the server and the pairing are
+  the program's own work: the script hands `ngc-controller pair` the pairing
+  code through its standard input, never in a command line, and shows what the
+  program printed - the fingerprint of this server's key and the anchor out of
+  the code, to compare with NextGenCloud. `install`, `configure` and
+  `uninstall`; a second run of `install` pairs nothing again and keeps the key
+  the data of every app is encrypted with, so the service is restarted only
+  when something really changed. Its menu entry, its three actions and all
+  eight questions are in the catalog in five languages; what the script itself
+  prints is English, as in every other script. The program file comes from a
+  release of NGC, or from `/var/lib/ngc/staged` when a `release.json` lies
+  there - and until NGC publishes its first release, that second way is the
+  only one that works.
+- New: `apps/cli/tests/ngc-controller.test.sh` runs the parts of
+  `ngc-controller` that work without a server: `controller.json` and the
+  service file it writes, byte for byte, which names, addresses, roles,
+  passwords and pairing codes it refuses, and that a change of the roles leaves
+  the keys of the server alone. The cases that ask about the answers need
+  `openssl` and the ones about a change of the roles need `jq`; that each is
+  there is a check of its own instead of a quiet skip.
 - New: `ngc-api` sets up the API server of a NextGenCloud installation (new
   category NextGenCloud, Debian and Ubuntu, `sudo`): the programs `ngc-api` and
   `ngc-store` in `/usr/lib/ngc/`, taken only from a release whose signature and
