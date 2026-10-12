@@ -2,7 +2,7 @@
 
 Complete guide to ulh v0.5 architecture, configuration, and development.
 
-**96 scripts across 16 categories** | Multi-distro support | Per-action automation
+**97 scripts across 17 categories** | Multi-distro support | Per-action automation
 
 ## Table of Contents
 

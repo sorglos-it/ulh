@@ -173,6 +173,16 @@ categories:
     descriptionIT: "Elaborare e convertire file multimediali"
     nameFR: "Multimédia"
     descriptionFR: "Traitement et conversion de médias"
+  NextGenCloud:
+    description: Servers of a NextGenCloud installation
+    nameDE: "NextGenCloud"
+    descriptionDE: "Server einer NextGenCloud-Anlage"
+    nameES: "NextGenCloud"
+    descriptionES: "Servidores de una instalación NextGenCloud"
+    nameIT: "NextGenCloud"
+    descriptionIT: "Server di un impianto NextGenCloud"
+    nameFR: "NextGenCloud"
+    descriptionFR: "Serveurs d'une installation NextGenCloud"
 scripts:
   curl:
     description: HTTP requests utility
@@ -5056,3 +5066,175 @@ scripts:
       descriptionES: "Desinstalar zoxide"
       descriptionIT: "Disinstalla zoxide"
       descriptionFR: "Désinstaller zoxide"
+  ngc-controller:
+    description: NextGenCloud controller
+    descriptionDE: "Controller von NextGenCloud"
+    descriptionES: "Controlador de NextGenCloud"
+    descriptionIT: "Controller di NextGenCloud"
+    descriptionFR: "Contrôleur de NextGenCloud"
+    category: NextGenCloud
+    file: ngc-controller.sh
+    sudo:
+    os_family:
+    - debian
+    actions:
+    - name: install
+      parameter: install
+      description: Set up the controller
+      descriptionDE: "Controller einrichten"
+      descriptionES: "Instalar el controlador"
+      descriptionIT: "Installa il controller"
+      descriptionFR: "Installer le contrôleur"
+      prompts:
+      - question: Name of this server in the installation?
+        questionDE: "Wie heißt dieser Server in der Anlage (z. B. dienste)?"
+        questionES: "¿Cómo se llama este servidor en la instalación (p. ej. dienste)?"
+        questionIT: "Come si chiama questo server nell'impianto (per es. dienste)?"
+        questionFR: "Comment s'appelle ce serveur dans l'installation (par ex. dienste) ?"
+        variable: NGC_NAME
+        type: text
+        default: dienste
+      - question: Pairing code out of NextGenCloud?
+        questionDE: "Kopplungscode aus NextGenCloud (leer, wenn dieser Server schon gekoppelt ist)?"
+        questionES: "¿Código de emparejamiento de NextGenCloud (vacío si este servidor ya está emparejado)?"
+        questionIT: "Codice di accoppiamento da NextGenCloud (vuoto se questo server è già accoppiato)?"
+        questionFR: "Code d'appairage de NextGenCloud (vide si ce serveur est déjà appairé) ?"
+        variable: NGC_PAIR_CODE
+        type: text
+        default: ''
+      - question: Roles of this server, several separated by a space (web api db services)?
+        questionDE: "Rollen dieses Servers, mehrere mit Leerzeichen trennen (web api db services)?"
+        questionES: "¿Roles de este servidor, varios separados por un espacio (web api db services)?"
+        questionIT: "Ruoli di questo server, più di uno separati da uno spazio (web api db services)?"
+        questionFR: "Rôles de ce serveur, plusieurs séparés par une espace (web api db services) ?"
+        variable: NGC_ROLES
+        type: text
+        default: services
+      - question: 'Role db only: addresses of the database nodes, several separated by a space?'
+        questionDE: "Nur bei Rolle db: Adressen der Datenbankknoten, z. B. db-1.example.org:3306 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Solo con el rol db: direcciones de los nodos de la base de datos, p. ej. db-1.example.org:3306 (varias separadas por un espacio)?"
+        questionIT: "Solo con il ruolo db: indirizzi dei nodi della banca dati, per es. db-1.example.org:3306 (più di uno separati da uno spazio)?"
+        questionFR: "Uniquement avec le rôle db : adresses des nœuds de la base de données, par ex. db-1.example.org:3306 (plusieurs séparées par une espace) ?"
+        variable: NGC_MIGRATE_NODES
+        type: text
+        default: ''
+      - question: 'Role db only: name of the database?'
+        questionDE: "Nur bei Rolle db: Wie heißt die Datenbank?"
+        questionES: "Solo con el rol db: ¿cómo se llama la base de datos?"
+        questionIT: "Solo con il ruolo db: come si chiama la banca dati?"
+        questionFR: "Uniquement avec le rôle db : comment s'appelle la base de données ?"
+        variable: NGC_MIGRATE_NAME
+        type: text
+        default: ngc
+      - question: 'Role db only: name of the account for the schema?'
+        questionDE: "Nur bei Rolle db: Wie heißt das Konto für das Schema (ngc-db legt es als ngc_migrate an)?"
+        questionES: "Solo con el rol db: ¿cómo se llama la cuenta para el esquema (ngc-db la crea como ngc_migrate)?"
+        questionIT: "Solo con il ruolo db: come si chiama l'account per lo schema (ngc-db lo crea come ngc_migrate)?"
+        questionFR: "Uniquement avec le rôle db : comment s'appelle le compte pour le schéma (ngc-db le crée comme ngc_migrate) ?"
+        variable: NGC_MIGRATE_USER
+        type: text
+        default: ngc_migrate
+      - question: 'Role db only: password of that account?'
+        questionDE: "Nur bei Rolle db: Passwort dieses Kontos (das, das ngc-db dafür bekommen hat)?"
+        questionES: "Solo con el rol db: ¿contraseña de esa cuenta (la que recibió ngc-db)?"
+        questionIT: "Solo con il ruolo db: password di quell'account (quella che ngc-db ha ricevuto)?"
+        questionFR: "Uniquement avec le rôle db : mot de passe de ce compte (celui que ngc-db a reçu) ?"
+        variable: NGC_MIGRATE_PASSWORD
+        type: text
+        default: ''
+      - question: 'Role db only: full path to the file with the CA certificate of the database?'
+        questionDE: "Nur bei Rolle db: Vollständiger Pfad zur Datei mit dem CA-Zertifikat der Datenbank (ngc-db zeigt es am Ende)?"
+        questionES: "Solo con el rol db: ruta completa del archivo con el certificado de la CA de la base de datos (ngc-db lo muestra al final)?"
+        questionIT: "Solo con il ruolo db: percorso completo del file con il certificato della CA della banca dati (ngc-db lo mostra alla fine)?"
+        questionFR: "Uniquement avec le rôle db : chemin complet du fichier avec le certificat de la CA de la base de données (ngc-db l'affiche à la fin) ?"
+        variable: NGC_MIGRATE_CA
+        type: text
+        default: ''
+    - name: configure
+      parameter: configure
+      description: Change the settings of the controller
+      descriptionDE: "Einstellungen des Controllers ändern"
+      descriptionES: "Cambiar la configuración del controlador"
+      descriptionIT: "Cambiare le impostazioni del controller"
+      descriptionFR: "Changer les réglages du contrôleur"
+      prompts:
+      - question: Name of this server in the installation?
+        questionDE: "Wie heißt dieser Server in der Anlage (z. B. dienste)?"
+        questionES: "¿Cómo se llama este servidor en la instalación (p. ej. dienste)?"
+        questionIT: "Come si chiama questo server nell'impianto (per es. dienste)?"
+        questionFR: "Comment s'appelle ce serveur dans l'installation (par ex. dienste) ?"
+        variable: NGC_NAME
+        type: text
+        default: dienste
+      - question: Pairing code out of NextGenCloud?
+        questionDE: "Kopplungscode aus NextGenCloud (leer, wenn dieser Server schon gekoppelt ist)?"
+        questionES: "¿Código de emparejamiento de NextGenCloud (vacío si este servidor ya está emparejado)?"
+        questionIT: "Codice di accoppiamento da NextGenCloud (vuoto se questo server è già accoppiato)?"
+        questionFR: "Code d'appairage de NextGenCloud (vide si ce serveur est déjà appairé) ?"
+        variable: NGC_PAIR_CODE
+        type: text
+        default: ''
+      - question: Roles of this server, several separated by a space (web api db services)?
+        questionDE: "Rollen dieses Servers, mehrere mit Leerzeichen trennen (web api db services)?"
+        questionES: "¿Roles de este servidor, varios separados por un espacio (web api db services)?"
+        questionIT: "Ruoli di questo server, più di uno separati da uno spazio (web api db services)?"
+        questionFR: "Rôles de ce serveur, plusieurs séparés par une espace (web api db services) ?"
+        variable: NGC_ROLES
+        type: text
+        default: services
+      - question: 'Role db only: addresses of the database nodes, several separated by a space?'
+        questionDE: "Nur bei Rolle db: Adressen der Datenbankknoten, z. B. db-1.example.org:3306 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Solo con el rol db: direcciones de los nodos de la base de datos, p. ej. db-1.example.org:3306 (varias separadas por un espacio)?"
+        questionIT: "Solo con il ruolo db: indirizzi dei nodi della banca dati, per es. db-1.example.org:3306 (più di uno separati da uno spazio)?"
+        questionFR: "Uniquement avec le rôle db : adresses des nœuds de la base de données, par ex. db-1.example.org:3306 (plusieurs séparées par une espace) ?"
+        variable: NGC_MIGRATE_NODES
+        type: text
+        default: ''
+      - question: 'Role db only: name of the database?'
+        questionDE: "Nur bei Rolle db: Wie heißt die Datenbank?"
+        questionES: "Solo con el rol db: ¿cómo se llama la base de datos?"
+        questionIT: "Solo con il ruolo db: come si chiama la banca dati?"
+        questionFR: "Uniquement avec le rôle db : comment s'appelle la base de données ?"
+        variable: NGC_MIGRATE_NAME
+        type: text
+        default: ngc
+      - question: 'Role db only: name of the account for the schema?'
+        questionDE: "Nur bei Rolle db: Wie heißt das Konto für das Schema (ngc-db legt es als ngc_migrate an)?"
+        questionES: "Solo con el rol db: ¿cómo se llama la cuenta para el esquema (ngc-db la crea como ngc_migrate)?"
+        questionIT: "Solo con il ruolo db: come si chiama l'account per lo schema (ngc-db lo crea come ngc_migrate)?"
+        questionFR: "Uniquement avec le rôle db : comment s'appelle le compte pour le schéma (ngc-db le crée comme ngc_migrate) ?"
+        variable: NGC_MIGRATE_USER
+        type: text
+        default: ngc_migrate
+      - question: 'Role db only: password of that account?'
+        questionDE: "Nur bei Rolle db: Passwort dieses Kontos (das, das ngc-db dafür bekommen hat)?"
+        questionES: "Solo con el rol db: ¿contraseña de esa cuenta (la que recibió ngc-db)?"
+        questionIT: "Solo con il ruolo db: password di quell'account (quella che ngc-db ha ricevuto)?"
+        questionFR: "Uniquement avec le rôle db : mot de passe de ce compte (celui que ngc-db a reçu) ?"
+        variable: NGC_MIGRATE_PASSWORD
+        type: text
+        default: ''
+      - question: 'Role db only: full path to the file with the CA certificate of the database?'
+        questionDE: "Nur bei Rolle db: Vollständiger Pfad zur Datei mit dem CA-Zertifikat der Datenbank (ngc-db zeigt es am Ende)?"
+        questionES: "Solo con el rol db: ruta completa del archivo con el certificado de la CA de la base de datos (ngc-db lo muestra al final)?"
+        questionIT: "Solo con il ruolo db: percorso completo del file con il certificato della CA della banca dati (ngc-db lo mostra alla fine)?"
+        questionFR: "Uniquement avec le rôle db : chemin complet du fichier avec le certificat de la CA de la base de données (ngc-db l'affiche à la fin) ?"
+        variable: NGC_MIGRATE_CA
+        type: text
+        default: ''
+    - name: uninstall
+      parameter: uninstall
+      description: Remove the controller
+      descriptionDE: "Controller entfernen"
+      descriptionES: "Quitar el controlador"
+      descriptionIT: "Rimuovere il controller"
+      descriptionFR: "Supprimer le contrôleur"
+      prompts:
+      - question: Delete the configuration, the keys and the data of the apps too?
+        questionDE: "Einstellungen, Schlüssel und Daten der Apps mit löschen? Nein hebt sie unter /var/lib/ngc/ auf"
+        questionES: "¿Borrar también la configuración, las claves y los datos de las aplicaciones? No los guarda en /var/lib/ngc/"
+        questionIT: "Cancellare anche le impostazioni, le chiavi e i dati delle app? No li conserva in /var/lib/ngc/"
+        questionFR: "Supprimer aussi la configuration, les clés et les données des applications ? Non les conserve dans /var/lib/ngc/"
+        variable: NGC_PURGE
+        type: yes/no
+        default: 'no'
