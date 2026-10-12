@@ -173,6 +173,16 @@ categories:
     descriptionIT: "Elaborare e convertire file multimediali"
     nameFR: "Multimédia"
     descriptionFR: "Traitement et conversion de médias"
+  NextGenCloud:
+    description: Servers of a NextGenCloud installation
+    nameDE: "NextGenCloud"
+    descriptionDE: "Server einer NextGenCloud-Anlage"
+    nameES: "NextGenCloud"
+    descriptionES: "Servidores de una instalación NextGenCloud"
+    nameIT: "NextGenCloud"
+    descriptionIT: "Server di un impianto NextGenCloud"
+    nameFR: "NextGenCloud"
+    descriptionFR: "Serveurs d'une installation NextGenCloud"
 scripts:
   curl:
     description: HTTP requests utility
@@ -5056,3 +5066,223 @@ scripts:
       descriptionES: "Desinstalar zoxide"
       descriptionIT: "Disinstalla zoxide"
       descriptionFR: "Désinstaller zoxide"
+  ngc-api:
+    description: NextGenCloud API server
+    descriptionDE: "API-Server von NextGenCloud"
+    descriptionES: "Servidor API de NextGenCloud"
+    descriptionIT: "Server API di NextGenCloud"
+    descriptionFR: "Serveur API de NextGenCloud"
+    category: NextGenCloud
+    file: ngc-api.sh
+    sudo:
+    os_family:
+    - debian
+    actions:
+    - name: install
+      parameter: install
+      description: Set up the API
+      descriptionDE: "API einrichten"
+      descriptionES: "Instalar la API"
+      descriptionIT: "Installa l'API"
+      descriptionFR: "Installer l'API"
+      prompts:
+      - question: Name of this API in the installation?
+        questionDE: "Wie heißt diese API in der Anlage (z. B. api-1)?"
+        questionES: "¿Cómo se llama esta API en la instalación (p. ej. api-1)?"
+        questionIT: "Come si chiama questa API nell'impianto (per es. api-1)?"
+        questionFR: "Comment s'appelle cette API dans l'installation (par ex. api-1) ?"
+        variable: NGC_NODE
+        type: text
+        default: api-1
+      - question: Name or IPv4 address the other servers reach it by?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse erreichen die anderen Server diese API?"
+        questionES: "¿Con qué nombre o dirección IPv4 alcanzan los otros servidores esta API?"
+        questionIT: "Con quale nome o indirizzo IPv4 gli altri server raggiungono questa API?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 les autres serveurs atteignent-ils cette API ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: 'Database: mariadb?'
+        questionDE: "Datenbank: mariadb?"
+        questionES: "Base de datos: mariadb?"
+        questionIT: "Banca dati: mariadb?"
+        questionFR: "Base de données : mariadb ?"
+        variable: NGC_DB_DRIVER
+        type: text
+        default: mariadb
+      - question: Addresses of the database nodes, several separated by a space?
+        questionDE: "Adressen der Datenbankknoten, z. B. db-1.example.org:3306 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Direcciones de los nodos de la base de datos, p. ej. db-1.example.org:3306 (varias separadas por un espacio)?"
+        questionIT: "Indirizzi dei nodi della banca dati, per es. db-1.example.org:3306 (più di uno separati da uno spazio)?"
+        questionFR: "Adresses des nœuds de la base de données, par ex. db-1.example.org:3306 (plusieurs séparées par une espace) ?"
+        variable: NGC_DB_NODES
+        type: text
+        default: ''
+      - question: Name of the database?
+        questionDE: "Wie heißt die Datenbank?"
+        questionES: "¿Cómo se llama la base de datos?"
+        questionIT: "Come si chiama la banca dati?"
+        questionFR: "Comment s'appelle la base de données ?"
+        variable: NGC_DB_NAME
+        type: text
+        default: ngc
+      - question: Name of the database account?
+        questionDE: "Wie heißt das Datenbankkonto?"
+        questionES: "¿Cómo se llama la cuenta de la base de datos?"
+        questionIT: "Come si chiama l'account della banca dati?"
+        questionFR: "Comment s'appelle le compte de la base de données ?"
+        variable: NGC_DB_USER
+        type: text
+        default: ngc
+      - question: Password of that account?
+        questionDE: "Passwort dieses Kontos (das, das ngc-db dafür bekommen hat)?"
+        questionES: "¿Contraseña de esa cuenta (la que recibió ngc-db)?"
+        questionIT: "Password di quell'account (quella che ngc-db ha ricevuto)?"
+        questionFR: "Mot de passe de ce compte (celui que ngc-db a reçu) ?"
+        variable: NGC_DB_PASSWORD
+        type: text
+        default: ''
+      - question: Full path to the file with the CA certificate of the database?
+        questionDE: "Vollständiger Pfad zur Datei mit dem CA-Zertifikat der Datenbank (ngc-db zeigt es am Ende)?"
+        questionES: "Ruta completa del archivo con el certificado de la CA de la base de datos (ngc-db lo muestra al final)?"
+        questionIT: "Percorso completo del file con il certificato della CA della banca dati (ngc-db lo mostra alla fine)?"
+        questionFR: "Chemin complet du fichier avec le certificat de la CA de la base de données (ngc-db l'affiche à la fin) ?"
+        variable: NGC_DB_CA
+        type: text
+        default: ''
+      - question: Address of your own app store, empty for the official one?
+        questionDE: "Adresse eines eigenen App-Stores, leer für den offiziellen?"
+        questionES: "¿Dirección de una tienda de aplicaciones propia, vacío para la oficial?"
+        questionIT: "Indirizzo di un negozio di app proprio, vuoto per quello ufficiale?"
+        questionFR: "Adresse d'un magasin d'applications propre, vide pour l'officiel ?"
+        variable: NGC_STORE_URL
+        type: text
+        default: ''
+      - question: Its public key, empty for the official store?
+        questionDE: "Öffentlicher Schlüssel dieses Stores, leer für den offiziellen?"
+        questionES: "¿Su clave pública, vacío para la tienda oficial?"
+        questionIT: "La sua chiave pubblica, vuoto per il negozio ufficiale?"
+        questionFR: "Sa clé publique, vide pour le magasin officiel ?"
+        variable: NGC_STORE_KEY
+        type: text
+        default: ''
+      - question: Join code of a running installation, empty on the first API?
+        questionDE: "Beitrittscode einer laufenden Anlage, leer beim ersten API-Server?"
+        questionES: "¿Código de incorporación de una instalación en marcha, vacío en el primer servidor API?"
+        questionIT: "Codice di adesione di un impianto in funzione, vuoto sul primo server API?"
+        questionFR: "Code d'adhésion d'une installation en marche, vide sur le premier serveur API ?"
+        variable: NGC_JOIN_CODE
+        type: text
+        default: ''
+    - name: configure
+      parameter: configure
+      description: Change the settings of the API
+      descriptionDE: "Einstellungen der API ändern"
+      descriptionES: "Cambiar la configuración de la API"
+      descriptionIT: "Cambiare le impostazioni dell'API"
+      descriptionFR: "Changer les réglages de l'API"
+      prompts:
+      - question: Name of this API in the installation?
+        questionDE: "Wie heißt diese API in der Anlage (z. B. api-1)?"
+        questionES: "¿Cómo se llama esta API en la instalación (p. ej. api-1)?"
+        questionIT: "Come si chiama questa API nell'impianto (per es. api-1)?"
+        questionFR: "Comment s'appelle cette API dans l'installation (par ex. api-1) ?"
+        variable: NGC_NODE
+        type: text
+        default: api-1
+      - question: Name or IPv4 address the other servers reach it by?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse erreichen die anderen Server diese API?"
+        questionES: "¿Con qué nombre o dirección IPv4 alcanzan los otros servidores esta API?"
+        questionIT: "Con quale nome o indirizzo IPv4 gli altri server raggiungono questa API?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 les autres serveurs atteignent-ils cette API ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: 'Database: mariadb?'
+        questionDE: "Datenbank: mariadb?"
+        questionES: "Base de datos: mariadb?"
+        questionIT: "Banca dati: mariadb?"
+        questionFR: "Base de données : mariadb ?"
+        variable: NGC_DB_DRIVER
+        type: text
+        default: mariadb
+      - question: Addresses of the database nodes, several separated by a space?
+        questionDE: "Adressen der Datenbankknoten, z. B. db-1.example.org:3306 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Direcciones de los nodos de la base de datos, p. ej. db-1.example.org:3306 (varias separadas por un espacio)?"
+        questionIT: "Indirizzi dei nodi della banca dati, per es. db-1.example.org:3306 (più di uno separati da uno spazio)?"
+        questionFR: "Adresses des nœuds de la base de données, par ex. db-1.example.org:3306 (plusieurs séparées par une espace) ?"
+        variable: NGC_DB_NODES
+        type: text
+        default: ''
+      - question: Name of the database?
+        questionDE: "Wie heißt die Datenbank?"
+        questionES: "¿Cómo se llama la base de datos?"
+        questionIT: "Come si chiama la banca dati?"
+        questionFR: "Comment s'appelle la base de données ?"
+        variable: NGC_DB_NAME
+        type: text
+        default: ngc
+      - question: Name of the database account?
+        questionDE: "Wie heißt das Datenbankkonto?"
+        questionES: "¿Cómo se llama la cuenta de la base de datos?"
+        questionIT: "Come si chiama l'account della banca dati?"
+        questionFR: "Comment s'appelle le compte de la base de données ?"
+        variable: NGC_DB_USER
+        type: text
+        default: ngc
+      - question: Password of that account?
+        questionDE: "Passwort dieses Kontos (das, das ngc-db dafür bekommen hat)?"
+        questionES: "¿Contraseña de esa cuenta (la que recibió ngc-db)?"
+        questionIT: "Password di quell'account (quella che ngc-db ha ricevuto)?"
+        questionFR: "Mot de passe de ce compte (celui que ngc-db a reçu) ?"
+        variable: NGC_DB_PASSWORD
+        type: text
+        default: ''
+      - question: Full path to the file with the CA certificate of the database?
+        questionDE: "Vollständiger Pfad zur Datei mit dem CA-Zertifikat der Datenbank (ngc-db zeigt es am Ende)?"
+        questionES: "Ruta completa del archivo con el certificado de la CA de la base de datos (ngc-db lo muestra al final)?"
+        questionIT: "Percorso completo del file con il certificato della CA della banca dati (ngc-db lo mostra alla fine)?"
+        questionFR: "Chemin complet du fichier avec le certificat de la CA de la base de données (ngc-db l'affiche à la fin) ?"
+        variable: NGC_DB_CA
+        type: text
+        default: ''
+      - question: Address of your own app store, empty for the official one?
+        questionDE: "Adresse eines eigenen App-Stores, leer für den offiziellen?"
+        questionES: "¿Dirección de una tienda de aplicaciones propia, vacío para la oficial?"
+        questionIT: "Indirizzo di un negozio di app proprio, vuoto per quello ufficiale?"
+        questionFR: "Adresse d'un magasin d'applications propre, vide pour l'officiel ?"
+        variable: NGC_STORE_URL
+        type: text
+        default: ''
+      - question: Its public key, empty for the official store?
+        questionDE: "Öffentlicher Schlüssel dieses Stores, leer für den offiziellen?"
+        questionES: "¿Su clave pública, vacío para la tienda oficial?"
+        questionIT: "La sua chiave pubblica, vuoto per il negozio ufficiale?"
+        questionFR: "Sa clé publique, vide pour le magasin officiel ?"
+        variable: NGC_STORE_KEY
+        type: text
+        default: ''
+      - question: Join code of a running installation, empty on the first API?
+        questionDE: "Beitrittscode einer laufenden Anlage, leer beim ersten API-Server?"
+        questionES: "¿Código de incorporación de una instalación en marcha, vacío en el primer servidor API?"
+        questionIT: "Codice di adesione di un impianto in funzione, vuoto sul primo server API?"
+        questionFR: "Code d'adhésion d'une installation en marche, vide sur le premier serveur API ?"
+        variable: NGC_JOIN_CODE
+        type: text
+        default: ''
+    - name: uninstall
+      parameter: uninstall
+      description: Remove the API
+      descriptionDE: "API entfernen"
+      descriptionES: "Quitar la API"
+      descriptionIT: "Rimuovere l'API"
+      descriptionFR: "Supprimer l'API"
+      prompts:
+      - question: Delete the configuration and the keys too?
+        questionDE: "Einstellungen und Schlüssel mit löschen? Nein hebt sie unter /var/lib/ngc/ auf"
+        questionES: "¿Borrar también la configuración y las claves? No las guarda en /var/lib/ngc/"
+        questionIT: "Cancellare anche le impostazioni e le chiavi? No le conserva in /var/lib/ngc/"
+        questionFR: "Supprimer aussi la configuration et les clés ? Non les conserve dans /var/lib/ngc/"
+        variable: NGC_PURGE
+        type: yes/no
+        default: 'no'

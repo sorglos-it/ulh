@@ -2,6 +2,27 @@
 
 ## Unreleased – 2026-09-22
 
+- New: `ngc-api` sets up the API server of a NextGenCloud installation (new
+  category NextGenCloud, Debian and Ubuntu, `sudo`): the programs `ngc-api` and
+  `ngc-store` in `/usr/lib/ngc/`, taken only from a release whose signature and
+  checksum fit and never older than the one installed, the keys of this node,
+  `/etc/ngc/api.json` (root, 0600), the service `ngc-api.service`, and at the end
+  the fingerprint of the TLS key every other part checks this server by plus, on
+  the first API server, the setup code of the first admin account. With a join
+  code it takes the two shared keys of a running installation (`secretKey` and
+  `challengeKey`) instead of its own. `install`, `configure` and `uninstall`; a
+  second run of `install` keeps the keys that are there and changes nothing that
+  is already right, so the service is restarted only when something really
+  changed. Its menu entry, its three actions and all eleven questions are in the
+  catalog in five languages; what the script itself prints is English, as in
+  every other script. The program files come from a release of NGC, or from
+  `/var/lib/ngc/staged` when a `release.json` lies there - and until NGC
+  publishes its first release, that second way is the only one that works.
+- New: `apps/cli/tests/ngc-api.test.sh` runs the parts of `ngc-api` that work
+  without a server: `api.json` and the service file it writes, byte for byte,
+  and which names, addresses, keys, passwords, CA files and join codes it
+  refuses. The cases that ask about the answers need `openssl`, and that it is
+  there is a check of its own instead of a quiet skip.
 - New: five languages - English, German, French, Italian and Spanish. The menu,
   the messages and the descriptions and questions of all 96 scripts. ulh starts in
   the language of the system; the key `l` switches and remembers it
