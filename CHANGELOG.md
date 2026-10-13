@@ -42,6 +42,39 @@
   without a server: the balancer it writes for Apache byte for byte, `web.json`,
   the four protective headers of the virtual host and its routing, and which
   host names, addresses and fingerprints it refuses.
+- `ngc-web`: that test grew from 51 checks to 200. What it promised in its own
+  comments and nothing held it to is measured now: safe unpacking of a release
+  (an absolute path, a `..`, a link or a missing `public/index.php` is refused,
+  and a refused archive leaves the interface that is there alone), the strict
+  base64url of `enc.B64` down to a second spelling of the same bytes, `put_file`
+  (the mode it was given, root as the owner of the file before the rename, and
+  nothing written when the bytes already match, which is what makes a second
+  run of `install` change nothing), the certificate for the browser with real
+  `openssl` (397 days, `IP:` for an address and `DNS:` for a name, the key
+  0600, a key that belongs to another certificate and a key with a password
+  both refused), `pin_of_cert` (never the SHA-256 of nothing), `ngc-md.conf`,
+  the fact that `mod_md` is switched on in the Let's Encrypt mode and in no
+  other, the options `download` may not lose, and `uninstall` with and without
+  purge - where what counts most is what it must NOT take: `api.json` and
+  `controller.json` of other parts on the same server, `release.seq`, and a
+  virtual host somebody wrote by hand. Each of those was held against a change
+  to the script that breaks it, and two changes that break nothing were checked
+  to leave the test green.
+- `ngc-web`: measured while writing those cases, and worth writing down: a
+  second spelling of the same bytes in base64url (`aGl` for `aGk`) is refused
+  by GNU coreutils' `base64 -d` itself, before `b64url`'s own re-encode check
+  can see it. Taking that check out of the script leaves every case green, so
+  on this kind of machine the line is untested - it earns its keep on a
+  `base64` that is more forgiving, busybox among them. The test says so out
+  loud instead of claiming the line.
+- `ngc-web`: four cases around the release (`release_payload`, `release_file`,
+  `verify_release` and the refusal of an older release) and `shellcheck` need
+  `jq` or `shellcheck`, which the machine this was written on has neither of.
+  They are RED and say `NOT MEASURED` instead of skipping themselves: a case
+  that steps over a missing tool is the worst kind of green. `sync_api_trust`,
+  `fetch_cert`, `ensure_php`, `ensure_packages` and `apache_apply` need a
+  Debian with Apache and an API answering on a port; they are measured on the
+  server and nothing here pretends otherwise.
 - New: five languages - English, German, French, Italian and Spanish. The menu,
   the messages and the descriptions and questions of all 96 scripts. ulh starts in
   the language of the system; the key `l` switches and remembers it
