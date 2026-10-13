@@ -5066,6 +5066,122 @@ scripts:
       descriptionES: "Desinstalar zoxide"
       descriptionIT: "Disinstalla zoxide"
       descriptionFR: "Désinstaller zoxide"
+  ngc-all:
+    description: NextGenCloud on one machine
+    descriptionDE: "NextGenCloud auf einer Maschine"
+    descriptionES: "NextGenCloud en una sola máquina"
+    descriptionIT: "NextGenCloud su una sola macchina"
+    descriptionFR: "NextGenCloud sur une seule machine"
+    category: NextGenCloud
+    file: ngc-all.sh
+    sudo:
+    os_family:
+    - debian
+    actions:
+    - name: install
+      parameter: install
+      description: Set up this machine
+      descriptionDE: "Diese Maschine einrichten"
+      descriptionES: "Instalar en esta máquina"
+      descriptionIT: "Installa su questa macchina"
+      descriptionFR: "Installer sur cette machine"
+      prompts:
+      - question: Name of this machine in the installation?
+        questionDE: "Wie heißt diese Maschine in der Anlage (z. B. ngc)?"
+        questionES: "¿Cómo se llama esta máquina en la instalación (p. ej. ngc)?"
+        questionIT: "Come si chiama questa macchina nell'impianto (per es. ngc)?"
+        questionFR: "Comment s'appelle cette machine dans l'installation (par ex. ngc) ?"
+        variable: NGC_NAME
+        type: text
+        default: ngc
+      - question: Name or IPv4 address the browser reaches it by?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse erreicht der Browser diese Maschine?"
+        questionES: "¿Con qué nombre o dirección IPv4 alcanza el navegador esta máquina?"
+        questionIT: "Con quale nome o indirizzo IPv4 il browser raggiunge questa macchina?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 le navigateur atteint-il cette machine ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: Address of your own app store, empty for the official one?
+        questionDE: "Adresse eines eigenen App-Stores, leer für den offiziellen?"
+        questionES: "¿Dirección de una tienda de aplicaciones propia, vacío para la oficial?"
+        questionIT: "Indirizzo di un negozio di app proprio, vuoto per quello ufficiale?"
+        questionFR: "Adresse d'un magasin d'applications propre, vide pour l'officiel ?"
+        variable: NGC_STORE_URL
+        type: text
+        default: ''
+      - question: Its public key, empty for the official store?
+        questionDE: "Öffentlicher Schlüssel dieses Stores, leer für den offiziellen?"
+        questionES: "¿Su clave pública, vacío para la tienda oficial?"
+        questionIT: "La sua chiave pubblica, vuoto per il negozio ufficiale?"
+        questionFR: "Sa clé publique, vide pour le magasin officiel ?"
+        variable: NGC_STORE_KEY
+        type: text
+        default: ''
+    - name: configure
+      parameter: configure
+      description: Pair the controller or change the settings
+      descriptionDE: "Controller koppeln oder Einstellungen ändern"
+      descriptionES: "Emparejar el controlador o cambiar la configuración"
+      descriptionIT: "Accoppiare il controller o cambiare le impostazioni"
+      descriptionFR: "Appairer le contrôleur ou changer les réglages"
+      prompts:
+      - question: Name of this machine in the installation?
+        questionDE: "Wie heißt diese Maschine in der Anlage (z. B. ngc)?"
+        questionES: "¿Cómo se llama esta máquina en la instalación (p. ej. ngc)?"
+        questionIT: "Come si chiama questa macchina nell'impianto (per es. ngc)?"
+        questionFR: "Comment s'appelle cette machine dans l'installation (par ex. ngc) ?"
+        variable: NGC_NAME
+        type: text
+        default: ngc
+      - question: Name or IPv4 address the browser reaches it by?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse erreicht der Browser diese Maschine?"
+        questionES: "¿Con qué nombre o dirección IPv4 alcanza el navegador esta máquina?"
+        questionIT: "Con quale nome o indirizzo IPv4 il browser raggiunge questa macchina?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 le navigateur atteint-il cette machine ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: Address of your own app store, empty for the official one?
+        questionDE: "Adresse eines eigenen App-Stores, leer für den offiziellen?"
+        questionES: "¿Dirección de una tienda de aplicaciones propia, vacío para la oficial?"
+        questionIT: "Indirizzo di un negozio di app proprio, vuoto per quello ufficiale?"
+        questionFR: "Adresse d'un magasin d'applications propre, vide pour l'officiel ?"
+        variable: NGC_STORE_URL
+        type: text
+        default: ''
+      - question: Its public key, empty for the official store?
+        questionDE: "Öffentlicher Schlüssel dieses Stores, leer für den offiziellen?"
+        questionES: "¿Su clave pública, vacío para la tienda oficial?"
+        questionIT: "La sua chiave pubblica, vuoto per il negozio ufficiale?"
+        questionFR: "Sa clé publique, vide pour le magasin officiel ?"
+        variable: NGC_STORE_KEY
+        type: text
+        default: ''
+      - question: Pairing code out of the web interface of this machine?
+        questionDE: "Kopplungscode aus dem Webinterface dieser Maschine (leer, wenn der Controller schon gekoppelt ist)?"
+        questionES: "¿Código de emparejamiento de la interfaz web de esta máquina (vacío si el controlador ya está emparejado)?"
+        questionIT: "Codice di accoppiamento dall'interfaccia web di questa macchina (vuoto se il controller è già accoppiato)?"
+        questionFR: "Code d'appairage de l'interface web de cette machine (vide si le contrôleur est déjà appairé) ?"
+        variable: NGC_PAIR_CODE
+        type: text
+        default: ''
+    - name: uninstall
+      parameter: uninstall
+      description: Remove NextGenCloud from this machine
+      descriptionDE: "NextGenCloud von dieser Maschine entfernen"
+      descriptionES: "Quitar NextGenCloud de esta máquina"
+      descriptionIT: "Rimuovere NextGenCloud da questa macchina"
+      descriptionFR: "Supprimer NextGenCloud de cette machine"
+      prompts:
+      - question: Delete the configuration, the keys and all the data too?
+        questionDE: "Einstellungen, Schlüssel und alle Daten mit löschen? Nein hebt sie unter /var/lib/ngc/ auf"
+        questionES: "¿Borrar también la configuración, las claves y todos los datos? No los guarda en /var/lib/ngc/"
+        questionIT: "Cancellare anche le impostazioni, le chiavi e tutti i dati? No li conserva in /var/lib/ngc/"
+        questionFR: "Supprimer aussi la configuration, les clés et toutes les données ? Non les conserve dans /var/lib/ngc/"
+        variable: NGC_PURGE
+        type: yes/no
+        default: 'no'
   ngc-api:
     description: NextGenCloud API server
     descriptionDE: "API-Server von NextGenCloud"

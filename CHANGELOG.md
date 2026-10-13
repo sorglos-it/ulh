@@ -2,6 +2,52 @@
 
 ## Unreleased – 2026-09-22
 
+- New: `ngc-all` sets up a whole NextGenCloud on ONE machine, a Raspberry Pi
+  among them (category NextGenCloud, Debian and Ubuntu, `sudo`). It is the way
+  in for a small installation, and it was the one that was missing: `ngc-api`
+  refuses every database driver but MariaDB and says in its own message that a
+  single machine with SQLite is this script's business. Here the database is a
+  FILE, encrypted whole with AES-256-XTS and a key of 64 bytes, so no database
+  server, no account, no password and no CA is asked for at all - `config.DB`
+  of NGC refuses all four next to a SQLite path. `install` puts `ngc-api`,
+  `ngc-store` and `ngc-controller` into `/usr/lib/ngc/` out of a release whose
+  signature and checksum fit and never older than the one installed, writes
+  `/etc/ngc/api.json` (root, 0600), starts `ngc-api.service` and shows the
+  fingerprint of this machine and the setup code for the first admin account.
+  `configure` with a pairing code out of the web interface pairs the controller
+  of this machine itself, writes `/etc/ngc/controller.json` with all four roles
+  and starts `ngc-controller.service`; the pairing runs on a provisional
+  configuration in a folder of `mktemp -d` that never reaches `/etc/ngc`, and
+  the script checks afterwards that the file the program wrote names a real API
+  before it puts it in place. `uninstall` asks whether the configuration, the
+  keys and the data go or stay under `/var/lib/ngc/`. A second run of `install`
+  pairs nothing again and keeps every key: on one machine there is no second
+  copy of any of them, so a fresh one would leave the whole installation
+  unreadable.
+- New: the two programs of this machine get two separate database files with
+  two separate keys - the API `/var/lib/ngc/api/ngc.db`, the controller
+  `/var/lib/ngc/controller/state.db` - and the script refuses to write anything
+  if those two are ever set to the same path. The reason is measured and not
+  assumed: on SQLite every program migrates at its own start, and the migration
+  lock only holds for the moment of a migration, so it does not keep two
+  programs apart. Where one file really does have two readers - the controller
+  carries the access for the migrations of an update, and on this machine that
+  is the API's file - `ngc-controller.service` is ordered after
+  `ngc-api.service`, so exactly one of the two migrates first, and both carry
+  `Restart=on-failure` with `RestartSec=5`, so whoever meets the lock comes back
+  a few seconds later instead of forcing its way in.
+- New: `apps/cli/tests/ngc-all.test.sh` runs the parts of `ngc-all` that work
+  without a machine: `api.json` and `controller.json` byte for byte, both
+  service files, the two separate database files and the guard over them, the
+  64 byte key against the 32 byte one, the provisional configuration of the
+  pairing, and which names, addresses, keys and pairing codes the script
+  refuses. The functions are read out of the shipped script itself, so this
+  measures the file that is installed. One case needs `jq` and is RED on a
+  machine without it instead of skipping itself quietly.
+- Known hole, named rather than half built: `ngc-all` does not set up the web
+  interface. Apache, PHP, the certificate and `/etc/ngc/web.json` are
+  `ngc-web`'s work, and `ngc-all` prints the fingerprint that script asks for
+  and names it as the next step.
 - New: `ngc-controller` sets up the controller of a NextGenCloud installation,
   which runs on every server of one (new category NextGenCloud, Debian and
   Ubuntu, `sudo`): the program `ngc-controller` in `/usr/lib/ngc/`, taken only
