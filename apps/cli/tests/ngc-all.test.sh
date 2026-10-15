@@ -421,8 +421,24 @@ fi
 # case that cannot run says so OUT LOUD and is red - a case that skips itself
 # over a missing tool is the worst kind of green.
 if command -v jq > /dev/null 2>&1; then
+    # A chown this suite cannot do: it runs as a normal user, so the
+    # "chown root:root" that put_file ends with fails and turns the whole of
+    # change_settings into a log_error - the three cases below then measured
+    # the missing root and nothing else (red until 15.10.2026). The stub writes
+    # down what it was asked for, so the owner stays MEASURED, out of the
+    # record instead of out of the file system. Nothing else is stubbed: jq,
+    # chmod, mv and cmp all run for real.
+    allbin="${alldir}/bin"
+    mkdir -p "$allbin"
+    cat > "${allbin}/chown" <<'STUB'
+#!/bin/bash
+printf '%s\n' "$*" >> "${NGC_CHOWN_LOG:-/dev/null}"
+exit 0
+STUB
+    chmod +x "${allbin}/chown"
     all_change() (
         all_load
+        export PATH="${allbin}:${PATH}" NGC_CHOWN_LOG="${alldir}/chown.log"
         NGC_API_JSON="${alldir}/api.json"
         NGC_CONF="${alldir}/ctrl.change.json"
         cp "${alldir}/ctrl.got" "$NGC_CONF"
@@ -430,13 +446,23 @@ if command -v jq > /dev/null 2>&1; then
         change_settings > /dev/null 2>&1
         cat "$NGC_CONF"
     )
+    : > "${alldir}/chown.log"
     all_change > "${alldir}/changed.got"
+    # Intermediate check: the way through put_file is open. Without it every
+    # case below could be comparing against the file that was copied in.
+    check "change_settings got as far as writing the file" \
+        test "$(wc -c < "${alldir}/changed.got")" -gt 100
     check "change_settings keeps the four roles" \
         grep -q '"web"' "${alldir}/changed.got"
     check "change_settings keeps the key of the pairing" \
         grep -q "$A_NOISE" "${alldir}/changed.got"
     check "change_settings writes migrate on the API's file" \
         grep -q '/var/lib/ngc/api/ngc.db' "${alldir}/changed.got"
+    check "change_settings asks for root:root on the file it wrote" \
+        grep -qE '^root:root -- ' "${alldir}/chown.log"
+    # jq really read it again: a file change_settings left half written would
+    # pass every grep above.
+    check "change_settings leaves JSON jq takes" jq -e . "${alldir}/changed.got"
 else
     check "NOT MEASURED: jq is here, so change_settings of ngc-all really ran" false
 fi

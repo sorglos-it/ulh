@@ -5,6 +5,12 @@
 # The functions come out of the script itself, so this tests the file that ships
 # and not a copy of it. Each call happens in a subshell, so none of ngc-web's
 # functions stays behind in the test shell.
+#
+# The disable=SC2034 lines below all say the same thing: the name is set
+# here and read by the script under test, which ngc_load sources inside a
+# function. shellcheck does not follow that source, so it holds the name
+# for unused. Every one of them is really read - take one away and the
+# case it belongs to turns red.
 
 ngcdir="${TMP}/ngc-web"
 mkdir -p "$ngcdir"
@@ -37,13 +43,17 @@ ngc_webjson() (
     ngc_load
     APIS=("$API1" "$API2")
     PINS=("$PIN1" "$PIN2")
+    # shellcheck disable=SC2034
     RP_ID="$1"
     render_web_json
 )
 ngc_answers() (
     ngc_load
+    # shellcheck disable=SC2034
     APIS=()
+    # shellcheck disable=SC2034
     PINS=()
+    # shellcheck disable=SC2034
     NGC_HOSTNAME="$1" NGC_CERT_MODE="$2" NGC_APIS="$3" NGC_API_PINS="$4"
     NGC_CERT_FILE="" NGC_KEY_FILE=""
     read_answers > /dev/null 2>&1
@@ -71,6 +81,7 @@ ngc_template_walls() (
 # human reads.
 ngc_ensure_tpl() (
     ngc_load
+    # shellcheck disable=SC2034
     VHOST_TEMPLATE="$1"
     ensure_vhost_template 2>&1
 )
@@ -554,10 +565,21 @@ check "b64url: a slash is refused" not ngc_b64url "aG/k"
 # cases below green. It earns its keep on a base64 that is more forgiving -
 # busybox is one - and there it is untested. These three measure the outcome,
 # not that line.
+#
+# MEASURED again on 15.10.2026, now with jq and shellcheck on the machine:
+# b64url has three bolts in a row, and on GNU coreutils only the FIRST of
+# them can fire. Taking the character class out (the case over
+# *[!A-Za-z0-9_-]*) changed nothing: 708 passed / 1 failed, same as the
+# base. Taking the re-encode out changed nothing either: 708 / 1. The one
+# bolt the cases below really pin is the od check over b64.in above it,
+# which refuses every byte outside the alphabet before anything else sees
+# it. Both other lines stay: they are what carries the rule on a base64
+# that lets more through. They are written down here as NOT MEASURED, not
+# quietly counted as green.
 for nc in aGl aGm aGn; do
     check "b64url: ${nc} is a second spelling of hi and is refused" not ngc_b64url "$nc"
 done
-check "NOT MEASURED: b64url's own check of the single spelling - GNU base64 refuses these inputs before it reaches them" false
+check "NOT MEASURED: b64url's own two bolts (character class and re-encode) - GNU base64 refuses these inputs before they reach them" false
 check "b64url: one character over is refused" not ngc_b64url "a"
 check "b64url: a space is refused" not ngc_b64url "aG k"
 
@@ -747,6 +769,7 @@ if command -v openssl > /dev/null 2>&1; then
     )
     ngc_fits() (
         ngc_load
+        # shellcheck disable=SC2034
         NGC_HOSTNAME="$1"
         NGC_CERT="${2}/web.crt" NGC_KEY="${2}/web.key"
         cert_fits
@@ -798,6 +821,7 @@ if command -v openssl > /dev/null 2>&1; then
     ngc_imp() (
         ngc_load
         ngc_env
+        # shellcheck disable=SC2034
         NGC_CERT_MODE=import NGC_CERT_FILE="$1" NGC_KEY_FILE="$2"
         NGC_CERT="${certdir}/imp/web.crt" NGC_KEY="${certdir}/imp/web.key"
         ensure_cert_import 2>&1
@@ -874,18 +898,29 @@ ngc_uninstall() (
     need_root() { :; }
     need_debian() { :; }
     base="$1"
+    # shellcheck disable=SC2034
     NGC_PURGE="$2"
+    # shellcheck disable=SC2034
     NGC_ETC="${base}/etc/ngc"
+    # shellcheck disable=SC2034
     NGC_TLS="${base}/etc/ngc/tls"
+    # shellcheck disable=SC2034
     NGC_WEB_JSON="${base}/etc/ngc/web.json"
+    # shellcheck disable=SC2034
     NGC_BALANCER="${base}/etc/ngc/apache-apis.conf"
+    # shellcheck disable=SC2034
     NGC_TRUST="${base}/etc/ngc/tls/api-trust.pem"
+    # shellcheck disable=SC2034
     NGC_CERT="${base}/etc/ngc/tls/web.crt"
+    # shellcheck disable=SC2034
     NGC_KEY="${base}/etc/ngc/tls/web.key"
     NGC_ROOT="${base}/var/www/ngc"
+    # shellcheck disable=SC2034
     NGC_KEPT="${base}/var/lib/ngc/web"
     SITE_FILE="${base}/sites-available/ngc-web.conf"
+    # shellcheck disable=SC2034
     SITE_KEPT="${SITE_FILE}.before-ulh"
+    # shellcheck disable=SC2034
     MD_FILE="${base}/conf-available/ngc-md.conf"
     uninstall_ngc_web > /dev/null 2>&1
 )
@@ -999,8 +1034,323 @@ if command -v jq > /dev/null 2>&1; then
         not ngc_rel_file '{"seq":1,"files":[{"part":"ngc-api","arch":"amd64","url":"https://x/a.tar"}]}'
     check "release_file: two entries for ngc-web all give none" \
         not ngc_rel_file '{"seq":1,"files":[{"part":"ngc-web","arch":"all","url":"https://x/a.tar"},{"part":"ngc-web","arch":"all","url":"https://x/b.tar"}]}'
-    check "release_file: a url whose last part is a path gives none" \
-        not ngc_rel_file '{"seq":1,"files":[{"part":"ngc-web","arch":"all","url":"https://x/../etc/passwd"}]}'
+    check "release_file: a url that ends in a slash gives none" \
+        not ngc_rel_file '{"seq":1,"files":[{"part":"ngc-web","arch":"all","url":"https://x/"}]}'
+    check "release_file: a name that starts with a dash gives none" \
+        not ngc_rel_file '{"seq":1,"files":[{"part":"ngc-web","arch":"all","url":"https://x/-rf.tar"}]}'
+    check "release_file: a hidden name gives none" \
+        not ngc_rel_file '{"seq":1,"files":[{"part":"ngc-web","arch":"all","url":"https://x/.x.tar"}]}'
+    check "release_file: a space in the name gives none" \
+        not ngc_rel_file '{"seq":1,"files":[{"part":"ngc-web","arch":"all","url":"https://x/a b.tar"}]}'
+    check "release_file: a semicolon in the name gives none" \
+        not ngc_rel_file '{"seq":1,"files":[{"part":"ngc-web","arch":"all","url":"https://x/a;rm.tar"}]}'
+    # The last segment of a url with .. in it is a plain name, and the
+    # contract takes exactly that segment (shared/ulh.md, step 4): nothing
+    # of the path before it survives, so this one is TAKEN, not refused.
+    # TestReleaseScript of the NGC repository says the same with its case
+    # "file named like a work file". The file is fetched into a folder of
+    # our own and checked by its SHA-256 before anything is installed.
+    check "release_file: only the last segment counts, not the path before it" \
+        test "$(ngc_rel_file '{"seq":1,"files":[{"part":"ngc-web","arch":"all","url":"https://x/../etc/passwd"}]}')" = passwd
+
+# ------------------------------------------------------------ release_payload
+# The payload is read before the signature is checked, only to learn the name
+# of the file to fetch. So it has to be strict about its own shape: a payload
+# that is not a text, or not the one base64url spelling of its bytes, gives
+# nothing at all.
+    ngc_rel_payload() (
+        ngc_load
+        printf '%s' "$1" > "$WORK/release.json"
+        release_payload "$WORK" > /dev/null 2>&1 || return 1
+        cat "$WORK/payload.json"
+    )
+    check "release_payload: a good payload comes out as the bytes it stands for" \
+        test "$(ngc_rel_payload '{"payload":"eyJzZXEiOjd9","sig":"x"}')" = '{"seq":7}'
+    check "release_payload: a release.json without a payload gives none" \
+        not ngc_rel_payload '{"sig":"x"}'
+    check "release_payload: a payload that is a number and not a text gives none" \
+        not ngc_rel_payload '{"payload":7,"sig":"x"}'
+    check "release_payload: a payload that is null gives none" \
+        not ngc_rel_payload '{"payload":null,"sig":"x"}'
+    check "release_payload: standard base64 with padding is not base64url" \
+        not ngc_rel_payload '{"payload":"eyJzZXEiOjd9Pz8=","sig":"x"}'
+    check "release_payload: a + of standard base64 is refused" \
+        not ngc_rel_payload '{"payload":"e+JzZXEiOjd9","sig":"x"}'
+    check "release_payload: a release.json that is no JSON gives none" \
+        not ngc_rel_payload 'not json at all'
+
+# ------------------------------------------------------------- verify_release
+# This is the lock that lets foreign code onto a server: nothing is unpacked
+# that this function has not confirmed. shared/ulh.md ("Regeln", steps 1 to 5)
+# says what it has to check, and shared/testdata/release/verify.sh is the
+# template it was written from. The cases below build a real release with a
+# real Ed25519 key - the same kind sign.Envelope uses - and then break it one
+# part at a time.
+#
+# NGC_RELEASE_KEY carries REPLACE-THIS-LINE in the file that ships, and
+# install_release refuses to run with it. Here the key of the release we just
+# made takes its place, so the signature really is verified against a key and
+# not against nothing.
+    reldir="${ngcdir}/rel"
+    mkdir -p "$reldir"
+    openssl genpkey -algorithm ED25519 -out "${reldir}/priv.pem" > /dev/null 2>&1
+    openssl pkey -in "${reldir}/priv.pem" -pubout -out "${reldir}/pub.pem" > /dev/null 2>&1
+    # Intermediate check: without a key pair every case below would measure the
+    # absence of openssl instead of the lock.
+    check "release: a key pair for the signature is here" \
+        grep -q "BEGIN PUBLIC KEY" "${reldir}/pub.pem"
+
+    # b64u <file  - the bytes of a file as base64url without padding, the way
+    # enc.B64 of NGC writes them.
+    b64u() { base64 -w0 < "$1" | tr -- '+/' '-_' | tr -d '='; }
+    # rel_build <dir> <payload-json> [sign-payload-json]
+    # writes release.json into <dir>. Signed over the third argument when it is
+    # given, so a signature over other bytes can be built too.
+    rel_build() {
+        local d="$1" pay="$2" signed="${3:-$2}"
+        printf '%s' "$pay"    > "${d}/payload.bin"
+        printf '%s' "$signed" > "${d}/signed.bin"
+        { printf 'ngc/release/v1\0'; cat "${d}/signed.bin"; } > "${d}/msg.bin"
+        openssl pkeyutl -sign -inkey "${reldir}/priv.pem" -rawin \
+            -in "${d}/msg.bin" -out "${d}/sig.bin" > /dev/null 2>&1 || return 1
+        printf '{"payload":"%s","sig":"%s"}' \
+            "$(b64u "${d}/payload.bin")" "$(b64u "${d}/sig.bin")" > "${d}/release.json"
+    }
+    # rel_payload <sum-b64url> <size> [seq] [url] - the payload of one entry.
+    rel_payload() {
+        printf '{"seq":%s,"files":[{"part":"ngc-web","arch":"all","url":"%s","sha256":"%s","size":%s}]}' \
+            "${3:-7}" "${4:-https://dl.ngc.test/ngc-web-all.tar}" "$1" "$2"
+    }
+    # ngc_verify <dir> - runs the real verify_release and prints its reason.
+    ngc_verify() (
+        ngc_load
+        NGC_RELEASE_KEY="$(cat "${reldir}/pub.pem")"
+        verify_release "$1" 2>&1
+    )
+    # rel_case <name> - a fresh directory with the good tar in it.
+    rel_case() {
+        local d="${reldir}/$1"
+        rm -rf "$d"; mkdir -p "$d"
+        printf 'this stands in for the interface NGC builds\n' > "${d}/ngc-web-all.tar"
+        printf '%s' "$d"
+    }
+    rel_sum() { openssl dgst -sha256 -binary "$1" > "${1}.sum" && b64u "${1}.sum"; }
+    # rel_begins <text> <start> - true when the text starts with it. A case
+    # cannot run the keyword case itself, so the comparison lives here.
+    rel_begins() { test "${1#"$2"}" != "$1"; }
+
+    # The good one first. Without it every refusal below could come from the
+    # fixture and not from the lock.
+    good="$(rel_case good)"
+    gsum="$(rel_sum "${good}/ngc-web-all.tar")"
+    gsize="$(wc -c < "${good}/ngc-web-all.tar" | tr -d ' ')"
+    rel_build "$good" "$(rel_payload "$gsum" "$gsize")"
+    check "verify_release: a release signed by NGC passes" ngc_verify "$good"
+    # The fixture itself put payload.bin, signed.bin, msg.bin and sig.bin
+    # there, so only those four and the two of the release may be found.
+    check "verify_release: and it writes nothing into the folder of the files" \
+        test "$(find "$good" -mindepth 1 \
+            -not -name ngc-web-all.tar -not -name release.json \
+            -not -name payload.bin -not -name signed.bin \
+            -not -name msg.bin -not -name sig.bin \
+            -not -name "*.sum" | wc -l)" = 0
+
+    # Step 2 of the contract: the signature over "ngc/release/v1", a NUL byte
+    # and the payload. A payload that was swapped after signing must not pass.
+    d="$(rel_case swapped)"
+    sum="$(rel_sum "${d}/ngc-web-all.tar")"
+    size="$(wc -c < "${d}/ngc-web-all.tar" | tr -d ' ')"
+    rel_build "$d" "$(rel_payload "$sum" "$size" 9)" "$(rel_payload "$sum" "$size" 7)"
+    check "verify_release: a payload swapped after signing is refused" not ngc_verify "$d"
+    check "verify_release: and it says the signature does not verify" \
+        test "$(ngc_verify "$d")" = "release wrong: signature does not verify"
+
+    # Another key is another signature: the lock is the key, not the shape.
+    d="$(rel_case otherkey)"
+    sum="$(rel_sum "${d}/ngc-web-all.tar")"
+    size="$(wc -c < "${d}/ngc-web-all.tar" | tr -d ' ')"
+    rel_build "$d" "$(rel_payload "$sum" "$size")"
+    ngc_verify_foreign() (
+        ngc_load
+        openssl genpkey -algorithm ED25519 -out "${reldir}/other.pem" > /dev/null 2>&1
+        openssl pkey -in "${reldir}/other.pem" -pubout -out "${reldir}/other.pub" > /dev/null 2>&1
+        NGC_RELEASE_KEY="$(cat "${reldir}/other.pub")"
+        verify_release "$1" 2>&1
+    )
+    check "verify_release: a release signed by somebody else is refused" \
+        not ngc_verify_foreign "$d"
+
+    # Step 5: the checksum and the size of the one file.
+    d="$(rel_case wrongsum)"
+    size="$(wc -c < "${d}/ngc-web-all.tar" | tr -d ' ')"
+    printf 'other bytes than the checksum says\n' > "${d}/other.bin"
+    rel_build "$d" "$(rel_payload "$(rel_sum "${d}/other.bin")" "$size")"
+    check "verify_release: a wrong checksum is refused" not ngc_verify "$d"
+    check "verify_release: and it names the checksum as the reason" \
+        test "$(ngc_verify "$d")" = "release wrong: checksum wrong: ngc-web-all.tar"
+
+    d="$(rel_case wrongsize)"
+    sum="$(rel_sum "${d}/ngc-web-all.tar")"
+    rel_build "$d" "$(rel_payload "$sum" 999999)"
+    check "verify_release: a wrong size is refused" not ngc_verify "$d"
+    check "verify_release: and it names the size as the reason" \
+        test "$(ngc_verify "$d")" = "release wrong: size wrong: ngc-web-all.tar"
+
+    d="$(rel_case missing)"
+    sum="$(rel_sum "${d}/ngc-web-all.tar")"
+    size="$(wc -c < "${d}/ngc-web-all.tar" | tr -d ' ')"
+    rel_build "$d" "$(rel_payload "$sum" "$size" 7 "https://dl.ngc.test/elsewhere.tar")"
+    check "verify_release: a file that is not there is refused" not ngc_verify "$d"
+    check "verify_release: and it says which file is missing" \
+        test "$(ngc_verify "$d")" = "release wrong: file missing: elsewhere.tar"
+
+    # Step 4: the name out of the url. A url ending in a slash leaves no name.
+    d="$(rel_case slash)"
+    sum="$(rel_sum "${d}/ngc-web-all.tar")"
+    size="$(wc -c < "${d}/ngc-web-all.tar" | tr -d ' ')"
+    rel_build "$d" "$(rel_payload "$sum" "$size" 7 "https://dl.ngc.test/")"
+    check "verify_release: a url that ends in a slash is refused" not ngc_verify "$d"
+    check "verify_release: and it names the file name as the reason" \
+        rel_begins "$(ngc_verify "$d")" "release wrong: file name not allowed"
+
+    # A name with a sign in it that the contract does not allow. The case
+    # above only reaches the FIRST of the two checks (the name is empty
+    # there); this one reaches the second, which nothing pinned down
+    # before - a mutant that took it out stayed alive on 15.10.2026.
+    d="$(rel_case badname)"
+    mv "${d}/ngc-web-all.tar" "${d}/a b.tar"
+    sum="$(rel_sum "${d}/a b.tar")"
+    size="$(wc -c < "${d}/a b.tar" | tr -d ' ')"
+    rel_build "$d" "$(rel_payload "$sum" "$size" 7 "https://dl.ngc.test/a b.tar")"
+    check "verify_release: a space in the file name is refused" not ngc_verify "$d"
+    check "verify_release: and it names that name as the reason" \
+        rel_begins "$(ngc_verify "$d")" "release wrong: file name not allowed"
+
+    # And the first of the two name checks: the contract wants a letter or
+    # a digit in front (^[A-Za-z0-9]). A hidden name and a name that looks
+    # like an option have to be refused there, and nothing pinned that
+    # down before - a mutant that let a dot and a dash in front through
+    # stayed alive on 15.10.2026.
+    for nc in .x.tar -rf.tar; do
+        d="$(rel_case "name${nc}")"
+        mv "${d}/ngc-web-all.tar" "${d}/${nc}"
+        sum="$(rel_sum "${d}/${nc}")"
+        size="$(wc -c < "${d}/${nc}" | tr -d ' ')"
+        rel_build "$d" "$(rel_payload "$sum" "$size" 7 "https://dl.ngc.test/${nc}")"
+        check "verify_release: the file name ${nc} is refused" not ngc_verify "$d"
+    done
+
+    # Step 3: exactly one entry for this part and this arch, with the types the
+    # contract names.
+    d="$(rel_case twoentries)"
+    sum="$(rel_sum "${d}/ngc-web-all.tar")"
+    size="$(wc -c < "${d}/ngc-web-all.tar" | tr -d ' ')"
+    rel_build "$d" "$(printf '{"seq":7,"files":[{"part":"ngc-web","arch":"all","url":"https://x/ngc-web-all.tar","sha256":"%s","size":%s},{"part":"ngc-web","arch":"all","url":"https://x/ngc-web-all.tar","sha256":"%s","size":%s}]}' "$sum" "$size" "$sum" "$size")"
+    check "verify_release: two entries for ngc-web all are refused" not ngc_verify "$d"
+
+    d="$(rel_case noentry)"
+    sum="$(rel_sum "${d}/ngc-web-all.tar")"
+    size="$(wc -c < "${d}/ngc-web-all.tar" | tr -d ' ')"
+    rel_build "$d" "$(printf '{"seq":7,"files":[{"part":"ngc-api","arch":"amd64","url":"https://x/a.tar","sha256":"%s","size":%s}]}' "$sum" "$size")"
+    check "verify_release: a release without an entry for ngc-web is refused" not ngc_verify "$d"
+
+    d="$(rel_case textsize)"
+    sum="$(rel_sum "${d}/ngc-web-all.tar")"
+    size="$(wc -c < "${d}/ngc-web-all.tar" | tr -d ' ')"
+    rel_build "$d" "$(printf '{"seq":7,"files":[{"part":"ngc-web","arch":"all","url":"https://x/ngc-web-all.tar","sha256":"%s","size":"%s"}]}' "$sum" "$size")"
+    check "verify_release: a size that is a text and not a number is refused" not ngc_verify "$d"
+
+    d="$(rel_case files_object)"
+    sum="$(rel_sum "${d}/ngc-web-all.tar")"
+    size="$(wc -c < "${d}/ngc-web-all.tar" | tr -d ' ')"
+    rel_build "$d" "$(printf '{"seq":7,"files":{"part":"ngc-web","arch":"all","url":"https://x/ngc-web-all.tar","sha256":"%s","size":%s}}' "$sum" "$size")"
+    check "verify_release: files that is no list is refused" not ngc_verify "$d"
+
+    # Step 1 at the signature itself: a sig that is not base64url.
+    d="$(rel_case badsig)"
+    sum="$(rel_sum "${d}/ngc-web-all.tar")"
+    size="$(wc -c < "${d}/ngc-web-all.tar" | tr -d ' ')"
+    rel_build "$d" "$(rel_payload "$sum" "$size")"
+    sed 's/"sig":"[^"]*"/"sig":"not+base64url="/' "${d}/release.json" > "${d}/r2.json"
+    # Intermediate check: the replacement really happened, or the case below
+    # would measure the good release once more.
+    check "verify_release: the broken signature was really put in" \
+        grep -q 'not+base64url=' "${d}/r2.json"
+    mv "${d}/r2.json" "${d}/release.json"
+    check "verify_release: a signature that is not base64url is refused" not ngc_verify "$d"
+    check "verify_release: and it says the signature is not base64url" \
+        test "$(ngc_verify "$d")" = "release wrong: signature not base64url"
+
+# -------------------------------------------- never a release that went back
+# install_release compares seq of the confirmed payload with
+# /var/lib/ngc/release.seq (shared/ulh.md, step 6): a smaller number stops the
+# installation, the same number may come again to repair one. This runs the
+# real install_release over a staged release, with chown written down instead
+# of done - the suite is not root.
+    ngc_install_rel() (
+        ngc_load
+        ngc_env "${reldir}/chown.log"
+        need_root() { :; }
+        # shellcheck disable=SC2034
+        NGC_RELEASE_KEY="$(cat "${reldir}/pub.pem")"
+        # shellcheck disable=SC2034
+        NGC_STAGE="$1"
+        # shellcheck disable=SC2034
+        NGC_SEQ="$2"
+        # shellcheck disable=SC2034
+        NGC_ROOT="${3}/var/www/ngc"
+        # shellcheck disable=SC2034
+        NGC_DATA="${3}/var/lib/ngc/data"
+        mkdir -p "${3}/var/lib/ngc"
+        install_release 2>&1
+    )
+    # The staged release carries a real archive with public/index.php in it, so
+    # unpack_release has something to unpack and the whole way is open.
+    stage="${reldir}/stage"
+    mkdir -p "${stage}/build/public"
+    printf '<?php // stands in for the interface of NGC\n' > "${stage}/build/public/index.php"
+    tar -C "${stage}/build" -cf "${stage}/ngc-web-all.tar" public
+    ssum="$(rel_sum "${stage}/ngc-web-all.tar")"
+    ssize="$(wc -c < "${stage}/ngc-web-all.tar" | tr -d ' ')"
+    rel_build "$stage" "$(rel_payload "$ssum" "$ssize" 7)"
+    rm -f "${stage}/payload.bin" "${stage}/signed.bin" "${stage}/msg.bin" "${stage}/sig.bin"
+
+    # Intermediate check: the way to the seq comparison is open. Without this a
+    # refusal below could just as well come from a broken signature.
+    seqbase="${reldir}/seq-ok"; mkdir -p "$seqbase"
+    ngc_install_rel "$stage" "${seqbase}/release.seq" "$seqbase" > "${reldir}/ok.log" 2>&1
+    check "release.seq: the staged release installs when nothing is installed yet" \
+        test -f "${seqbase}/var/www/ngc/public/index.php"
+    check "release.seq: and the number it installed is written down" \
+        test "$(cat "${seqbase}/release.seq")" = 7
+
+    # A step backwards: 7 arrives, 8 is installed.
+    seqold="${reldir}/seq-old"; mkdir -p "${seqold}/var/www/ngc/public"
+    printf '<?php // the one that is installed\n' > "${seqold}/var/www/ngc/public/index.php"
+    printf '8\n' > "${seqold}/release.seq"
+    ngc_install_rel "$stage" "${seqold}/release.seq" "$seqold" > "${reldir}/old.log" 2>&1
+    check "release.seq: a release older than the installed one is refused" \
+        grep -q "older than the installed" "${reldir}/old.log"
+    check "release.seq: and the installed interface is left as it was" \
+        grep -q "the one that is installed" "${seqold}/var/www/ngc/public/index.php"
+    check "release.seq: and the number stays at the installed one" \
+        test "$(cat "${seqold}/release.seq")" = 8
+
+    # The same number may come again, and then nothing is unpacked twice.
+    seqsame="${reldir}/seq-same"; mkdir -p "${seqsame}/var/www/ngc/public"
+    printf '<?php // the one that is installed\n' > "${seqsame}/var/www/ngc/public/index.php"
+    printf '7\n' > "${seqsame}/release.seq"
+    ngc_install_rel "$stage" "${seqsame}/release.seq" "$seqsame" > "${reldir}/same.log" 2>&1
+    check "release.seq: the same number is taken as this version already being here" \
+        grep -q "already" "${reldir}/same.log"
+
+    # And a number nobody can read is no number: a release.seq full of junk
+    # counts as nothing installed, not as a number that lets everything pass.
+    seqjunk="${reldir}/seq-junk"; mkdir -p "$seqjunk"
+    printf 'not a number\n' > "${seqjunk}/release.seq"
+    ngc_install_rel "$stage" "${seqjunk}/release.seq" "$seqjunk" > "${reldir}/junk.log" 2>&1
+    check "release.seq: a release.seq nobody can read counts as nothing installed" \
+        test -f "${seqjunk}/var/www/ngc/public/index.php"
 else
     check "NOT MEASURED: jq is here, so release_file of ngc-web really ran" false
     check "NOT MEASURED: jq is here, so release_payload really ran" false
@@ -1021,6 +1371,8 @@ fi
 # ensure_packages needs dpkg. They are named in docs and measured on the
 # server, not here.
 
+unset -f b64u rel_build rel_payload rel_case rel_sum rel_begins ngc_verify ngc_verify_foreign ngc_install_rel ngc_rel_payload 2>/dev/null
+unset reldir good gsum gsize sum size d stage ssum ssize seqbase seqold seqsame seqjunk 2>/dev/null
 unset -f ngc_env ngc_is_ipv4 ngc_port ngc_url ngc_pin ngc_import ngc_b64url \
     ngc_put ngc_dir ngc_unpack ngc_md ngc_mods ngc_download ngc_self ngc_fits \
     ngc_imp ngc_pinof ngc_uninstall ngc_make_install ngc_rel_file 2>/dev/null
