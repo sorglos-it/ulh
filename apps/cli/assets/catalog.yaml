@@ -173,6 +173,16 @@ categories:
     descriptionIT: "Elaborare e convertire file multimediali"
     nameFR: "Multimédia"
     descriptionFR: "Traitement et conversion de médias"
+  NextGenCloud:
+    description: Servers of a NextGenCloud installation
+    nameDE: "NextGenCloud"
+    descriptionDE: "Server einer NextGenCloud-Anlage"
+    nameES: "NextGenCloud"
+    descriptionES: "Servidores de una instalación NextGenCloud"
+    nameIT: "NextGenCloud"
+    descriptionIT: "Server di un impianto NextGenCloud"
+    nameFR: "NextGenCloud"
+    descriptionFR: "Serveurs d'une installation NextGenCloud"
 scripts:
   curl:
     description: HTTP requests utility
@@ -5056,3 +5066,871 @@ scripts:
       descriptionES: "Desinstalar zoxide"
       descriptionIT: "Disinstalla zoxide"
       descriptionFR: "Désinstaller zoxide"
+  ngc-all:
+    description: NextGenCloud on one machine
+    descriptionDE: "NextGenCloud auf einer Maschine"
+    descriptionES: "NextGenCloud en una sola máquina"
+    descriptionIT: "NextGenCloud su una sola macchina"
+    descriptionFR: "NextGenCloud sur une seule machine"
+    category: NextGenCloud
+    file: ngc-all.sh
+    sudo:
+    os_family:
+    - debian
+    actions:
+    - name: install
+      parameter: install
+      description: Set up this machine
+      descriptionDE: "Diese Maschine einrichten"
+      descriptionES: "Instalar en esta máquina"
+      descriptionIT: "Installa su questa macchina"
+      descriptionFR: "Installer sur cette machine"
+      prompts:
+      - question: Name of this machine in the installation?
+        questionDE: "Wie heißt diese Maschine in der Anlage (z. B. ngc)?"
+        questionES: "¿Cómo se llama esta máquina en la instalación (p. ej. ngc)?"
+        questionIT: "Come si chiama questa macchina nell'impianto (per es. ngc)?"
+        questionFR: "Comment s'appelle cette machine dans l'installation (par ex. ngc) ?"
+        variable: NGC_NAME
+        type: text
+        default: ngc
+      - question: Name or IPv4 address the browser reaches it by?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse erreicht der Browser diese Maschine?"
+        questionES: "¿Con qué nombre o dirección IPv4 alcanza el navegador esta máquina?"
+        questionIT: "Con quale nome o indirizzo IPv4 il browser raggiunge questa macchina?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 le navigateur atteint-il cette machine ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: Address of your own app store, empty for the official one?
+        questionDE: "Adresse eines eigenen App-Stores, leer für den offiziellen?"
+        questionES: "¿Dirección de una tienda de aplicaciones propia, vacío para la oficial?"
+        questionIT: "Indirizzo di un negozio di app proprio, vuoto per quello ufficiale?"
+        questionFR: "Adresse d'un magasin d'applications propre, vide pour l'officiel ?"
+        variable: NGC_STORE_URL
+        type: text
+        default: ''
+      - question: Its public key, empty for the official store?
+        questionDE: "Öffentlicher Schlüssel dieses Stores, leer für den offiziellen?"
+        questionES: "¿Su clave pública, vacío para la tienda oficial?"
+        questionIT: "La sua chiave pubblica, vuoto per il negozio ufficiale?"
+        questionFR: "Sa clé publique, vide pour le magasin officiel ?"
+        variable: NGC_STORE_KEY
+        type: text
+        default: ''
+    - name: configure
+      parameter: configure
+      description: Pair the controller or change the settings
+      descriptionDE: "Controller koppeln oder Einstellungen ändern"
+      descriptionES: "Emparejar el controlador o cambiar la configuración"
+      descriptionIT: "Accoppiare il controller o cambiare le impostazioni"
+      descriptionFR: "Appairer le contrôleur ou changer les réglages"
+      prompts:
+      - question: Name of this machine in the installation?
+        questionDE: "Wie heißt diese Maschine in der Anlage (z. B. ngc)?"
+        questionES: "¿Cómo se llama esta máquina en la instalación (p. ej. ngc)?"
+        questionIT: "Come si chiama questa macchina nell'impianto (per es. ngc)?"
+        questionFR: "Comment s'appelle cette machine dans l'installation (par ex. ngc) ?"
+        variable: NGC_NAME
+        type: text
+        default: ngc
+      - question: Name or IPv4 address the browser reaches it by?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse erreicht der Browser diese Maschine?"
+        questionES: "¿Con qué nombre o dirección IPv4 alcanza el navegador esta máquina?"
+        questionIT: "Con quale nome o indirizzo IPv4 il browser raggiunge questa macchina?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 le navigateur atteint-il cette machine ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: Address of your own app store, empty for the official one?
+        questionDE: "Adresse eines eigenen App-Stores, leer für den offiziellen?"
+        questionES: "¿Dirección de una tienda de aplicaciones propia, vacío para la oficial?"
+        questionIT: "Indirizzo di un negozio di app proprio, vuoto per quello ufficiale?"
+        questionFR: "Adresse d'un magasin d'applications propre, vide pour l'officiel ?"
+        variable: NGC_STORE_URL
+        type: text
+        default: ''
+      - question: Its public key, empty for the official store?
+        questionDE: "Öffentlicher Schlüssel dieses Stores, leer für den offiziellen?"
+        questionES: "¿Su clave pública, vacío para la tienda oficial?"
+        questionIT: "La sua chiave pubblica, vuoto per il negozio ufficiale?"
+        questionFR: "Sa clé publique, vide pour le magasin officiel ?"
+        variable: NGC_STORE_KEY
+        type: text
+        default: ''
+      - question: Pairing code out of the web interface of this machine?
+        questionDE: "Kopplungscode aus dem Webinterface dieser Maschine (leer, wenn der Controller schon gekoppelt ist)?"
+        questionES: "¿Código de emparejamiento de la interfaz web de esta máquina (vacío si el controlador ya está emparejado)?"
+        questionIT: "Codice di accoppiamento dall'interfaccia web di questa macchina (vuoto se il controller è già accoppiato)?"
+        questionFR: "Code d'appairage de l'interface web de cette machine (vide si le contrôleur est déjà appairé) ?"
+        variable: NGC_PAIR_CODE
+        type: text
+        default: ''
+    - name: uninstall
+      parameter: uninstall
+      description: Remove NextGenCloud from this machine
+      descriptionDE: "NextGenCloud von dieser Maschine entfernen"
+      descriptionES: "Quitar NextGenCloud de esta máquina"
+      descriptionIT: "Rimuovere NextGenCloud da questa macchina"
+      descriptionFR: "Supprimer NextGenCloud de cette machine"
+      prompts:
+      - question: Delete the configuration, the keys and all the data too?
+        questionDE: "Einstellungen, Schlüssel und alle Daten mit löschen? Nein hebt sie unter /var/lib/ngc/ auf"
+        questionES: "¿Borrar también la configuración, las claves y todos los datos? No los guarda en /var/lib/ngc/"
+        questionIT: "Cancellare anche le impostazioni, le chiavi e tutti i dati? No li conserva in /var/lib/ngc/"
+        questionFR: "Supprimer aussi la configuration, les clés et toutes les données ? Non les conserve dans /var/lib/ngc/"
+        variable: NGC_PURGE
+        type: yes/no
+        default: 'no'
+  ngc-api:
+    description: NextGenCloud API server
+    descriptionDE: "API-Server von NextGenCloud"
+    descriptionES: "Servidor API de NextGenCloud"
+    descriptionIT: "Server API di NextGenCloud"
+    descriptionFR: "Serveur API de NextGenCloud"
+    category: NextGenCloud
+    file: ngc-api.sh
+    sudo:
+    os_family:
+    - debian
+    actions:
+    - name: install
+      parameter: install
+      description: Set up the API
+      descriptionDE: "API einrichten"
+      descriptionES: "Instalar la API"
+      descriptionIT: "Installa l'API"
+      descriptionFR: "Installer l'API"
+      prompts:
+      - question: Name of this API in the installation?
+        questionDE: "Wie heißt diese API in der Anlage (z. B. api-1)?"
+        questionES: "¿Cómo se llama esta API en la instalación (p. ej. api-1)?"
+        questionIT: "Come si chiama questa API nell'impianto (per es. api-1)?"
+        questionFR: "Comment s'appelle cette API dans l'installation (par ex. api-1) ?"
+        variable: NGC_NODE
+        type: text
+        default: api-1
+      - question: Name or IPv4 address the other servers reach it by?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse erreichen die anderen Server diese API?"
+        questionES: "¿Con qué nombre o dirección IPv4 alcanzan los otros servidores esta API?"
+        questionIT: "Con quale nome o indirizzo IPv4 gli altri server raggiungono questa API?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 les autres serveurs atteignent-ils cette API ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: 'Database: mariadb?'
+        questionDE: "Datenbank: mariadb?"
+        questionES: "Base de datos: mariadb?"
+        questionIT: "Banca dati: mariadb?"
+        questionFR: "Base de données : mariadb ?"
+        variable: NGC_DB_DRIVER
+        type: text
+        default: mariadb
+      - question: Addresses of the database nodes, several separated by a space?
+        questionDE: "Adressen der Datenbankknoten, z. B. db-1.example.org:3306 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Direcciones de los nodos de la base de datos, p. ej. db-1.example.org:3306 (varias separadas por un espacio)?"
+        questionIT: "Indirizzi dei nodi della banca dati, per es. db-1.example.org:3306 (più di uno separati da uno spazio)?"
+        questionFR: "Adresses des nœuds de la base de données, par ex. db-1.example.org:3306 (plusieurs séparées par une espace) ?"
+        variable: NGC_DB_NODES
+        type: text
+        default: ''
+      - question: Name of the database?
+        questionDE: "Wie heißt die Datenbank?"
+        questionES: "¿Cómo se llama la base de datos?"
+        questionIT: "Come si chiama la banca dati?"
+        questionFR: "Comment s'appelle la base de données ?"
+        variable: NGC_DB_NAME
+        type: text
+        default: ngc
+      - question: Name of the database account?
+        questionDE: "Wie heißt das Datenbankkonto?"
+        questionES: "¿Cómo se llama la cuenta de la base de datos?"
+        questionIT: "Come si chiama l'account della banca dati?"
+        questionFR: "Comment s'appelle le compte de la base de données ?"
+        variable: NGC_DB_USER
+        type: text
+        default: ngc
+      - question: Password of that account?
+        questionDE: "Passwort dieses Kontos (das, das ngc-db dafür bekommen hat)?"
+        questionES: "¿Contraseña de esa cuenta (la que recibió ngc-db)?"
+        questionIT: "Password di quell'account (quella che ngc-db ha ricevuto)?"
+        questionFR: "Mot de passe de ce compte (celui que ngc-db a reçu) ?"
+        variable: NGC_DB_PASSWORD
+        type: text
+        default: ''
+      - question: Full path to the file with the CA certificate of the database?
+        questionDE: "Vollständiger Pfad zur Datei mit dem CA-Zertifikat der Datenbank (ngc-db zeigt es am Ende)?"
+        questionES: "Ruta completa del archivo con el certificado de la CA de la base de datos (ngc-db lo muestra al final)?"
+        questionIT: "Percorso completo del file con il certificato della CA della banca dati (ngc-db lo mostra alla fine)?"
+        questionFR: "Chemin complet du fichier avec le certificat de la CA de la base de données (ngc-db l'affiche à la fin) ?"
+        variable: NGC_DB_CA
+        type: text
+        default: ''
+      - question: Address of your own app store, empty for the official one?
+        questionDE: "Adresse eines eigenen App-Stores, leer für den offiziellen?"
+        questionES: "¿Dirección de una tienda de aplicaciones propia, vacío para la oficial?"
+        questionIT: "Indirizzo di un negozio di app proprio, vuoto per quello ufficiale?"
+        questionFR: "Adresse d'un magasin d'applications propre, vide pour l'officiel ?"
+        variable: NGC_STORE_URL
+        type: text
+        default: ''
+      - question: Its public key, empty for the official store?
+        questionDE: "Öffentlicher Schlüssel dieses Stores, leer für den offiziellen?"
+        questionES: "¿Su clave pública, vacío para la tienda oficial?"
+        questionIT: "La sua chiave pubblica, vuoto per il negozio ufficiale?"
+        questionFR: "Sa clé publique, vide pour le magasin officiel ?"
+        variable: NGC_STORE_KEY
+        type: text
+        default: ''
+      - question: Join code of a running installation, empty on the first API?
+        questionDE: "Beitrittscode einer laufenden Anlage, leer beim ersten API-Server?"
+        questionES: "¿Código de incorporación de una instalación en marcha, vacío en el primer servidor API?"
+        questionIT: "Codice di adesione di un impianto in funzione, vuoto sul primo server API?"
+        questionFR: "Code d'adhésion d'une installation en marche, vide sur le premier serveur API ?"
+        variable: NGC_JOIN_CODE
+        type: text
+        default: ''
+    - name: configure
+      parameter: configure
+      description: Change the settings of the API
+      descriptionDE: "Einstellungen der API ändern"
+      descriptionES: "Cambiar la configuración de la API"
+      descriptionIT: "Cambiare le impostazioni dell'API"
+      descriptionFR: "Changer les réglages de l'API"
+      prompts:
+      - question: Name of this API in the installation?
+        questionDE: "Wie heißt diese API in der Anlage (z. B. api-1)?"
+        questionES: "¿Cómo se llama esta API en la instalación (p. ej. api-1)?"
+        questionIT: "Come si chiama questa API nell'impianto (per es. api-1)?"
+        questionFR: "Comment s'appelle cette API dans l'installation (par ex. api-1) ?"
+        variable: NGC_NODE
+        type: text
+        default: api-1
+      - question: Name or IPv4 address the other servers reach it by?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse erreichen die anderen Server diese API?"
+        questionES: "¿Con qué nombre o dirección IPv4 alcanzan los otros servidores esta API?"
+        questionIT: "Con quale nome o indirizzo IPv4 gli altri server raggiungono questa API?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 les autres serveurs atteignent-ils cette API ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: 'Database: mariadb?'
+        questionDE: "Datenbank: mariadb?"
+        questionES: "Base de datos: mariadb?"
+        questionIT: "Banca dati: mariadb?"
+        questionFR: "Base de données : mariadb ?"
+        variable: NGC_DB_DRIVER
+        type: text
+        default: mariadb
+      - question: Addresses of the database nodes, several separated by a space?
+        questionDE: "Adressen der Datenbankknoten, z. B. db-1.example.org:3306 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Direcciones de los nodos de la base de datos, p. ej. db-1.example.org:3306 (varias separadas por un espacio)?"
+        questionIT: "Indirizzi dei nodi della banca dati, per es. db-1.example.org:3306 (più di uno separati da uno spazio)?"
+        questionFR: "Adresses des nœuds de la base de données, par ex. db-1.example.org:3306 (plusieurs séparées par une espace) ?"
+        variable: NGC_DB_NODES
+        type: text
+        default: ''
+      - question: Name of the database?
+        questionDE: "Wie heißt die Datenbank?"
+        questionES: "¿Cómo se llama la base de datos?"
+        questionIT: "Come si chiama la banca dati?"
+        questionFR: "Comment s'appelle la base de données ?"
+        variable: NGC_DB_NAME
+        type: text
+        default: ngc
+      - question: Name of the database account?
+        questionDE: "Wie heißt das Datenbankkonto?"
+        questionES: "¿Cómo se llama la cuenta de la base de datos?"
+        questionIT: "Come si chiama l'account della banca dati?"
+        questionFR: "Comment s'appelle le compte de la base de données ?"
+        variable: NGC_DB_USER
+        type: text
+        default: ngc
+      - question: Password of that account?
+        questionDE: "Passwort dieses Kontos (das, das ngc-db dafür bekommen hat)?"
+        questionES: "¿Contraseña de esa cuenta (la que recibió ngc-db)?"
+        questionIT: "Password di quell'account (quella che ngc-db ha ricevuto)?"
+        questionFR: "Mot de passe de ce compte (celui que ngc-db a reçu) ?"
+        variable: NGC_DB_PASSWORD
+        type: text
+        default: ''
+      - question: Full path to the file with the CA certificate of the database?
+        questionDE: "Vollständiger Pfad zur Datei mit dem CA-Zertifikat der Datenbank (ngc-db zeigt es am Ende)?"
+        questionES: "Ruta completa del archivo con el certificado de la CA de la base de datos (ngc-db lo muestra al final)?"
+        questionIT: "Percorso completo del file con il certificato della CA della banca dati (ngc-db lo mostra alla fine)?"
+        questionFR: "Chemin complet du fichier avec le certificat de la CA de la base de données (ngc-db l'affiche à la fin) ?"
+        variable: NGC_DB_CA
+        type: text
+        default: ''
+      - question: Address of your own app store, empty for the official one?
+        questionDE: "Adresse eines eigenen App-Stores, leer für den offiziellen?"
+        questionES: "¿Dirección de una tienda de aplicaciones propia, vacío para la oficial?"
+        questionIT: "Indirizzo di un negozio di app proprio, vuoto per quello ufficiale?"
+        questionFR: "Adresse d'un magasin d'applications propre, vide pour l'officiel ?"
+        variable: NGC_STORE_URL
+        type: text
+        default: ''
+      - question: Its public key, empty for the official store?
+        questionDE: "Öffentlicher Schlüssel dieses Stores, leer für den offiziellen?"
+        questionES: "¿Su clave pública, vacío para la tienda oficial?"
+        questionIT: "La sua chiave pubblica, vuoto per il negozio ufficiale?"
+        questionFR: "Sa clé publique, vide pour le magasin officiel ?"
+        variable: NGC_STORE_KEY
+        type: text
+        default: ''
+      - question: Join code of a running installation, empty on the first API?
+        questionDE: "Beitrittscode einer laufenden Anlage, leer beim ersten API-Server?"
+        questionES: "¿Código de incorporación de una instalación en marcha, vacío en el primer servidor API?"
+        questionIT: "Codice di adesione di un impianto in funzione, vuoto sul primo server API?"
+        questionFR: "Code d'adhésion d'une installation en marche, vide sur le premier serveur API ?"
+        variable: NGC_JOIN_CODE
+        type: text
+        default: ''
+    - name: uninstall
+      parameter: uninstall
+      description: Remove the API
+      descriptionDE: "API entfernen"
+      descriptionES: "Quitar la API"
+      descriptionIT: "Rimuovere l'API"
+      descriptionFR: "Supprimer l'API"
+      prompts:
+      - question: Delete the configuration and the keys too?
+        questionDE: "Einstellungen und Schlüssel mit löschen? Nein hebt sie unter /var/lib/ngc/ auf"
+        questionES: "¿Borrar también la configuración y las claves? No las guarda en /var/lib/ngc/"
+        questionIT: "Cancellare anche le impostazioni e le chiavi? No le conserva in /var/lib/ngc/"
+        questionFR: "Supprimer aussi la configuration et les clés ? Non les conserve dans /var/lib/ngc/"
+        variable: NGC_PURGE
+        type: yes/no
+        default: 'no'
+  ngc-controller:
+    description: NextGenCloud controller
+    descriptionDE: "Controller von NextGenCloud"
+    descriptionES: "Controlador de NextGenCloud"
+    descriptionIT: "Controller di NextGenCloud"
+    descriptionFR: "Contrôleur de NextGenCloud"
+    category: NextGenCloud
+    file: ngc-controller.sh
+    sudo:
+    os_family:
+    - debian
+    actions:
+    - name: install
+      parameter: install
+      description: Set up the controller
+      descriptionDE: "Controller einrichten"
+      descriptionES: "Instalar el controlador"
+      descriptionIT: "Installa il controller"
+      descriptionFR: "Installer le contrôleur"
+      prompts:
+      - question: Name of this server in the installation?
+        questionDE: "Wie heißt dieser Server in der Anlage (z. B. dienste)?"
+        questionES: "¿Cómo se llama este servidor en la instalación (p. ej. dienste)?"
+        questionIT: "Come si chiama questo server nell'impianto (per es. dienste)?"
+        questionFR: "Comment s'appelle ce serveur dans l'installation (par ex. dienste) ?"
+        variable: NGC_NAME
+        type: text
+        default: dienste
+      - question: Pairing code out of NextGenCloud?
+        questionDE: "Kopplungscode aus NextGenCloud (leer, wenn dieser Server schon gekoppelt ist)?"
+        questionES: "¿Código de emparejamiento de NextGenCloud (vacío si este servidor ya está emparejado)?"
+        questionIT: "Codice di accoppiamento da NextGenCloud (vuoto se questo server è già accoppiato)?"
+        questionFR: "Code d'appairage de NextGenCloud (vide si ce serveur est déjà appairé) ?"
+        variable: NGC_PAIR_CODE
+        type: text
+        default: ''
+      - question: Roles of this server, several separated by a space (web api db services)?
+        questionDE: "Rollen dieses Servers, mehrere mit Leerzeichen trennen (web api db services)?"
+        questionES: "¿Roles de este servidor, varios separados por un espacio (web api db services)?"
+        questionIT: "Ruoli di questo server, più di uno separati da uno spazio (web api db services)?"
+        questionFR: "Rôles de ce serveur, plusieurs séparés par une espace (web api db services) ?"
+        variable: NGC_ROLES
+        type: text
+        default: services
+      - question: 'Role db only: addresses of the database nodes, several separated by a space?'
+        questionDE: "Nur bei Rolle db: Adressen der Datenbankknoten, z. B. db-1.example.org:3306 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Solo con el rol db: direcciones de los nodos de la base de datos, p. ej. db-1.example.org:3306 (varias separadas por un espacio)?"
+        questionIT: "Solo con il ruolo db: indirizzi dei nodi della banca dati, per es. db-1.example.org:3306 (più di uno separati da uno spazio)?"
+        questionFR: "Uniquement avec le rôle db : adresses des nœuds de la base de données, par ex. db-1.example.org:3306 (plusieurs séparées par une espace) ?"
+        variable: NGC_MIGRATE_NODES
+        type: text
+        default: ''
+      - question: 'Role db only: name of the database?'
+        questionDE: "Nur bei Rolle db: Wie heißt die Datenbank?"
+        questionES: "Solo con el rol db: ¿cómo se llama la base de datos?"
+        questionIT: "Solo con il ruolo db: come si chiama la banca dati?"
+        questionFR: "Uniquement avec le rôle db : comment s'appelle la base de données ?"
+        variable: NGC_MIGRATE_NAME
+        type: text
+        default: ngc
+      - question: 'Role db only: name of the account for the schema?'
+        questionDE: "Nur bei Rolle db: Wie heißt das Konto für das Schema (ngc-db legt es als ngc_migrate an)?"
+        questionES: "Solo con el rol db: ¿cómo se llama la cuenta para el esquema (ngc-db la crea como ngc_migrate)?"
+        questionIT: "Solo con il ruolo db: come si chiama l'account per lo schema (ngc-db lo crea come ngc_migrate)?"
+        questionFR: "Uniquement avec le rôle db : comment s'appelle le compte pour le schéma (ngc-db le crée comme ngc_migrate) ?"
+        variable: NGC_MIGRATE_USER
+        type: text
+        default: ngc_migrate
+      - question: 'Role db only: password of that account?'
+        questionDE: "Nur bei Rolle db: Passwort dieses Kontos (das, das ngc-db dafür bekommen hat)?"
+        questionES: "Solo con el rol db: ¿contraseña de esa cuenta (la que recibió ngc-db)?"
+        questionIT: "Solo con il ruolo db: password di quell'account (quella che ngc-db ha ricevuto)?"
+        questionFR: "Uniquement avec le rôle db : mot de passe de ce compte (celui que ngc-db a reçu) ?"
+        variable: NGC_MIGRATE_PASSWORD
+        type: text
+        default: ''
+      - question: 'Role db only: full path to the file with the CA certificate of the database?'
+        questionDE: "Nur bei Rolle db: Vollständiger Pfad zur Datei mit dem CA-Zertifikat der Datenbank (ngc-db zeigt es am Ende)?"
+        questionES: "Solo con el rol db: ruta completa del archivo con el certificado de la CA de la base de datos (ngc-db lo muestra al final)?"
+        questionIT: "Solo con il ruolo db: percorso completo del file con il certificato della CA della banca dati (ngc-db lo mostra alla fine)?"
+        questionFR: "Uniquement avec le rôle db : chemin complet du fichier avec le certificat de la CA de la base de données (ngc-db l'affiche à la fin) ?"
+        variable: NGC_MIGRATE_CA
+        type: text
+        default: ''
+    - name: configure
+      parameter: configure
+      description: Change the settings of the controller
+      descriptionDE: "Einstellungen des Controllers ändern"
+      descriptionES: "Cambiar la configuración del controlador"
+      descriptionIT: "Cambiare le impostazioni del controller"
+      descriptionFR: "Changer les réglages du contrôleur"
+      prompts:
+      - question: Name of this server in the installation?
+        questionDE: "Wie heißt dieser Server in der Anlage (z. B. dienste)?"
+        questionES: "¿Cómo se llama este servidor en la instalación (p. ej. dienste)?"
+        questionIT: "Come si chiama questo server nell'impianto (per es. dienste)?"
+        questionFR: "Comment s'appelle ce serveur dans l'installation (par ex. dienste) ?"
+        variable: NGC_NAME
+        type: text
+        default: dienste
+      - question: Pairing code out of NextGenCloud?
+        questionDE: "Kopplungscode aus NextGenCloud (leer, wenn dieser Server schon gekoppelt ist)?"
+        questionES: "¿Código de emparejamiento de NextGenCloud (vacío si este servidor ya está emparejado)?"
+        questionIT: "Codice di accoppiamento da NextGenCloud (vuoto se questo server è già accoppiato)?"
+        questionFR: "Code d'appairage de NextGenCloud (vide si ce serveur est déjà appairé) ?"
+        variable: NGC_PAIR_CODE
+        type: text
+        default: ''
+      - question: Roles of this server, several separated by a space (web api db services)?
+        questionDE: "Rollen dieses Servers, mehrere mit Leerzeichen trennen (web api db services)?"
+        questionES: "¿Roles de este servidor, varios separados por un espacio (web api db services)?"
+        questionIT: "Ruoli di questo server, più di uno separati da uno spazio (web api db services)?"
+        questionFR: "Rôles de ce serveur, plusieurs séparés par une espace (web api db services) ?"
+        variable: NGC_ROLES
+        type: text
+        default: services
+      - question: 'Role db only: addresses of the database nodes, several separated by a space?'
+        questionDE: "Nur bei Rolle db: Adressen der Datenbankknoten, z. B. db-1.example.org:3306 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Solo con el rol db: direcciones de los nodos de la base de datos, p. ej. db-1.example.org:3306 (varias separadas por un espacio)?"
+        questionIT: "Solo con il ruolo db: indirizzi dei nodi della banca dati, per es. db-1.example.org:3306 (più di uno separati da uno spazio)?"
+        questionFR: "Uniquement avec le rôle db : adresses des nœuds de la base de données, par ex. db-1.example.org:3306 (plusieurs séparées par une espace) ?"
+        variable: NGC_MIGRATE_NODES
+        type: text
+        default: ''
+      - question: 'Role db only: name of the database?'
+        questionDE: "Nur bei Rolle db: Wie heißt die Datenbank?"
+        questionES: "Solo con el rol db: ¿cómo se llama la base de datos?"
+        questionIT: "Solo con il ruolo db: come si chiama la banca dati?"
+        questionFR: "Uniquement avec le rôle db : comment s'appelle la base de données ?"
+        variable: NGC_MIGRATE_NAME
+        type: text
+        default: ngc
+      - question: 'Role db only: name of the account for the schema?'
+        questionDE: "Nur bei Rolle db: Wie heißt das Konto für das Schema (ngc-db legt es als ngc_migrate an)?"
+        questionES: "Solo con el rol db: ¿cómo se llama la cuenta para el esquema (ngc-db la crea como ngc_migrate)?"
+        questionIT: "Solo con il ruolo db: come si chiama l'account per lo schema (ngc-db lo crea come ngc_migrate)?"
+        questionFR: "Uniquement avec le rôle db : comment s'appelle le compte pour le schéma (ngc-db le crée comme ngc_migrate) ?"
+        variable: NGC_MIGRATE_USER
+        type: text
+        default: ngc_migrate
+      - question: 'Role db only: password of that account?'
+        questionDE: "Nur bei Rolle db: Passwort dieses Kontos (das, das ngc-db dafür bekommen hat)?"
+        questionES: "Solo con el rol db: ¿contraseña de esa cuenta (la que recibió ngc-db)?"
+        questionIT: "Solo con il ruolo db: password di quell'account (quella che ngc-db ha ricevuto)?"
+        questionFR: "Uniquement avec le rôle db : mot de passe de ce compte (celui que ngc-db a reçu) ?"
+        variable: NGC_MIGRATE_PASSWORD
+        type: text
+        default: ''
+      - question: 'Role db only: full path to the file with the CA certificate of the database?'
+        questionDE: "Nur bei Rolle db: Vollständiger Pfad zur Datei mit dem CA-Zertifikat der Datenbank (ngc-db zeigt es am Ende)?"
+        questionES: "Solo con el rol db: ruta completa del archivo con el certificado de la CA de la base de datos (ngc-db lo muestra al final)?"
+        questionIT: "Solo con il ruolo db: percorso completo del file con il certificato della CA della banca dati (ngc-db lo mostra alla fine)?"
+        questionFR: "Uniquement avec le rôle db : chemin complet du fichier avec le certificat de la CA de la base de données (ngc-db l'affiche à la fin) ?"
+        variable: NGC_MIGRATE_CA
+        type: text
+        default: ''
+    - name: uninstall
+      parameter: uninstall
+      description: Remove the controller
+      descriptionDE: "Controller entfernen"
+      descriptionES: "Quitar el controlador"
+      descriptionIT: "Rimuovere il controller"
+      descriptionFR: "Supprimer le contrôleur"
+      prompts:
+      - question: Delete the configuration, the keys and the data of the apps too?
+        questionDE: "Einstellungen, Schlüssel und Daten der Apps mit löschen? Nein hebt sie unter /var/lib/ngc/ auf"
+        questionES: "¿Borrar también la configuración, las claves y los datos de las aplicaciones? No los guarda en /var/lib/ngc/"
+        questionIT: "Cancellare anche le impostazioni, le chiavi e i dati delle app? No li conserva in /var/lib/ngc/"
+        questionFR: "Supprimer aussi la configuration, les clés et les données des applications ? Non les conserve dans /var/lib/ngc/"
+        variable: NGC_PURGE
+        type: yes/no
+        default: 'no'
+  ngc-db:
+    description: NextGenCloud database with Galera and TLS
+    descriptionDE: "Datenbank von NextGenCloud mit Galera und TLS"
+    descriptionES: "Base de datos de NextGenCloud con Galera y TLS"
+    descriptionIT: "Database di NextGenCloud con Galera e TLS"
+    descriptionFR: "Base de données de NextGenCloud avec Galera et TLS"
+    category: NextGenCloud
+    file: ngc-db.sh
+    sudo:
+    os_family:
+    - debian
+    actions:
+    - name: install
+      parameter: install
+      description: Set up the database
+      descriptionDE: "Datenbank einrichten"
+      descriptionES: "Instalar la base de datos"
+      descriptionIT: "Installa il database"
+      descriptionFR: "Installer la base de données"
+      prompts:
+      - question: Name or IPv4 address of this database server?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse ist dieser Datenbankserver erreichbar?"
+        questionES: "¿Con qué nombre o dirección IPv4 se alcanza este servidor de base de datos?"
+        questionIT: "Con quale nome o indirizzo IPv4 si raggiunge questo server di database?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 ce serveur de base de données est-il joignable ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: 'All database servers as host:port, several separated by a space?'
+        questionDE: "Alle Datenbankserver als host:port, z. B. db-1.example.org:3306 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Todos los servidores de base de datos como host:port, p. ej. db-1.example.org:3306 (varios separados por un espacio)?"
+        questionIT: "Tutti i server di database come host:port, per es. db-1.example.org:3306 (più di uno separati da uno spazio)?"
+        questionFR: "Tous les serveurs de base de données sous la forme host:port, par ex. db-1.example.org:3306 (plusieurs séparés par une espace) ?"
+        variable: NGC_NODES
+        type: text
+        default: ''
+      - question: Is this the first database server (yes) or does it join (no)?
+        questionDE: "Ist das der erste Datenbankserver (yes) oder tritt er bei (no)?"
+        questionES: "¿Es este el primer servidor de base de datos (yes) o se une (no)?"
+        questionIT: "È questo il primo server di database (yes) o si aggiunge (no)?"
+        questionFR: "Est-ce le premier serveur de base de données (yes) ou rejoint-il (no) ?"
+        variable: NGC_BOOTSTRAP
+        type: text
+        default: no
+      - question: Password of the account ngc (reads and writes)?
+        questionDE: "Passwort des Kontos ngc (liest und schreibt)?"
+        questionES: "¿Contraseña de la cuenta ngc (lee y escribe)?"
+        questionIT: "Password dell'account ngc (legge e scrive)?"
+        questionFR: "Mot de passe du compte ngc (lit et écrit) ?"
+        variable: NGC_PASSWORD_NGC
+        type: text
+        default: ''
+      - question: Password of the account ngc_migrate (changes the schema)?
+        questionDE: "Passwort des Kontos ngc_migrate (ändert das Schema)?"
+        questionES: "¿Contraseña de la cuenta ngc_migrate (cambia el esquema)?"
+        questionIT: "Password dell'account ngc_migrate (cambia lo schema)?"
+        questionFR: "Mot de passe du compte ngc_migrate (change le schéma) ?"
+        variable: NGC_PASSWORD_MIGRATE
+        type: text
+        default: ''
+      - question: Folder for the key of the CA, first server only?
+        questionDE: "Ordner für den Schlüssel der CA, nur beim ersten Server?"
+        questionES: "¿Carpeta para la clave de la CA, solo en el primer servidor?"
+        questionIT: "Cartella per la chiave della CA, solo sul primo server?"
+        questionFR: "Dossier pour la clé de la CA, seulement sur le premier serveur ?"
+        variable: NGC_CA_DIR
+        type: text
+        default: /etc/ngc/db-ca
+    - name: configure
+      parameter: configure
+      description: Change nodes or passwords
+      descriptionDE: "Knoten oder Passwörter ändern"
+      descriptionES: "Cambiar los nodos o las contraseñas"
+      descriptionIT: "Cambiare i nodi o le password"
+      descriptionFR: "Changer les nœuds ou les mots de passe"
+      prompts:
+      - question: Name or IPv4 address of this database server?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse ist dieser Datenbankserver erreichbar?"
+        questionES: "¿Con qué nombre o dirección IPv4 se alcanza este servidor de base de datos?"
+        questionIT: "Con quale nome o indirizzo IPv4 si raggiunge questo server di database?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 ce serveur de base de données est-il joignable ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: 'All database servers as host:port, several separated by a space?'
+        questionDE: "Alle Datenbankserver als host:port, z. B. db-1.example.org:3306 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Todos los servidores de base de datos como host:port, p. ej. db-1.example.org:3306 (varios separados por un espacio)?"
+        questionIT: "Tutti i server di database come host:port, per es. db-1.example.org:3306 (più di uno separati da uno spazio)?"
+        questionFR: "Tous les serveurs de base de données sous la forme host:port, par ex. db-1.example.org:3306 (plusieurs séparés par une espace) ?"
+        variable: NGC_NODES
+        type: text
+        default: ''
+      - question: Is this the first database server (yes) or does it join (no)?
+        questionDE: "Ist das der erste Datenbankserver (yes) oder tritt er bei (no)?"
+        questionES: "¿Es este el primer servidor de base de datos (yes) o se une (no)?"
+        questionIT: "È questo il primo server di database (yes) o si aggiunge (no)?"
+        questionFR: "Est-ce le premier serveur de base de données (yes) ou rejoint-il (no) ?"
+        variable: NGC_BOOTSTRAP
+        type: text
+        default: no
+      - question: Password of the account ngc (reads and writes)?
+        questionDE: "Passwort des Kontos ngc (liest und schreibt)?"
+        questionES: "¿Contraseña de la cuenta ngc (lee y escribe)?"
+        questionIT: "Password dell'account ngc (legge e scrive)?"
+        questionFR: "Mot de passe du compte ngc (lit et écrit) ?"
+        variable: NGC_PASSWORD_NGC
+        type: text
+        default: ''
+      - question: Password of the account ngc_migrate (changes the schema)?
+        questionDE: "Passwort des Kontos ngc_migrate (ändert das Schema)?"
+        questionES: "¿Contraseña de la cuenta ngc_migrate (cambia el esquema)?"
+        questionIT: "Password dell'account ngc_migrate (cambia lo schema)?"
+        questionFR: "Mot de passe du compte ngc_migrate (change le schéma) ?"
+        variable: NGC_PASSWORD_MIGRATE
+        type: text
+        default: ''
+      - question: Folder for the key of the CA, first server only?
+        questionDE: "Ordner für den Schlüssel der CA, nur beim ersten Server?"
+        questionES: "¿Carpeta para la clave de la CA, solo en el primer servidor?"
+        questionIT: "Cartella per la chiave della CA, solo sul primo server?"
+        questionFR: "Dossier pour la clé de la CA, seulement sur le premier serveur ?"
+        variable: NGC_CA_DIR
+        type: text
+        default: /etc/ngc/db-ca
+    - name: sign
+      parameter: sign
+      description: Issue the certificate of another node
+      descriptionDE: "Zertifikat eines weiteren Knotens ausstellen"
+      descriptionES: "Emitir el certificado de otro nodo"
+      descriptionIT: "Emettere il certificato di un altro nodo"
+      descriptionFR: "Délivrer le certificat d'un autre nœud"
+      prompts:
+      - question: Name or IPv4 address of this database server?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse ist dieser Datenbankserver erreichbar?"
+        questionES: "¿Con qué nombre o dirección IPv4 se alcanza este servidor de base de datos?"
+        questionIT: "Con quale nome o indirizzo IPv4 si raggiunge questo server di database?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 ce serveur de base de données est-il joignable ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: 'All database servers as host:port, several separated by a space?'
+        questionDE: "Alle Datenbankserver als host:port, z. B. db-1.example.org:3306 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Todos los servidores de base de datos como host:port, p. ej. db-1.example.org:3306 (varios separados por un espacio)?"
+        questionIT: "Tutti i server di database come host:port, per es. db-1.example.org:3306 (più di uno separati da uno spazio)?"
+        questionFR: "Tous les serveurs de base de données sous la forme host:port, par ex. db-1.example.org:3306 (plusieurs séparés par une espace) ?"
+        variable: NGC_NODES
+        type: text
+        default: ''
+      - question: Is this the first database server (yes) or does it join (no)?
+        questionDE: "Ist das der erste Datenbankserver (yes) oder tritt er bei (no)?"
+        questionES: "¿Es este el primer servidor de base de datos (yes) o se une (no)?"
+        questionIT: "È questo il primo server di database (yes) o si aggiunge (no)?"
+        questionFR: "Est-ce le premier serveur de base de données (yes) ou rejoint-il (no) ?"
+        variable: NGC_BOOTSTRAP
+        type: text
+        default: no
+      - question: Full path to the request (CSR) of that node?
+        questionDE: "Vollständiger Pfad zur Anfrage (CSR) dieses Knotens?"
+        questionES: "¿Ruta completa de la solicitud (CSR) de ese nodo?"
+        questionIT: "Percorso completo della richiesta (CSR) di quel nodo?"
+        questionFR: "Chemin complet de la demande (CSR) de ce nœud ?"
+        variable: NGC_CSR
+        type: text
+        default: ''
+    - name: backup
+      parameter: backup
+      description: Back up the database
+      descriptionDE: "Datenbank sichern"
+      descriptionES: "Copia de seguridad de la base de datos"
+      descriptionIT: "Salvare il database"
+      descriptionFR: "Sauvegarder la base de données"
+      prompts:
+      - question: Folder for the backup file? The passphrase is asked afterwards and not shown
+        questionDE: "Ordner für die Sicherungsdatei? Das Kennwort wird danach gefragt und nicht angezeigt"
+        questionES: "¿Carpeta para el archivo de copia de seguridad? La contraseña se pregunta después y no se muestra"
+        questionIT: "Cartella per il file di sicurezza? La passphrase viene chiesta dopo e non viene mostrata"
+        questionFR: "Dossier pour le fichier de sauvegarde ? La phrase secrète est demandée ensuite et n'est pas affichée"
+        variable: NGC_BACKUP_DIR
+        type: text
+        default: /var/backups/ngc
+    - name: restore
+      parameter: restore
+      description: Put a backup back
+      descriptionDE: "Sicherung zurückspielen"
+      descriptionES: "Restaurar una copia de seguridad"
+      descriptionIT: "Ripristinare una copia di sicurezza"
+      descriptionFR: "Restaurer une sauvegarde"
+      prompts:
+      - question: Full path to the backup file (.sql.enc)?
+        questionDE: "Vollständiger Pfad zur Sicherungsdatei (.sql.enc)?"
+        questionES: "¿Ruta completa del archivo de copia de seguridad (.sql.enc)?"
+        questionIT: "Percorso completo del file di sicurezza (.sql.enc)?"
+        questionFR: "Chemin complet du fichier de sauvegarde (.sql.enc) ?"
+        variable: NGC_BACKUP_FILE
+        type: text
+        default: ''
+      - question: 'Really replace the database ngc with it? The data that are in it now are gone for good (yes/no)'
+        questionDE: "Die Datenbank ngc wirklich dadurch ersetzen? Die Daten, die jetzt darin sind, sind danach unwiderruflich weg (yes/no)"
+        questionES: "¿Reemplazar realmente la base de datos ngc por ella? Los datos que hay ahora se perderán definitivamente (yes/no)"
+        questionIT: "Sostituire davvero il database ngc con essa? I dati che ci sono adesso andranno perduti per sempre (yes/no)"
+        questionFR: "Remplacer vraiment la base de données ngc par elle ? Les données actuelles seront perdues définitivement (yes/no)"
+        variable: NGC_RESTORE_CONFIRM
+        type: yes/no
+        default: 'no'
+    - name: uninstall
+      parameter: uninstall
+      description: Remove the database configuration
+      descriptionDE: "Datenbank-Konfiguration entfernen"
+      descriptionES: "Quitar la configuración de la base de datos"
+      descriptionIT: "Rimuovere la configurazione del database"
+      descriptionFR: "Supprimer la configuration de la base de données"
+      prompts:
+      - question: 'Remove packages, keys and the CA as well? The data then cannot be read any more (yes/no)'
+        questionDE: "Auch Pakete, Schlüssel und die CA entfernen? Die Daten sind danach nicht mehr lesbar (yes/no)"
+        questionES: "¿Quitar también los paquetes, las claves y la CA? Después los datos ya no se podrán leer (yes/no)"
+        questionIT: "Rimuovere anche i pacchetti, le chiavi e la CA? Dopo, i dati non saranno più leggibili (yes/no)"
+        questionFR: "Supprimer aussi les paquets, les clés et la CA ? Les données ne seront plus lisibles ensuite (yes/no)"
+        variable: NGC_PURGE
+        type: text
+        default: 'no'
+  ngc-web:
+    description: NextGenCloud web interface on Apache
+    descriptionDE: "Webinterface von NextGenCloud auf Apache"
+    descriptionES: "Interfaz web de NextGenCloud en Apache"
+    descriptionIT: "Interfaccia web di NextGenCloud su Apache"
+    descriptionFR: "Interface web de NextGenCloud sur Apache"
+    category: NextGenCloud
+    file: ngc-web.sh
+    sudo:
+    os_family:
+    - debian
+    actions:
+    - name: install
+      parameter: install
+      description: Set up the web interface
+      descriptionDE: "Webinterface einrichten"
+      descriptionES: "Instalar la interfaz web"
+      descriptionIT: "Installa l'interfaccia web"
+      descriptionFR: "Installer l'interface web"
+      prompts:
+      - question: Name or IPv4 address the browser calls?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse ruft der Browser NGC auf?"
+        questionES: "¿Con qué nombre o dirección IPv4 abre el navegador NGC?"
+        questionIT: "Con quale nome o indirizzo IPv4 il browser apre NGC?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 le navigateur ouvre-t-il NGC ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: 'Certificate: letsencrypt, selfsigned or import?'
+        questionDE: "Zertifikat: letsencrypt, selfsigned oder import?"
+        questionES: "Certificado: letsencrypt, selfsigned o import?"
+        questionIT: "Certificato: letsencrypt, selfsigned o import?"
+        questionFR: "Certificat : letsencrypt, selfsigned ou import ?"
+        variable: NGC_CERT_MODE
+        type: text
+        default: selfsigned
+      - question: Only for import - full path to the certificate (PEM)?
+        questionDE: "Nur bei import: vollständiger Pfad zum Zertifikat (PEM)?"
+        questionES: "Solo con import: ruta completa del certificado (PEM)?"
+        questionIT: "Solo con import: percorso completo del certificato (PEM)?"
+        questionFR: "Seulement avec import : chemin complet du certificat (PEM) ?"
+        variable: NGC_CERT_FILE
+        type: text
+        default: ''
+      - question: Only for import - full path to its key (PEM)?
+        questionDE: "Nur bei import: vollständiger Pfad zum Schlüssel (PEM)?"
+        questionES: "Solo con import: ruta completa de la clave (PEM)?"
+        questionIT: "Solo con import: percorso completo della chiave (PEM)?"
+        questionFR: "Seulement avec import : chemin complet de la clé (PEM) ?"
+        variable: NGC_KEY_FILE
+        type: text
+        default: ''
+      - question: Addresses of the API servers, several separated by a space?
+        questionDE: "Adressen der API-Server, z. B. https://api-1.example.org:7443 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Direcciones de los servidores API, p. ej. https://api-1.example.org:7443 (varias separadas por un espacio)?"
+        questionIT: "Indirizzi dei server API, per es. https://api-1.example.org:7443 (più di uno separati da uno spazio)?"
+        questionFR: "Adresses des serveurs API, par ex. https://api-1.example.org:7443 (plusieurs séparées par une espace) ?"
+        variable: NGC_APIS
+        type: text
+        default: ''
+      - question: Their fingerprints, in the same order, separated by a space?
+        questionDE: "Fingerabdrücke der API-Server in derselben Reihenfolge (mit Leerzeichen trennen)?"
+        questionES: "Huellas de los servidores API en el mismo orden (separadas por un espacio)?"
+        questionIT: "Impronte dei server API nello stesso ordine (separate da uno spazio)?"
+        questionFR: "Empreintes des serveurs API dans le même ordre (séparées par une espace) ?"
+        variable: NGC_API_PINS
+        type: text
+        default: ''
+    - name: configure
+      parameter: configure
+      description: Change certificate or API servers
+      descriptionDE: "Zertifikat oder API-Server ändern"
+      descriptionES: "Cambiar el certificado o los servidores API"
+      descriptionIT: "Cambiare il certificato o i server API"
+      descriptionFR: "Changer le certificat ou les serveurs API"
+      prompts:
+      - question: Name or IPv4 address the browser calls?
+        questionDE: "Unter welchem Namen oder welcher IPv4-Adresse ruft der Browser NGC auf?"
+        questionES: "¿Con qué nombre o dirección IPv4 abre el navegador NGC?"
+        questionIT: "Con quale nome o indirizzo IPv4 il browser apre NGC?"
+        questionFR: "Sous quel nom ou quelle adresse IPv4 le navigateur ouvre-t-il NGC ?"
+        variable: NGC_HOSTNAME
+        type: text
+        default: ''
+      - question: 'Certificate: letsencrypt, selfsigned or import?'
+        questionDE: "Zertifikat: letsencrypt, selfsigned oder import?"
+        questionES: "Certificado: letsencrypt, selfsigned o import?"
+        questionIT: "Certificato: letsencrypt, selfsigned o import?"
+        questionFR: "Certificat : letsencrypt, selfsigned ou import ?"
+        variable: NGC_CERT_MODE
+        type: text
+        default: selfsigned
+      - question: Only for import - full path to the certificate (PEM)?
+        questionDE: "Nur bei import: vollständiger Pfad zum Zertifikat (PEM)?"
+        questionES: "Solo con import: ruta completa del certificado (PEM)?"
+        questionIT: "Solo con import: percorso completo del certificato (PEM)?"
+        questionFR: "Seulement avec import : chemin complet du certificat (PEM) ?"
+        variable: NGC_CERT_FILE
+        type: text
+        default: ''
+      - question: Only for import - full path to its key (PEM)?
+        questionDE: "Nur bei import: vollständiger Pfad zum Schlüssel (PEM)?"
+        questionES: "Solo con import: ruta completa de la clave (PEM)?"
+        questionIT: "Solo con import: percorso completo della chiave (PEM)?"
+        questionFR: "Seulement avec import : chemin complet de la clé (PEM) ?"
+        variable: NGC_KEY_FILE
+        type: text
+        default: ''
+      - question: Addresses of the API servers, several separated by a space?
+        questionDE: "Adressen der API-Server, z. B. https://api-1.example.org:7443 (mehrere mit Leerzeichen trennen)?"
+        questionES: "Direcciones de los servidores API, p. ej. https://api-1.example.org:7443 (varias separadas por un espacio)?"
+        questionIT: "Indirizzi dei server API, per es. https://api-1.example.org:7443 (più di uno separati da uno spazio)?"
+        questionFR: "Adresses des serveurs API, par ex. https://api-1.example.org:7443 (plusieurs séparées par une espace) ?"
+        variable: NGC_APIS
+        type: text
+        default: ''
+      - question: Their fingerprints, in the same order, separated by a space?
+        questionDE: "Fingerabdrücke der API-Server in derselben Reihenfolge (mit Leerzeichen trennen)?"
+        questionES: "Huellas de los servidores API en el mismo orden (separadas por un espacio)?"
+        questionIT: "Impronte dei server API nello stesso ordine (separate da uno spazio)?"
+        questionFR: "Empreintes des serveurs API dans le même ordre (séparées par une espace) ?"
+        variable: NGC_API_PINS
+        type: text
+        default: ''
+    - name: uninstall
+      parameter: uninstall
+      description: Remove the web interface
+      descriptionDE: "Webinterface entfernen"
+      descriptionES: "Quitar la interfaz web"
+      descriptionIT: "Rimuovere l'interfaccia web"
+      descriptionFR: "Supprimer l'interface web"
+      prompts:
+      - question: Delete the configuration and the certificate too?
+        questionDE: "Einstellungen und Zertifikat mit löschen? Nein hebt sie unter /var/lib/ngc/ auf"
+        questionES: "¿Borrar también la configuración y el certificado? No los guarda en /var/lib/ngc/"
+        questionIT: "Cancellare anche le impostazioni e il certificato? No le conserva in /var/lib/ngc/"
+        questionFR: "Supprimer aussi la configuration et le certificat ? Non les conserve dans /var/lib/ngc/"
+        variable: NGC_PURGE
+        type: yes/no
+        default: 'no'
