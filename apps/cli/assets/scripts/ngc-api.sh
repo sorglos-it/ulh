@@ -86,7 +86,7 @@ NGC_RELEASE_BASE="${NGC_RELEASE_BASE:-https://github.com/sorglos-it/nextgencloud
 # key, so every install stops at the check - which is the safe way round until
 # the real key is in here.
 NGC_RELEASE_KEY="-----BEGIN PUBLIC KEY-----
-REPLACE-THIS-LINE-WITH-THE-NGC-RELEASE-KEY
+MCowBQYDK2VwAyEAG0sJt5p/tSyJB9yXaDT5Y5VWchsBAMDErZPY1h9sDAo=
 -----END PUBLIC KEY-----"
 
 # The official store of NGC, taken when the admin names none (shared/ulh.md: a
@@ -404,6 +404,17 @@ read_answers() {
 		STORE_URL="$NGC_STORE_URL"
 		STORE_KEY="$NGC_STORE_KEY"
 	else
+		# The official store of NGC has no key yet, so the default below is a
+		# placeholder like the release key was. Without this bolt it reaches
+		# api.json, and the API refuses the whole file with "config: invalid
+		# configuration" - measured on Debian 13 on 16.10.2026, where the
+		# service then restarted in a loop while this script said it was
+		# running. A placeholder is not a key, so it stops here instead.
+		case "$NGC_STORE_KEY_DEFAULT" in
+		*REPLACE-THIS-LINE*)
+			log_error "NGC has no official app store yet, so this installation needs a store of its own: give its address and its key in the two questions about the store. Leaving them empty would write a placeholder into /etc/ngc/api.json, and the API refuses that file."
+			;;
+		esac
 		STORE_URL="$NGC_STORE_URL_DEFAULT"
 		STORE_KEY="$NGC_STORE_KEY_DEFAULT"
 	fi

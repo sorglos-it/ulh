@@ -86,7 +86,7 @@ NGC_RELEASE_BASE="${NGC_RELEASE_BASE:-https://github.com/sorglos-it/nextgencloud
 # placeholder below is not a key, so every install stops at the check - which
 # is the safe way round until the real key is in here.
 NGC_RELEASE_KEY="-----BEGIN PUBLIC KEY-----
-REPLACE-THIS-LINE-WITH-THE-NGC-RELEASE-KEY
+MCowBQYDK2VwAyEAG0sJt5p/tSyJB9yXaDT5Y5VWchsBAMDErZPY1h9sDAo=
 -----END PUBLIC KEY-----"
 
 # The answers. parse_parameters exported them, so they are read from the
