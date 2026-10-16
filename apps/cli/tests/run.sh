@@ -6,8 +6,28 @@
 # installed, nothing outside the temporary folder changes.
 set -u
 
+# Run with bash, never with sh. Under dash ${BASH_SOURCE[0]} is empty, dirname
+# turns that into ".", and SRC becomes "/" three levels up - the copy below
+# then takes the WHOLE file system into the temporary folder. On a WSL machine
+# that is /mnt/c as well, and /tmp is a 32 GB tmpfs: measured on 16.10.2026 it
+# filled up with 13 and 19 GB, after which apt reported OpenPGP signature
+# errors ("Splitting up ... into data and signature failed") that had nothing
+# to do with signatures. So the shell is checked first, and SRC afterwards.
+if [ -z "${BASH_VERSION:-}" ]; then
+    echo "run.sh needs bash, not sh: bash apps/cli/tests/run.sh" >&2
+    exit 2
+fi
+
 TESTS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC="$(cd "${TESTS}/../../.." && pwd)"          # the ulh folder
+
+# SRC has to BE the ulh folder, not something above it. Two files that only
+# this repository has; without them nothing is copied anywhere.
+if [ ! -f "${SRC}/apps/cli/ulh.sh" ] && [ ! -f "${SRC}/apps/cli/classes/bootstrap.sh" ]; then
+    echo "run.sh: ${SRC} is not the ulh folder - refusing to copy it" >&2
+    exit 2
+fi
+
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 PASSED=0
