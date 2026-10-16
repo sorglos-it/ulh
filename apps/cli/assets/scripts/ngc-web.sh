@@ -974,14 +974,14 @@ render_balancer() {
 		'' \
 		'<Proxy "balancer://ngc-api">'
 	for u in "${APIS[@]}"; do
-		printf '    BalancerMember "%s" retry=5 timeout=65 keepalive=On\n' "$u"
+		printf '    BalancerMember "%s" retry=5 timeout=65 keepalive=On upgrade=websocket\n' "$u"
 	done
 	printf '%s\n' \
 		'    ProxySet lbmethod=byrequests failontimeout=On' \
 		'</Proxy>' \
 		'' \
 		'ProxyPreserveHost Off' \
-		'ProxyPass        "/api/" "balancer://ngc-api/api/" upgrade=websocket' \
+		'ProxyPass        "/api/" "balancer://ngc-api/api/"' \
 		'ProxyPassReverse "/api/" "balancer://ngc-api/api/"'
 }
 
