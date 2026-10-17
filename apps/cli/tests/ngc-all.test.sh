@@ -271,7 +271,7 @@ RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 LockPersonality=yes
 MemoryDenyWriteExecute=yes
 SystemCallArchitectures=native
-ReadWritePaths=/var/lib/ngc /etc/ngc/tls
+ReadWritePaths=/var/lib/ngc /etc/ngc
 
 [Install]
 WantedBy=multi-user.target
@@ -467,3 +467,50 @@ check "exactly one chmod decides the mode of the trust anchor" \
     test "$(anchor_modes | grep -c .)" = 1
 check "the trust anchor is readable for others, or the interface answers 500 after pairing" \
     anchor_others_may_read
+
+# ------------------------------------------- the service may write where the anchor lies
+# /etc/ngc/trust-anchor.json is written by the API itself, not only by this
+# script: after it has taken a new version of the trust list in, it moves the
+# anchor up. shared/config writeAtomic does that by creating a NEIGHBOUR file
+# in the same directory, renaming it over the target and syncing the
+# DIRECTORY - so a ReadWritePaths naming the anchor FILE is not enough, it has
+# to name the directory.
+#
+# Measured on Debian 13 on 17.10.2026 with a throwaway unit carrying exactly
+# these protections, doing exactly those three steps:
+#   ReadWritePaths=/var/lib/ngc /etc/ngc/tls                  mktemp refused, exit 11
+#   ReadWritePaths=/var/lib/ngc /etc/ngc/trust-anchor.json    mktemp refused, exit 11
+#   ReadWritePaths=/etc/ngc /var/lib/ngc                      written, exit 0
+#
+# The directory is read OUT OF the script, not written out here: if the anchor
+# ever moves, this check moves with it. The byte-for-byte comparison above
+# cannot catch this - mutate the template and the expectation together and it
+# stays green, which is how the websocket parameter survived.
+anchor_dir_of() {
+    local anchor
+    anchor="$(sed -n 's/^NGC_ANCHOR="\([^"]*\)".*/\1/p' "$1" | head -1)"
+    if [ -n "$anchor" ]; then
+        printf '%s\n' "${anchor%/*}"
+        return 0
+    fi
+    # ngc-api.sh installs the API alone and never writes the anchor itself, so
+    # it carries no NGC_ANCHOR. The anchor is config.AnchorFile and lies in
+    # config.Dir, which every one of these scripts carries as NGC_ETC.
+    sed -n 's/^NGC_ETC="\([^"]*\)".*/\1/p' "$1" | head -1
+}
+anchor_dir_writable() {
+    local dir rwp p
+    dir="$(anchor_dir_of "$1")"
+    [ -n "$dir" ] || return 1
+    rwp="$(sed -n 's/^ReadWritePaths=//p' "$2" | head -1)"
+    [ -n "$rwp" ] || return 1
+    for p in $rwp; do
+        [ "$p" = "$dir" ] && return 0
+    done
+    return 1
+}
+# Without this one an empty reading would make the check below say nothing.
+check "the directory of the trust anchor can be read out of the script" \
+    test "$(anchor_dir_of "${ULH}/apps/cli/assets/scripts/ngc-all.sh")" = /etc/ngc
+check "the service may write in the directory the trust anchor lies in" \
+    anchor_dir_writable "${ULH}/apps/cli/assets/scripts/ngc-all.sh" "${alldir}/unit-api.got"
