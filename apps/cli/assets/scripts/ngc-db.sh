@@ -73,6 +73,10 @@ SST_FILE="/etc/ngc/db-keys/sst.pass" # the SST password, made once and kept
 # point cluster_state_here at a file of its own instead of replacing that
 # function - a stub of the function under measurement measures the stub.
 GRASTATE="${GRASTATE:-/var/lib/mysql/grastate.dat}"
+# The port the nodes talk to each other on: Galera's own default, as a running
+# provider reports it (gmcast.listen_addr = ssl://0.0.0.0:4567, measured on
+# 17.10.2026). The template sets no other one.
+GALERA_PORT="${GALERA_PORT:-4567}"
 
 # Packages: the server, Galera's provider, the copy tool for a new node, and
 # openssl for the CA and the node certificates.
@@ -740,6 +744,97 @@ cluster_state_here() {
 	return 0
 }
 
+# node_in_cluster is the question the old order should have asked instead of
+# "is mariadbd running?": a server that is up WITHOUT wsrep is not a cluster.
+# Synced is the normal answer; Donor/Desynced is a node that is feeding another
+# one and is just as much a member.
+node_in_cluster() {
+	local state
+	state="$(mariadb --protocol=socket -N -B 		-e "SHOW STATUS LIKE '"'"'wsrep_local_state_comment'"'"'" 2>/dev/null | cut -f2)"
+	case "$state" in
+		Synced | Donor/Desynced) return 0 ;;
+	esac
+	return 1
+}
+
+# grastate_field prints one field of the state file Galera keeps.
+grastate_field() {
+	[ -f "$GRASTATE" ] || return 1
+	sed -n "s/^$1:[[:space:]]*//p" "$GRASTATE" | head -1
+}
+
+# other_node_answers says whether any OTHER node of this installation answers
+# on the Galera port. It is the difference between "the cluster is gone" and
+# "the cluster is up and I have to join it", and no status of this machine can
+# tell them apart.
+other_node_answers() {
+	local h
+	for h in "${HOSTS[@]}"; do
+		[ "$h" = "$NGC_HOSTNAME" ] && continue
+		if timeout 2 bash -c "exec 3<>/dev/tcp/${h}/${GALERA_PORT}" 2>/dev/null; then
+			return 0
+		fi
+	done
+	return 1
+}
+
+# may_open_again decides whether this node may OPEN a cluster - the one action
+# that can cost data, so every condition here is a refusal and the default is
+# no.
+#
+# Why it is needed at all: a node that holds cluster state does not come back
+# on its own after the whole cluster was down. A plain start makes it JOIN the
+# address list, which contains itself, and that times out - measured on
+# Debian 13 on 17.10.2026 at a one-node installation: after a clean stop,
+# "wsrep::connect(gcomm://db-1.ngc.test) failed: 7", and only
+# galera_new_cluster brings it up. Every reboot of a small installation needed
+# a hand.
+#
+# Three conditions, all of them:
+#
+#  1. This machine is the one the admin named as the first node. The decision
+#     stays where the answer put it.
+#  2. No other node answers on the Galera port. With one reachable, there is a
+#     cluster to join and opening a second one is exactly the mistake.
+#  3. Galera itself says this node may do it: safe_to_bootstrap 1. After a
+#     full cluster shutdown Galera marks exactly ONE node that way; a node
+#     with 0 must never open, and does not here either.
+#
+# And the weighing, because this is the dangerous branch:
+#
+#  - Measured on a ONE-node installation, safe_to_bootstrap is 1 at every
+#    moment - while it runs (seqno -1), after a clean stop (seqno 14) and
+#    after a kill -9 (seqno -1). So condition 3 protects nothing there, and
+#    the whole protection is condition 2.
+#  - Which is why a cluster of MORE than one node additionally needs a seqno
+#    of 0 or more, that is an orderly last shutdown. After a crash the seqno
+#    is -1, Galera cannot say who is furthest ahead, and the documented way is
+#    to recover and let a human decide. This script then refuses and joins,
+#    rather than guessing.
+#  - What stays open and cannot be closed from here: if the network is split,
+#    a node may see nobody and still be the one with safe_to_bootstrap 1. Two
+#    primary components need two such nodes, and Galera marks only one - so
+#    this cannot split a cluster that was shut down properly. It CAN split one
+#    whose nodes were bootstrapped by hand before, and no automation undoes
+#    that.
+#  - The case that is NOT measured here: safe_to_bootstrap 0, because that
+#    needs two nodes running at once, and all WSL instances of this machine
+#    share one network namespace (measured: same netns inode, same addresses),
+#    so two nodes cannot both hold port 3306. The branch therefore fails
+#    closed, which is the side to be wrong on.
+may_open_again() {
+	[ "$BOOTSTRAP" = 1 ] || return 1
+	other_node_answers && return 1
+	# Never been in a cluster: this is the very first start.
+	cluster_state_here || return 0
+	[ "$(grastate_field safe_to_bootstrap)" = 1 ] || return 1
+	[ "${#NODES[@]}" -gt 1 ] || return 0
+	case "$(grastate_field seqno)" in
+		'' | -*) return 1 ;;
+	esac
+	return 0
+}
+
 # cluster_action names what this node has to do with the service, and it is a
 # function of its own so the decision can be measured without a database:
 # "open", "restart", "start" or "nothing".
@@ -754,14 +849,19 @@ cluster_state_here() {
 # after about a minute and a half. Whether mariadbd happens to be up says
 # nothing about whether the cluster exists, so it is the second question now.
 cluster_action() {
-	if [ "$BOOTSTRAP" = 1 ] && ! cluster_state_here; then
-		printf 'open'
-	elif mariadb_running; then
+	# A node that is already a member is never bootstrapped again - that, and
+	# not "mariadbd is up", is what a working cluster looks like.
+	if node_in_cluster; then
 		if [ "$CHANGED" = 1 ]; then
 			printf 'restart'
 		else
 			printf 'nothing'
 		fi
+	elif may_open_again; then
+		printf 'open'
+	elif mariadb_running; then
+		# Up, but no member: it has to read the configuration and join.
+		printf 'restart'
 	else
 		printf 'start'
 	fi

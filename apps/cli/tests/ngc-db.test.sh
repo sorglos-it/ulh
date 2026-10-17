@@ -805,62 +805,99 @@ unset chgdir
 
 # ------------------------------------------- which branch start_cluster takes
 # The decision is its own function (cluster_action), so it can be measured
-# without a database: mariadb_running is stubbed and grastate.dat is a file in
-# the test folder, and the answer is one of open / restart / start / nothing.
+# without a database: node_in_cluster, mariadb_running and other_node_answers
+# are stubbed, and grastate.dat is a file in the test folder - but
+# cluster_state_here and may_open_again are the ones out of the script, since
+# they are what is being measured. The answer is open / restart / start /
+# nothing.
 #
-# The case that matters is the first one. The package leaves mariadbd running,
-# without wsrep. The old order asked "is it running?" first, so on a fresh
-# bootstrap node the restart branch won - and a plain restart makes the node
-# JOIN the cluster named in wsrep_cluster_address instead of opening it. With
-# itself as the only entry that cannot work: measured on Debian 13 on
-# 17.10.2026, "failed to reach primary view", then
-# "wsrep::connect(gcomm://db-1.ngc.test) failed: 7".
+# Two bolts are pinned here. The first: the old order asked "is mariadbd
+# running?", and the package leaves mariadbd running WITHOUT wsrep, so on a
+# fresh bootstrap node the restart branch won and the node tried to JOIN a
+# cluster that does not exist. Measured on Debian 13 on 17.10.2026,
+# "wsrep::connect(gcomm://db-1.ngc.test) failed: 7". The second: a node that
+# holds cluster state never came back after the whole cluster was down, for
+# the same reason, and only galera_new_cluster brought it up - so every reboot
+# of a small installation needed a hand.
 bootdir="${dbdir}/boot"
 mkdir -p "$bootdir"
-# db_action: $1 BOOTSTRAP, $2 CHANGED, $3 what mariadb_running answers (0 = it
-# runs), $4 the uuid line of grastate.dat or "none" for no file at all.
-db_action() (
+# db_act reads its inputs from the environment, because there are six of them:
+#   B   BOOTSTRAP            C    CHANGED
+#   INC node_in_cluster      RUN  mariadb_running   (0 = yes, 1 = no)
+#   OTH other_node_answers   (0 = another node answers)
+#   UUID / SEQ / STB         what grastate.dat says, UUID=none for no file
+#   NN  how many nodes the installation has
+db_act() (
     db_load
-    BOOTSTRAP="$1"
-    CHANGED="$2"
-    # $3 has to be caught in a variable of its own: inside the stub, $3 would
-    # be the stub's OWN third argument, and mariadb_running is called without
-    # any. The first check below is what catches that.
-    local running="$3"
-    mariadb_running() { return "$running"; }
-    if [ "$4" = none ]; then
-        rm -f "${bootdir}/grastate.dat"
+    BOOTSTRAP="${B:-0}"
+    CHANGED="${C:-0}"
+    # Caught in locals first: inside a stub, $1 would be the stub's OWN
+    # argument, and these are called without any. The first check below is
+    # what catches that.
+    local inc="${INC:-1}" run="${RUN:-1}" oth="${OTH:-1}" i
+    node_in_cluster() { return "$inc"; }
+    mariadb_running() { return "$run"; }
+    other_node_answers() { return "$oth"; }
+    GRASTATE="${bootdir}/grastate.dat"
+    if [ "${UUID:-none}" = none ]; then
+        rm -f "$GRASTATE"
     else
         printf '# GALERA saved state
 version: 2.1
 uuid:    %s
-seqno:   -1
-safe_to_bootstrap: 1
-' "$4" > "${bootdir}/grastate.dat"
+seqno:   %s
+safe_to_bootstrap: %s
+'             "$UUID" "${SEQ:--1}" "${STB:-1}" > "$GRASTATE"
     fi
-    # The state file of this measurement, not the machine's - and only the
-    # PATH is swapped. cluster_state_here itself is the one out of the script:
-    # a stub of the function under measurement would measure the stub, which is
-    # how the mutant that ignores the uuid survived the first run of this set.
-    GRASTATE="${bootdir}/grastate.dat"
+    NODES=()
+    for i in $(seq 1 "${NN:-1}"); do NODES+=("db-${i}.ngc.test:3306"); done
     cluster_action
 )
-# The stubs have to be the ones doing the talking, so prove the preparation
-# works before any answer counts.
-check "the measurement can make cluster_action answer at all"     test -n "$(db_action 0 0 1 none)"
-check "a fresh bootstrap node opens the cluster, although mariadbd runs"     test "$(db_action 1 1 0 none)" = open
-check "and it opens it even when mariadbd does not run"     test "$(db_action 1 1 1 none)" = open
-check "a grastate.dat with the all-zero uuid is no cluster state"     test "$(db_action 1 1 0 00000000-0000-0000-0000-000000000000)" = open
-check "a bootstrap node whose cluster exists only restarts"     test "$(db_action 1 1 0 65b4d82f-ca64-11f1-8026-9f3253e2f221)" = restart
-check "and it is left alone when nothing was written"     test "$(db_action 1 0 0 65b4d82f-ca64-11f1-8026-9f3253e2f221)" = nothing
-check "a node that is not the first one starts and does not open anything"     test "$(db_action 0 1 1 none)" = start
-check "a running node that is not the first one restarts after a change"     test "$(db_action 0 1 0 none)" = restart
-# And the order has to stay the order: the running check may not come first.
-check "cluster_action asks about the cluster before it asks about the service"     test "$(awk '/^cluster_action\(\) \{/,/^\}/' "${dbdir}/body.sh" | grep -nE 'cluster_state_here|mariadb_running' | head -1 | cut -d: -f2 | grep -c cluster_state_here)" = 1
+REAL=65b4d82f-ca64-11f1-8026-9f3253e2f221
+ZERO=00000000-0000-0000-0000-000000000000
+# The stubs have to be the ones talking before any answer counts.
+check "the measurement can make cluster_action answer at all"     test -n "$(db_act)"
+# --- the fresh bootstrap node, the first bolt
+check "a fresh bootstrap node opens the cluster, although mariadbd runs"     test "$(B=1 C=1 RUN=0 db_act)" = open
+check "and it opens it even when mariadbd does not run"     test "$(B=1 C=1 db_act)" = open
+check "a grastate.dat with the all-zero uuid is no cluster state"     test "$(B=1 C=1 RUN=0 UUID=$ZERO db_act)" = open
+# --- the node that comes back after the cluster was down, the second bolt
+check "a first node whose cluster is gone opens it again"     test "$(B=1 UUID=$REAL SEQ=14 db_act)" = open
+check "and it does so after a crash too, as long as it is alone"     test "$(B=1 UUID=$REAL SEQ=-1 NN=1 db_act)" = open
+# --- and every refusal, because opening is the branch that can cost data
+check "a node that is already a member is never bootstrapped again"     test "$(B=1 INC=0 UUID=$REAL SEQ=14 db_act)" = nothing
+check "a member picks up a new configuration with a restart"     test "$(B=1 C=1 INC=0 UUID=$REAL SEQ=14 db_act)" = restart
+check "nobody opens a cluster while another node answers"     test "$(B=1 OTH=0 UUID=$REAL SEQ=14 db_act)" = start
+check "a node that is not the first one never opens anything"     test "$(B=0 UUID=$REAL SEQ=14 db_act)" = start
+check "safe_to_bootstrap 0 refuses, that is Galera's own answer"     test "$(B=1 UUID=$REAL SEQ=14 STB=0 db_act)" = start
+check "with several nodes a crash refuses: no seqno, no decision"     test "$(B=1 UUID=$REAL SEQ=-1 NN=3 db_act)" = start
+check "with several nodes an orderly shutdown is allowed"     test "$(B=1 UUID=$REAL SEQ=14 NN=3 db_act)" = open
+# --- and the plain cases
+check "a running node that is no member reads the configuration again"     test "$(B=0 C=1 RUN=0 UUID=$REAL SEQ=14 db_act)" = restart
+check "a node that is down and not the first one just starts"     test "$(B=0 UUID=$REAL SEQ=14 db_act)" = start
+# --- the order itself has to stay the order
+check "cluster_action asks about membership before it asks about the service"     test "$(awk '/^cluster_action\(\) \{/,/^\}/' "${dbdir}/body.sh" | grep -nE 'node_in_cluster|mariadb_running' | head -1 | cut -d: -f2 | grep -c node_in_cluster)" = 1
+# other_node_answers really does talk to the network: a port nothing listens
+# on has to answer "no", or condition 2 would never refuse anything.
+db_reach() (
+    db_load
+    HOSTS=(127.0.0.1)
+    NGC_HOSTNAME=db-1.ngc.test
+    GALERA_PORT=1
+    other_node_answers && printf yes || printf no
+)
+check "other_node_answers says no for a port nothing listens on"     test "$(db_reach)" = no
+db_self() (
+    db_load
+    HOSTS=(db-1.ngc.test)
+    NGC_HOSTNAME=db-1.ngc.test
+    GALERA_PORT=1
+    other_node_answers && printf yes || printf no
+)
+check "and it does not count this node itself as another one"     test "$(db_self)" = no
 
-unset -f db_action
-unset bootdir
-unset chgdir
+unset -f db_act db_reach db_self
+unset bootdir REAL ZERO
 
 # ------------------------------------------------- the key file MariaDB reads
 # file_key_management opens a "Salted__" file with the old EVP_BytesToKey of
