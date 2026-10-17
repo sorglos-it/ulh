@@ -114,18 +114,28 @@ SSLProxyProtocol TLSv1.3
 SSLProxyCipherSuite TLSv1.3 TLS_AES_256_GCM_SHA384
 
 <Proxy "balancer://ngc-api">
-    BalancerMember "https://api-1.ngc.test:7443" retry=5 timeout=65 keepalive=On
-    BalancerMember "https://api-2.ngc.test:7443" retry=5 timeout=65 keepalive=On
+    BalancerMember "https://api-1.ngc.test:7443" retry=5 timeout=65 keepalive=On upgrade=websocket
+    BalancerMember "https://api-2.ngc.test:7443" retry=5 timeout=65 keepalive=On upgrade=websocket
     ProxySet lbmethod=byrequests failontimeout=On
 </Proxy>
 
 ProxyPreserveHost Off
-ProxyPass        "/api/" "balancer://ngc-api/api/" upgrade=websocket
+ProxyPass        "/api/" "balancer://ngc-api/api/"
 ProxyPassReverse "/api/" "balancer://ngc-api/api/"
 EOF
 ngc_balancer "$API1" "$API2" > "${ngcdir}/balancer.got"
 check "balancer for Apache: byte for byte the form of the contract" \
     cmp -s "${ngcdir}/balancer.want" "${ngcdir}/balancer.got"
+# upgrade=websocket is a WORKER parameter. On the ProxyPass of a balancer://
+# target Apache reads every key=value as a BALANCER parameter and refuses to
+# start: "ProxyPass unknown Balancer parameter", measured on Apache 2.4.69 on
+# Debian 13 on 16.10.2026. The byte comparison above cannot catch a move of
+# the parameter on its own - want and got would wander together - so the two
+# cases below name the place.
+check "balancer: upgrade=websocket stands on every BalancerMember" \
+    test "$(grep -c '^    BalancerMember .* upgrade=websocket$' "${ngcdir}/balancer.got")" = 2
+check "balancer: and on no ProxyPass line" \
+    not grep -q '^ProxyPass .*upgrade=' "${ngcdir}/balancer.got"
 check "one API gives one BalancerMember" \
     test "$(ngc_balancer "$API1" | grep -c BalancerMember)" = 1
 # The path of the trust file stands written out in the balancer, because the
@@ -728,8 +738,24 @@ ngc_mods() (
 : > "${ngcdir}/mods.ss"; ngc_mods selfsigned "${ngcdir}/mods.ss"
 check "modules: with Let's Encrypt md is switched on" grep -qx md "${ngcdir}/mods.le"
 check "modules: self-signed does not switch md on" not grep -qx md "${ngcdir}/mods.ss"
+# ensure_modules only calls a2enmod for a module that is not enabled yet, so
+# the log says nothing about a machine that already has one of them on: on the
+# Debian 13 of 17.10.2026 ssl, dir and the four proxy modules were enabled by
+# an earlier Apache, and six cases over the log alone were red for that reason
+# and for no other. So each module is measured as "switched on by this call OR
+# already enabled on this machine", and the list of the contract is measured
+# where no Apache can get in the way: in NGC_MODULES itself.
+ngc_module_list() (
+    ngc_load
+    printf '%s\n' "${NGC_MODULES[@]}"
+)
+ngc_module_list > "${ngcdir}/mods.list"
+check "modules: the list is the script's own, not an empty one" \
+    test "$(wc -l < "${ngcdir}/mods.list")" -ge 6
+mod_on() { grep -qx "$1" "${ngcdir}/mods.ss" || [ -e "/etc/apache2/mods-enabled/${1}.load" ]; }
 for m in ssl proxy_http proxy_wstunnel proxy_balancer proxy_fcgi dir; do
-    check "modules: ${m} is switched on" grep -qx "$m" "${ngcdir}/mods.ss"
+    check "modules: ${m} is in the list of the script" grep -qx "$m" "${ngcdir}/mods.list"
+    check "modules: ${m} is switched on, or was on already" mod_on "$m"
 done
 
 # -------------------------------------------------------------------- download
