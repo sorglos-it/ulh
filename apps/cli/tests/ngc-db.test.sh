@@ -739,6 +739,67 @@ unset GOODPASS BADPASS store enc empty broken other cut backup_code restore_code
 unset r_warn r_load r_conf r_tables r_ren back_vars rest_vars restore_q spaced
 unset bad_line bad_dir
 
+# ------------------------------------------------- the key file MariaDB reads
+# file_key_management opens a "Salted__" file with the old EVP_BytesToKey of
+# OpenSSL over SHA-1. A file written with -pbkdf2 -md sha256 is sound, decrypts
+# fine with those same flags, and MariaDB still cannot read it: measured on a
+# fresh Debian 13 on 17.10.2026 as "Cannot decrypt .../keys.enc. Wrong key?",
+# whereupon file_key_management, InnoDB and the server fall. So the check here
+# is not "it decrypts" but "it decrypts the way MariaDB decrypts".
+db_keys() (
+    db_load
+    NGC_KEYS="${dbdir}/keys"
+    mkdir -p "$NGC_KEYS"
+    rm -f "${NGC_KEYS}/keys.enc" "${NGC_KEYS}/keyfile.key"
+    put_secret() { install -m 0400 "$1" "$2"; }
+    ensure_encryption_keys > /dev/null 2>&1 || exit 1
+    # Read it back the way the plugin does, and nothing else.
+    openssl enc -d -aes-256-cbc -md sha1 -in "${NGC_KEYS}/keys.enc"         -pass "file:${NGC_KEYS}/keyfile.key" 2>/dev/null
+)
+keys_out="$(db_keys)"
+check "the key file opens the way MariaDB's file_key_management opens it"     grep -qE '^1;[0-9a-f]{64}$' <<< "$keys_out"
+# And the flags themselves, named, so nobody puts the better derivation back
+# without reading why it is not there.
+check "the key file is not written with pbkdf2"     not grep -qE 'keys[.]enc.*pbkdf2|pbkdf2.*keys[.]enc'         <(awk '/^ensure_encryption_keys\(\) \{/,/^\}/' "${dbdir}/body.sh")
+check "the key file is written over sha1, as that plugin derives"     grep -q 'openssl enc -aes-256-cbc -md sha1 -salt'         <(awk '/^ensure_encryption_keys\(\) \{/,/^\}/' "${dbdir}/body.sh")
+
+unset -f db_keys
+unset keys_out
+
+# ---------------------------------------------------------------- the group mysql
+# A machine that never had MariaDB has no group mysql, and prepare makes the
+# two folders BEFORE ensure_packages installs it (render_ca_cnf writes into
+# NGC_TLS). Measured on a fresh Debian 13 on 17.10.2026: install died at
+# "chown: invalid group: 'root:mysql'" with RC=1, before anything was written.
+mkdir -p "${dbdir}/gbin"
+db_owner() (
+    db_load
+    PATH="${dbdir}/gbin:${PATH}"
+    db_dir_owner
+)
+printf '#!/bin/bash
+exit 2
+' > "${dbdir}/gbin/getent"
+chmod +x "${dbdir}/gbin/getent"
+check "without the group mysql the two folders stay with root alone"     test "$(db_owner)" = root:root
+printf '#!/bin/bash
+exit 0
+' > "${dbdir}/gbin/getent"
+check "with the group mysql the two folders go to it"     test "$(db_owner)" = root:mysql
+# prepare must not name the group itself: that is the line that died.
+check "prepare names no group that may not exist yet"     not grep -qE 'ensure_dir "\$NGC_(TLS|KEYS)" root:mysql'         <(awk '/^prepare\(\) \{/,/^\}/' "${dbdir}/body.sh")
+# And the handover has to sit after the packages, not before them.
+inst="$(awk '/^install_ngc_db\(\) \{/,/^\}/' "${dbdir}/body.sh")"
+pkg_ln="$(grep -n 'ensure_packages' <<< "$inst" | head -1 | cut -d: -f1)"
+dir_ln="$(grep -n 'ensure_db_dirs' <<< "$inst" | head -1 | cut -d: -f1)"
+check "install hands the folders to mysql after it installed MariaDB"     test -n "$pkg_ln" -a -n "$dir_ln" -a "${dir_ln:-0}" -gt "${pkg_ln:-0}"
+# configure calls prepare too, and there MariaDB is already running - but the
+# folders still have to end up with the group, not with root.
+check "configure hands the folders to mysql as well"     grep -q 'ensure_db_dirs' <<< "$(awk '/^configure_ngc_db\(\) \{/,/^\}/' "${dbdir}/body.sh")"
+
+unset -f db_owner
+unset inst pkg_ln dir_ln
+
 unset -f db_load db_galera db_cacnf db_answers db_host db_cluster
 unset dbdir NODE1 NODE2 NODE3 PASS1 PASS2 missing unpinned head back prov forbidden good bad shell o
 unset warn_line rm_line chk_line del_line purge_q line

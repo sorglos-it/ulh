@@ -206,6 +206,34 @@ ensure_dir() {
 	chmod "$mode" "$dir"
 }
 
+# db_dir_owner names the owner of the two folders MariaDB reads. The group
+# mysql comes with mariadb-server, and prepare makes these folders BEFORE that
+# package is there: render_ca_cnf writes the OpenSSL configuration into
+# NGC_TLS. On a machine that never had MariaDB, chown root:mysql therefore dies
+# with "chown: invalid group" and install stops before it has written anything
+# (measured on a fresh Debian 13, 17.10.2026). Until the package is there the
+# folders belong to root alone - 0710 gives nobody else anything either way -
+# and ensure_db_dirs hands them over as soon as the group exists.
+db_dir_owner() {
+	if getent group mysql > /dev/null 2>&1; then
+		printf 'root:mysql'
+	else
+		printf 'root:root'
+	fi
+}
+
+# ensure_db_dirs gives the two folders to the group mysql. It belongs AFTER
+# ensure_packages: MariaDB runs as mysql and has to read ssl_cert, ssl_key, the
+# CA and both file_key_management files that lie in there; through a folder it
+# may not enter, the chown on those files would be worth nothing, and the
+# server would come up without TLS or stop at the encryption.
+ensure_db_dirs() {
+	getent group mysql > /dev/null 2>&1 ||
+		log_error "MariaDB is installed, but there is no group mysql. Nothing more was changed."
+	ensure_dir "$NGC_TLS" root:mysql 0710
+	ensure_dir "$NGC_KEYS" root:mysql 0710
+}
+
 # put_file writes stdin to a file only if the content differs, and always
 # atomically: a reader never sees half a configuration. It sets CHANGED when it
 # wrote.
@@ -489,9 +517,25 @@ ensure_encryption_keys() {
 	local plain="${WORK}/keys.txt" pass="${WORK}/pass.txt"
 	printf '1;%s\n' "$(openssl rand -hex 32)" > "$plain"
 	openssl rand -base64 48 | tr -d '\n' > "$pass"
-	openssl enc -aes-256-cbc -pbkdf2 -md sha256 -salt \
-		-in "$plain" -out "${WORK}/keys.enc" -pass "file:${pass}" ||
+	# -md sha1 and NO -pbkdf2, although pbkdf2 is the better derivation: the
+	# reader of this file is MariaDB's file_key_management, and that plugin
+	# opens a "Salted__" file with the old EVP_BytesToKey of OpenSSL over SHA-1
+	# and nothing else. Written with -pbkdf2 -md sha256 the file is sound and
+	# MariaDB cannot read it: measured on a fresh Debian 13 on 17.10.2026,
+	# "Cannot decrypt /etc/ngc/db-keys/keys.enc. Wrong key?", upon which
+	# file_key_management, InnoDB and the server fall in that order. The key
+	# itself is 32 random bytes and stays AES-256; what the derivation guards
+	# is keyfile.key, which lies beside it as 0400 for mysql.
+	openssl enc -aes-256-cbc -md sha1 -salt \
+		-in "$plain" -out "${WORK}/keys.enc" -pass "file:${pass}" 2>/dev/null ||
 		log_error "Could not encrypt the key file."
+	# The derivation above is the one thing about this file nobody sees go
+	# wrong: a file written with the wrong one decrypts fine with the wrong one
+	# too, and only MariaDB says no, minutes later and about InnoDB. So read it
+	# back the way MariaDB will read it, before anything is kept.
+	openssl enc -d -aes-256-cbc -md sha1 -in "${WORK}/keys.enc" \
+		-pass "file:${pass}" 2>/dev/null | grep -q '^1;' ||
+		log_error "The key file cannot be read back the way MariaDB reads it. Nothing was kept."
 	shred -u "$plain" 2>/dev/null || rm -f "$plain"
 	put_secret "${WORK}/keys.enc" "${NGC_KEYS}/keys.enc"
 	put_secret "$pass" "${NGC_KEYS}/keyfile.key"
@@ -875,8 +919,8 @@ prepare() {
 	# would be worth nothing, and the server would come up without TLS or stop
 	# at the encryption. 0710 gives mysql the way through and no listing, and
 	# nobody else anything at all.
-	ensure_dir "$NGC_TLS" root:mysql 0710
-	ensure_dir "$NGC_KEYS" root:mysql 0710
+	ensure_dir "$NGC_TLS" "$(db_dir_owner)" 0710
+	ensure_dir "$NGC_KEYS" "$(db_dir_owner)" 0710
 	if [ "$BOOTSTRAP" = 1 ]; then
 		# This one stays root:root 0700: the private key of the CA is the
 		# whole trust of the installation, and MariaDB never reads it.
@@ -889,6 +933,7 @@ install_ngc_db() {
 	log_section "NextGenCloud: MariaDB with Galera for ${NGC_HOSTNAME}"
 	prepare
 	ensure_packages
+	ensure_db_dirs
 	# MariaDB has to be there before the keys: they belong to its user.
 	ensure_sst_password
 	ensure_encryption_keys
@@ -911,6 +956,7 @@ configure_ngc_db() {
 	log_section "NextGenCloud: changing the database configuration"
 	prepare
 	mariadb_running || log_error "MariaDB is not running. Use install."
+	ensure_db_dirs
 	ensure_node_cert
 	write_config
 	start_cluster
