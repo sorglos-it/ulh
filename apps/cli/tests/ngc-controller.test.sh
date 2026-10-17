@@ -435,3 +435,30 @@ check "taking the role db away takes migrate with it" \
     test "$(jq -r 'has("migrate")' "${ctldir}/back.json")" = false
 check "taking the roles away leaves the key of the data alone" \
     test "$(jq -r '.dbKey' "${ctldir}/back.json")" = "$K_DB"
+
+# ---------------------------------------------------------- the trust anchor is public
+# /etc/ngc/trust-anchor.json is read by index.php of ngc-web, which hands its
+# number and hash to every browser in config.json - and Apache runs that as
+# www-data. A mode without the read bit for others makes the interface answer
+# 500 to every call after a successful pairing; measured on Debian 13 on
+# 17.10.2026, where this one line made a freshly paired machine unreachable.
+# What protects the anchor is the signature of the trust list, not the mode.
+#
+# The check is on the BIT and not on the number, because the reason is the bit:
+# 0600 and 0640 are wrong alike, and a later 0664 would be right alike. A check
+# on the literal 0644 would pass for 0640 if somebody ever wrote that.
+anchor_modes() {
+    grep -oE 'chmod [0-7]{4} -- "\$NGC_ANCHOR"' "${ctldir}/body.sh" | awk '{print $2}'
+}
+anchor_others_may_read() {
+    local modes digit
+    modes="$(anchor_modes)"
+    # One line and no more: a second chmod would make this reading say nothing.
+    [ "$(printf '%s\n' "$modes" | grep -c .)" = 1 ] || return 1
+    digit="$(printf '%s' "$modes" | cut -c4)"
+    [ "$(( digit & 4 ))" -ne 0 ]
+}
+check "exactly one chmod decides the mode of the trust anchor" \
+    test "$(anchor_modes | grep -c .)" = 1
+check "the trust anchor is readable for others, or the interface answers 500 after pairing" \
+    anchor_others_may_read
