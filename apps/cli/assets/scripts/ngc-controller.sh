@@ -1015,7 +1015,14 @@ pair_controller() {
 		log_error "The configuration ngc-controller wrote still names no API, so the pairing did not come off. Nothing was changed; get a new pairing code and run the setup again."
 	fi
 	put_file "${WORK}/controller.json" "$NGC_CONF" 0600
-	chmod 0600 -- "$NGC_ANCHOR"
+	# 0644, not 0600: the anchor is PUBLIC. index.php of ngc-web reads it and
+	# puts it into the config.json of every browser, and Apache runs that as
+	# www-data. With 0600 the interface answers 500 to every call after the
+	# pairing - measured on Debian 13 on 17.10.2026, where this very line made
+	# a freshly paired machine unreachable. Its content is a number and a
+	# hash, both of which the browser is handed anyway; what protects it is
+	# the signature of the trust list, not the mode of the file.
+	chmod 0644 -- "$NGC_ANCHOR"
 	chown root:root -- "$NGC_ANCHOR"
 	ensure_dir "$NGC_STATE_DIR" 0700
 	: >"${WORK}/paired"
