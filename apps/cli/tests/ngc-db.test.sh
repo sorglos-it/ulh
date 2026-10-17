@@ -144,10 +144,20 @@ check "and in [mariabackup], for the copy to a new node" test "$back" = 0
 # a part of it.
 prov=0
 for part in socket.ssl_ca=/etc/ngc/db-tls/ca.crt socket.ssl_cert=/etc/ngc/db-tls/node.crt \
-    socket.ssl_key=/etc/ngc/db-tls/node.key socket.ssl_cipher=TLS_AES_256_GCM_SHA384; do
+    socket.ssl_key=/etc/ngc/db-tls/node.key socket.ssl_cipher=ECDHE-ECDSA-AES256-GCM-SHA384; do
     grep -qF "$part" "${dbdir}/galera.got" || { prov=$((prov + 1)); echo "    missing: ${part}"; }
 done
-check "wsrep_provider_options carries the CA, the certificate and TLS 1.3" test "$prov" = 0
+check "wsrep_provider_options carries the CA, the certificate and the cipher list" test "$prov" = 0
+# The loop above holds the rendering against this file's own list, so a wrong
+# value moved into both stays green - the gap Punkt 56 found in the Apache
+# template. This case knows something the rendering does not say about itself:
+# socket.ssl_cipher reaches SSL_CTX_set_cipher_list, which knows TLS 1.2 names
+# only. A TLS 1.3 name (TLS_*) restricts nothing and aborts mariadbd with "no
+# cipher match" - measured on Debian 13 with Galera 26.4.23 on 17.10.2026.
+cipher_val="$(grep -o 'socket[.]ssl_cipher=[^;"]*' "${dbdir}/galera.got" | head -1 | cut -d= -f2)"
+check "the cipher of the cluster is a TLS 1.2 name, not a TLS 1.3 suite" not grep -qE '^TLS_' <<< "$cipher_val"
+# And dropping the option would pass that alone, so the pin has to stay a pin.
+check "the cipher of the cluster still names AES-256-GCM" grep -q 'AES256-GCM' <<< "$cipher_val"
 
 forbidden=0
 for line in skip-ssl ssl=0 require_secure_transport=OFF wsrep_on=OFF \
@@ -802,4 +812,5 @@ unset inst pkg_ln dir_ln
 
 unset -f db_load db_galera db_cacnf db_answers db_host db_cluster
 unset dbdir NODE1 NODE2 NODE3 PASS1 PASS2 missing unpinned head back prov forbidden good bad shell o
+unset cipher_val
 unset warn_line rm_line chk_line del_line purge_q line
