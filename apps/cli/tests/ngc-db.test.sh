@@ -749,6 +749,119 @@ unset GOODPASS BADPASS store enc empty broken other cut backup_code restore_code
 unset r_warn r_load r_conf r_tables r_ren back_vars rest_vars restore_q spaced
 unset bad_line bad_dir
 
+# --------------------------------------- does a written configuration reach it
+# CHANGED is what tells start_cluster that MariaDB has to pick the new
+# configuration up. put_file sets it - and on the right of a pipe put_file runs
+# in a subshell, where that assignment dies with the subshell. The tick
+# "written: ..." is printed either way, so the loss is invisible: measured on
+# Debian 13 on 17.10.2026 with a probe inside start_cluster,
+# "action=nothing bootstrap=1 changed=0 running=yes" right after that tick.
+chgdir="${dbdir}/changed"
+mkdir -p "$chgdir"
+db_changed() (
+    db_load
+    CONF_FILE="${chgdir}/60-ngc.cnf"
+    NGC_HOSTNAME=db-1.ngc.test
+    NGC_NODES="${NODE1} ${NODE2} ${NODE3}"
+    NGC_BOOTSTRAP=no NGC_PASSWORD_NGC="$PASS1" NGC_PASSWORD_MIGRATE="$PASS2"
+    NGC_CA_DIR=/etc/ngc/db-ca
+    read_answers > /dev/null 2>&1 || exit 1
+    SST_PASS="0123456789abcdef"
+    load_sst_password() { :; }
+    ensure_dir() { :; }
+    CHANGED=0
+    printf '%s
+' "$1" > "$CONF_FILE"
+    write_config > /dev/null 2>&1
+    printf '%s' "$CHANGED"
+)
+# The preparation has to work before an answer counts: a first file that really
+# differs, so there is something to notice.
+check "a configuration that differs is noticed, so start_cluster is told"     test "$(db_changed 'this is not the configuration')" = 1
+# And the other way: nothing written, nothing to apply. The file is the one
+# write_config itself produced the line before, so this is not a second shape.
+db_same() (
+    db_load
+    CONF_FILE="${chgdir}/60-ngc.cnf"
+    NGC_HOSTNAME=db-1.ngc.test
+    NGC_NODES="${NODE1} ${NODE2} ${NODE3}"
+    NGC_BOOTSTRAP=no NGC_PASSWORD_NGC="$PASS1" NGC_PASSWORD_MIGRATE="$PASS2"
+    NGC_CA_DIR=/etc/ngc/db-ca
+    read_answers > /dev/null 2>&1 || exit 1
+    SST_PASS="0123456789abcdef"
+    load_sst_password() { :; }
+    ensure_dir() { :; }
+    write_config > /dev/null 2>&1   # first write: makes the file
+    CHANGED=0
+    write_config > /dev/null 2>&1   # second write: the same content
+    printf '%s' "$CHANGED"
+)
+check "a configuration that is already right changes nothing"     test "$(db_same)" = 0
+# And the cause, named: put_file may not sit on the right of a pipe.
+check "write_config does not put put_file behind a pipe"     not grep -qE '[|][[:space:]]*put_file'         <(awk '/^write_config\(\) \{/,/^\}/' "${dbdir}/body.sh")
+
+unset -f db_changed db_same
+unset chgdir
+
+# ------------------------------------------- which branch start_cluster takes
+# The decision is its own function (cluster_action), so it can be measured
+# without a database: mariadb_running is stubbed and grastate.dat is a file in
+# the test folder, and the answer is one of open / restart / start / nothing.
+#
+# The case that matters is the first one. The package leaves mariadbd running,
+# without wsrep. The old order asked "is it running?" first, so on a fresh
+# bootstrap node the restart branch won - and a plain restart makes the node
+# JOIN the cluster named in wsrep_cluster_address instead of opening it. With
+# itself as the only entry that cannot work: measured on Debian 13 on
+# 17.10.2026, "failed to reach primary view", then
+# "wsrep::connect(gcomm://db-1.ngc.test) failed: 7".
+bootdir="${dbdir}/boot"
+mkdir -p "$bootdir"
+# db_action: $1 BOOTSTRAP, $2 CHANGED, $3 what mariadb_running answers (0 = it
+# runs), $4 the uuid line of grastate.dat or "none" for no file at all.
+db_action() (
+    db_load
+    BOOTSTRAP="$1"
+    CHANGED="$2"
+    # $3 has to be caught in a variable of its own: inside the stub, $3 would
+    # be the stub's OWN third argument, and mariadb_running is called without
+    # any. The first check below is what catches that.
+    local running="$3"
+    mariadb_running() { return "$running"; }
+    if [ "$4" = none ]; then
+        rm -f "${bootdir}/grastate.dat"
+    else
+        printf '# GALERA saved state
+version: 2.1
+uuid:    %s
+seqno:   -1
+safe_to_bootstrap: 1
+' "$4" > "${bootdir}/grastate.dat"
+    fi
+    # The state file of this measurement, not the machine's - and only the
+    # PATH is swapped. cluster_state_here itself is the one out of the script:
+    # a stub of the function under measurement would measure the stub, which is
+    # how the mutant that ignores the uuid survived the first run of this set.
+    GRASTATE="${bootdir}/grastate.dat"
+    cluster_action
+)
+# The stubs have to be the ones doing the talking, so prove the preparation
+# works before any answer counts.
+check "the measurement can make cluster_action answer at all"     test -n "$(db_action 0 0 1 none)"
+check "a fresh bootstrap node opens the cluster, although mariadbd runs"     test "$(db_action 1 1 0 none)" = open
+check "and it opens it even when mariadbd does not run"     test "$(db_action 1 1 1 none)" = open
+check "a grastate.dat with the all-zero uuid is no cluster state"     test "$(db_action 1 1 0 00000000-0000-0000-0000-000000000000)" = open
+check "a bootstrap node whose cluster exists only restarts"     test "$(db_action 1 1 0 65b4d82f-ca64-11f1-8026-9f3253e2f221)" = restart
+check "and it is left alone when nothing was written"     test "$(db_action 1 0 0 65b4d82f-ca64-11f1-8026-9f3253e2f221)" = nothing
+check "a node that is not the first one starts and does not open anything"     test "$(db_action 0 1 1 none)" = start
+check "a running node that is not the first one restarts after a change"     test "$(db_action 0 1 0 none)" = restart
+# And the order has to stay the order: the running check may not come first.
+check "cluster_action asks about the cluster before it asks about the service"     test "$(awk '/^cluster_action\(\) \{/,/^\}/' "${dbdir}/body.sh" | grep -nE 'cluster_state_here|mariadb_running' | head -1 | cut -d: -f2 | grep -c cluster_state_here)" = 1
+
+unset -f db_action
+unset bootdir
+unset chgdir
+
 # ------------------------------------------------- the key file MariaDB reads
 # file_key_management opens a "Salted__" file with the old EVP_BytesToKey of
 # OpenSSL over SHA-1. A file written with -pbkdf2 -md sha256 is sound, decrypts
@@ -813,4 +926,5 @@ unset inst pkg_ln dir_ln
 unset -f db_load db_galera db_cacnf db_answers db_host db_cluster
 unset dbdir NODE1 NODE2 NODE3 PASS1 PASS2 missing unpinned head back prov forbidden good bad shell o
 unset cipher_val
+unset bootdir
 unset warn_line rm_line chk_line del_line purge_q line

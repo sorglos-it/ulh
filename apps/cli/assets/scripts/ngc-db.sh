@@ -69,6 +69,10 @@ NGC_KEYS="/etc/ngc/db-keys"     # keys.enc and keyfile.key for file_key_manageme
 CONF_FILE="/etc/mysql/mariadb.conf.d/60-ngc.cnf"
 CA_CNF="/etc/ngc/db-tls/db-ca.cnf"   # the rendered OpenSSL configuration
 SST_FILE="/etc/ngc/db-keys/sst.pass" # the SST password, made once and kept
+# Galera writes its own state beside the data. It is a variable so a test can
+# point cluster_state_here at a file of its own instead of replacing that
+# function - a stub of the function under measurement measures the stub.
+GRASTATE="${GRASTATE:-/var/lib/mysql/grastate.dat}"
 
 # Packages: the server, Galera's provider, the copy tool for a new node, and
 # openssl for the CA and the node certificates.
@@ -689,7 +693,14 @@ load_sst_password() {
 write_config() {
 	[ -n "$SST_PASS" ] || load_sst_password
 	ensure_dir /etc/mysql/mariadb.conf.d root:root 0755
-	render_galera "$(cluster_list)" | put_file "$CONF_FILE" root:root 0644
+	# NOT a pipe. put_file sets CHANGED, and on the right of a pipe it runs in a
+	# subshell, where that assignment dies with the subshell. This is the one
+	# file whose change has to reach start_cluster, so losing it means a new
+	# configuration gets written and never applied - silently, with a tick
+	# beside it. Measured on Debian 13 on 17.10.2026 with a probe inside
+	# start_cluster: "action=nothing bootstrap=1 changed=0 running=yes" right
+	# after the line "written: /etc/mysql/mariadb.conf.d/60-ngc.cnf".
+	put_file "$CONF_FILE" root:root 0644 < <(render_galera "$(cluster_list)")
 }
 
 mariadb_running() {
@@ -712,22 +723,68 @@ wait_synced() {
 	log_error "This node did not report Synced. Look at the log: journalctl -u mariadb."
 }
 
-start_cluster() {
-	if mariadb_running; then
+# cluster_state_here says whether this node already holds the state of a Galera
+# cluster. The existence of grastate.dat is NOT the answer: a start that failed
+# at the provider leaves one behind whose uuid is all zeroes, and a node that
+# never reached a cluster must still be allowed to open one. Measured on
+# Debian 13 on 17.10.2026: after a bootstrap that worked the uuid is a real one
+# (seqno -1 while the server runs, safe_to_bootstrap 1); a start that fell
+# recovers the position 00000000-0000-0000-0000-000000000000.
+cluster_state_here() {
+	local uuid
+	[ -f "$GRASTATE" ] || return 1
+	uuid="$(sed -n 's/^uuid:[[:space:]]*//p' "$GRASTATE" | head -1)"
+	case "$uuid" in
+		'' | 00000000-0000-0000-0000-000000000000) return 1 ;;
+	esac
+	return 0
+}
+
+# cluster_action names what this node has to do with the service, and it is a
+# function of its own so the decision can be measured without a database:
+# "open", "restart", "start" or "nothing".
+#
+# The CLUSTER comes first, not the service. The old order asked
+# "is mariadbd running?" first - and the package leaves mariadbd running,
+# without wsrep. So on a fresh bootstrap node the restart branch won, and a
+# plain restart makes the node JOIN the cluster named in
+# wsrep_cluster_address instead of opening it. With itself as the only entry
+# that cannot work: measured on Debian 13 on 17.10.2026, "failed to reach
+# primary view" and then "wsrep::connect(gcomm://db-1.ngc.test) failed: 7"
+# after about a minute and a half. Whether mariadbd happens to be up says
+# nothing about whether the cluster exists, so it is the second question now.
+cluster_action() {
+	if [ "$BOOTSTRAP" = 1 ] && ! cluster_state_here; then
+		printf 'open'
+	elif mariadb_running; then
 		if [ "$CHANGED" = 1 ]; then
-			log_section "Restarting MariaDB"
-			systemctl restart mariadb || log_error "MariaDB did not come up again."
+			printf 'restart'
+		else
+			printf 'nothing'
 		fi
-	elif [ "$BOOTSTRAP" = 1 ] && [ ! -f /var/lib/mysql/grastate.dat ]; then
+	else
+		printf 'start'
+	fi
+}
+
+start_cluster() {
+	case "$(cluster_action)" in
+	open)
 		# The very first start of the whole cluster: this node opens it.
 		log_section "Opening the cluster on this node"
 		systemctl stop mariadb > /dev/null 2>&1 || true
 		galera_new_cluster || log_error "galera_new_cluster did not come up."
-	else
+		;;
+	restart)
+		log_section "Restarting MariaDB"
+		systemctl restart mariadb || log_error "MariaDB did not come up again."
+		;;
+	start)
 		log_section "Starting MariaDB"
 		systemctl enable mariadb > /dev/null 2>&1 || true
 		systemctl start mariadb || log_error "MariaDB did not come up. Is the first node running?"
-	fi
+		;;
+	esac
 	wait_synced
 }
 
