@@ -802,7 +802,135 @@ check "write_config does not put put_file behind a pipe"     not grep -qE '[|][[
 
 unset -f db_changed db_same
 unset chgdir
+unset whydir why_port why_unknown
 
+# ------------------------------------ what the script says when it did not start
+# The message used to be one fixed sentence, "MariaDB did not come up. Is the
+# first node running?" - and it named the wrong cause: measured on 17.10.2026,
+# the first node WAS running and the port was taken by it, in another WSL
+# instance of the same network namespace. A sentence that names one of several
+# possible causes and rules out none is the same class of finding as the one
+# sentence of ngc-controller in Punkt 61.
+#
+# The journals below are not invented: every line is verbatim off this
+# machine's own mariadb journal, collected while measuring ngc-db on 17. and
+# 18.10.2026. unit_journal is the only thing stubbed - why_it_did_not_start
+# itself is the one out of the script.
+whydir="${dbdir}/why"
+mkdir -p "$whydir"
+db_why() (
+    db_load
+    NGC_HOSTNAME=db-1.ngc.test
+    NGC_KEYS=/etc/ngc/db-keys
+    CONF_FILE=/etc/mysql/mariadb.conf.d/60-ngc.cnf
+    DB_PORT=3306
+    GALERA_PORT=4567
+    HOSTS=(db-1.ngc.test db-2.ngc.test)
+    local recorded="$1"
+    unit_journal() { cat "$recorded"; }
+    why_it_did_not_start 0
+)
+# Each file holds the lines of ONE real failure, in the order they appeared.
+cat > "${whydir}/port" <<'J'
+2026-10-17 23:36:30 0 [ERROR] Can't start server: Bind on TCP/IP port. Got error: 98: Address already in use
+2026-10-17 23:36:30 0 [ERROR] Do you already have another server running on port: 3306 ?
+2026-10-17 23:36:30 0 [ERROR] Aborting
+J
+cat > "${whydir}/ownname" <<'J'
+2026-10-17 23:34:28 0 [ERROR] Can't create IP socket: Name or service not known
+2026-10-17 23:34:28 0 [ERROR] Aborting
+J
+cat > "${whydir}/nodename" <<'J'
+2026-10-17 22:15:10 0 [ERROR] WSREP: getaddrinfo() failed on 'db-1.ngc.test': -2 (Name or service not known)
+2026-10-17 22:15:10 0 [ERROR] WSREP: failed to open gcomm backend connection: 110: failed to reach primary view
+2026-10-17 22:15:10 0 [ERROR] Aborting
+J
+cat > "${whydir}/keys" <<'J'
+2026-10-17 21:15:34 0 [ERROR] mariadbd: Cannot decrypt /etc/ngc/db-keys/keys.enc. Wrong key?
+2026-10-17 21:15:34 0 [ERROR] Plugin 'file_key_management' init function returned error.
+2026-10-17 21:15:34 0 [ERROR] InnoDB: cannot enable encryption, encryption plugin is not available
+2026-10-17 21:15:34 0 [ERROR] Aborting
+J
+cat > "${whydir}/olddata" <<'J'
+2026-10-17 22:15:10 0 [ERROR] InnoDB: Obtaining redo log encryption key version 1 failed (4294967295). Maybe the key or the required encryption key management plugin was not found.
+2026-10-17 22:15:10 0 [ERROR] InnoDB: Reading log encryption info failed; the log was created with MariaDB 11.8.6.
+2026-10-17 22:15:10 0 [ERROR] Unknown/unsupported storage engine: InnoDB
+2026-10-17 22:15:10 0 [ERROR] Aborting
+J
+cat > "${whydir}/provider" <<'J'
+2026-10-17 21:26:23 0 [ERROR] WSREP: Error setting SSL cipher list to 'TLS_AES_256_GCM_SHA384': 167772345: 'error:0A0000B9:SSL routines::no cipher match'
+2026-10-17 21:26:23 0 [ERROR] WSREP: Failed to create a new provider '/usr/lib/galera/libgalera_smm.so' with options 'socket.ssl_ca=/etc/ngc/db-tls/ca.crt': Failed to initialize wsrep provider
+2026-10-17 21:26:23 0 [ERROR] WSREP: Failed to load provider
+2026-10-17 21:26:23 0 [ERROR] Aborting
+J
+cat > "${whydir}/noquorum" <<'J'
+2026-10-17 23:45:34 0 [ERROR] WSREP: failed to open gcomm backend connection: 110: failed to reach primary view
+2026-10-17 23:45:35 0 [ERROR] WSREP: gcs connect failed: Operation timed out
+2026-10-17 23:45:35 0 [ERROR] WSREP: wsrep::connect(gcomm://db-1.ngc.test) failed: 7
+2026-10-17 23:45:35 0 [ERROR] Aborting
+J
+cat > "${whydir}/unknown" <<'J'
+2026-10-18 00:00:00 0 [ERROR] something nobody here has ever seen
+J
+# The preparation has to bite before any answer counts: an empty journal would
+# make every one of these look like the last case.
+check "the measurement really hands the recorded journal over" \
+    grep -q 'port 3306' <<< "$(db_why "${whydir}/port")"
+# 1. the one that was reported wrong
+why_port="$(db_why "${whydir}/port")"
+check "a taken port is named as a taken port" \
+    grep -q 'already holds port 3306' <<< "$why_port"
+check "and it does NOT blame the other nodes any more" \
+    not grep -qiE 'first node|other node of the installation answered' <<< "$why_port"
+# 2. this node's own name
+check "an unresolvable own name is named, with the name" \
+    grep -q 'db-1.ngc.test, does not resolve' <<< "$(db_why "${whydir}/ownname")"
+# 3. a name of the node list
+check "an unresolvable node of the list is named, with the list" \
+    grep -q 'db-1.ngc.test db-2.ngc.test' <<< "$(db_why "${whydir}/nodename")"
+# and that one matters: its journal ALSO carries the timeout line, so the order
+# of the questions is what keeps it from being read as a missing node.
+check "a name that does not resolve beats the timeout in the same journal" \
+    not grep -q 'answered on port' <<< "$(db_why "${whydir}/nodename")"
+# 4. the key pair
+check "a key file that cannot be opened is named, with its folder" \
+    grep -q '/etc/ngc/db-keys/keys.enc' <<< "$(db_why "${whydir}/keys")"
+# 5. data written with another key
+check "data written with another key is told apart from a missing key" \
+    grep -q 'written with another encryption key' <<< "$(db_why "${whydir}/olddata")"
+# 6. the provider
+check "a refused provider setting points at the configuration file" \
+    grep -q '60-ngc.cnf' <<< "$(db_why "${whydir}/provider")"
+check "and it says nothing was reached over the network" \
+    grep -q 'Nothing was reached over the network' <<< "$(db_why "${whydir}/provider")"
+# 7. and only here is the cluster the answer
+check "a real timeout does name the nodes and the Galera port" \
+    grep -q 'answered on port 4567' <<< "$(db_why "${whydir}/noquorum")"
+# 8. and nothing is ever answered with silence
+why_unknown="$(db_why "${whydir}/unknown")"
+check "an unknown journal says so and points at journalctl" \
+    grep -q 'journalctl -u mariadb' <<< "$why_unknown"
+check "and it does not invent a cause" \
+    not grep -qiE 'port|resolve|key|provider' <<< "$why_unknown"
+# No journal line may be printed back: a line carries whatever MariaDB put in
+# it, and these sentences end up in reports.
+check "no journal line is echoed into the message" \
+    not grep -qE '\[ERROR\]' <<< "$why_port$(db_why "${whydir}/keys")$(db_why "${whydir}/provider")"
+# And every failing branch of start_cluster has to ask, not just one of them.
+check "all three failures of start_cluster say what was found" \
+    test "$(awk '/^start_cluster\(\) \{/,/^\}/' "${dbdir}/body.sh" | grep -c 'why_it_did_not_start')" = 3
+# Comments stripped first: the sentence still stands in one, as the record of
+# what it used to say, and a case that counts comments measures prose.
+check "no fixed guess about the first node is left in the code" \
+    not grep -q 'Is the first node running' \
+        <(grep -vE '^[[:space:]]*#' "${dbdir}/body.sh")
+# The journal is read from the attempt onwards, not from the whole history: an
+# older attempt's cause would otherwise be read as this one's.
+check "the journal is read from the attempt onwards" \
+    grep -q 'since "@' <<< "$(awk '/^unit_journal\(\) \{/,/^\}/' "${dbdir}/body.sh")"
+
+unset -f db_why
+unset whydir why_port why_unknown
 # ------------------------------------------- which branch start_cluster takes
 # The decision is its own function (cluster_action), so it can be measured
 # without a database: node_in_cluster, mariadb_running and other_node_answers

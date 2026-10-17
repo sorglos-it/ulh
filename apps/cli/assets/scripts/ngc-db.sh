@@ -77,6 +77,10 @@ GRASTATE="${GRASTATE:-/var/lib/mysql/grastate.dat}"
 # provider reports it (gmcast.listen_addr = ssl://0.0.0.0:4567, measured on
 # 17.10.2026). The template sets no other one.
 GALERA_PORT="${GALERA_PORT:-4567}"
+# The port MariaDB itself answers on. The rendered configuration sets none, so
+# it is the server default and no answer of ulh can change it (measured:
+# 60-ngc.cnf carries no port line). It is here for the messages below.
+DB_PORT="${DB_PORT:-3306}"
 
 # Packages: the server, Galera's provider, the copy tool for a new node, and
 # openssl for the CA and the node certificates.
@@ -867,22 +871,99 @@ cluster_action() {
 	fi
 }
 
+# unit_journal prints what MariaDB's service said since a point in time. Its
+# own function so a measurement can hand the diagnosis a recorded journal
+# instead of this machine's.
+#
+# --since matters and is not decoration: the journal holds the attempts before
+# this one too, and the cause of an older one would be read as the cause of
+# this. It cost exactly that in this project - a stale port clash from an
+# earlier run sat in the same journal as a fresh timeout.
+unit_journal() {
+	journalctl -u mariadb --no-pager --since "@${1}" 2>/dev/null
+}
+
+# why_it_did_not_start says what the journal really holds. $1 is the time the
+# attempt began.
+#
+# The answer is OURS, never a journal line: a line carries whatever MariaDB put
+# in it, and these sentences end up in reports and in chats.
+#
+# The ORDER is the whole point. An exit code does not separate these causes -
+# every one of them ends in "Aborting" - and several of them appear in one
+# journal at once. So the questions run from the ones that stop the server
+# earliest to the one that only shows up at the very end, and the first match
+# wins. The timeout of the cluster connection is last on purpose: it is the
+# most common line and it would otherwise hide every cause in front of it.
+# That is how a port clash came to be reported as "Is the first node running?"
+# while the first node was running perfectly well.
+#
+# Every pattern below was read off this machine's own journal while measuring
+# ngc-db on 17. and 18.10.2026. None of them is guessed.
+why_it_did_not_start() {
+	local j
+	j="$(unit_journal "$1")"
+	# 1. Nothing of ours ever got a port.
+	if printf '%s' "$j" | grep -q 'Address already in use'; then
+		printf 'Another program on this machine already holds port %s. MariaDB never got its port, so this says nothing about the other nodes: look for the other server first (ss -ltnp | grep %s).' "$DB_PORT" "$DB_PORT"
+		return 0
+	fi
+	# 2. The server cannot bind, because its OWN name is unknown here.
+	if printf '%s' "$j" | grep -q "Can't create IP socket"; then
+		printf 'The name of this node, %s, does not resolve on this machine, so MariaDB cannot bind to it. It has to be in DNS or in /etc/hosts.' "$NGC_HOSTNAME"
+		return 0
+	fi
+	# 3. A name of the NODE LIST is unknown here.
+	if printf '%s' "$j" | grep -q 'getaddrinfo() failed'; then
+		printf 'A node of this installation does not resolve on this machine. The names are the ones of the answer nodes: %s. Each of them has to be in DNS or in /etc/hosts.' "${HOSTS[*]}"
+		return 0
+	fi
+	# 4. The key pair of the encryption cannot be opened.
+	if printf '%s' "$j" | grep -q 'Cannot decrypt'; then
+		printf 'MariaDB cannot open the key file %s/keys.enc with %s/keyfile.key. The two belong together and are made once; put the pair back from the backup rather than guessing.' "$NGC_KEYS" "$NGC_KEYS"
+		return 0
+	fi
+	# 5. The data on disk was written with a DIFFERENT key.
+	if printf '%s' "$j" | grep -qE 'Reading log encryption info failed|Obtaining redo log encryption key'; then
+		printf 'The data in /var/lib/mysql was written with another encryption key than the one in %s. It cannot be read with this key: the pair that wrote it has to come back.' "$NGC_KEYS"
+		return 0
+	fi
+	# 6. Galera refused the options of the provider.
+	if printf '%s' "$j" | grep -qE 'no cipher match|Failed to initialize wsrep provider|Failed to load provider'; then
+		printf 'Galera refused the settings of its provider in %s (wsrep_provider_options). Nothing was reached over the network yet; the line itself is wrong.' "$CONF_FILE"
+		return 0
+	fi
+	# 7. Last, because this line also appears when one of the above is the cause.
+	if printf '%s' "$j" | grep -qE 'failed to reach primary view|wsrep::connect'; then
+		printf 'No other node of the installation answered on port %s within the timeout. The nodes are %s: at least one of them has to be running and reachable, and the first node has to have opened the cluster.' "$GALERA_PORT" "${HOSTS[*]}"
+		return 0
+	fi
+	printf 'The journal of the service names no cause this script knows. Read it with: journalctl -u mariadb -n 80'
+}
+
 start_cluster() {
+	local at
 	case "$(cluster_action)" in
 	open)
 		# The very first start of the whole cluster: this node opens it.
 		log_section "Opening the cluster on this node"
 		systemctl stop mariadb > /dev/null 2>&1 || true
-		galera_new_cluster || log_error "galera_new_cluster did not come up."
+		at="$(date +%s)"
+		galera_new_cluster ||
+			log_error "The cluster could not be opened. $(why_it_did_not_start "$at")"
 		;;
 	restart)
 		log_section "Restarting MariaDB"
-		systemctl restart mariadb || log_error "MariaDB did not come up again."
+		at="$(date +%s)"
+		systemctl restart mariadb ||
+			log_error "MariaDB did not come up again. $(why_it_did_not_start "$at")"
 		;;
 	start)
 		log_section "Starting MariaDB"
 		systemctl enable mariadb > /dev/null 2>&1 || true
-		systemctl start mariadb || log_error "MariaDB did not come up. Is the first node running?"
+		at="$(date +%s)"
+		systemctl start mariadb ||
+			log_error "MariaDB did not come up. $(why_it_did_not_start "$at")"
 		;;
 	esac
 	wait_synced
