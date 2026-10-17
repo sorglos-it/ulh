@@ -435,3 +435,60 @@ check "taking the role db away takes migrate with it" \
     test "$(jq -r 'has("migrate")' "${ctldir}/back.json")" = false
 check "taking the roles away leaves the key of the data alone" \
     test "$(jq -r '.dbKey' "${ctldir}/back.json")" = "$K_DB"
+
+# ------------------------------------------------- the mode of the anchor
+# /etc/ngc/trust-anchor.json is PUBLIC: index.php of ngc-web reads it and puts
+# its number and hash into the config.json of every browser, and Apache runs
+# as www-data. With 0600 the interface answered 500 to every call after a
+# pairing - measured on Debian 13 on 17.10.2026 (point 61 of the contract
+# list). What protects the anchor is the signature of the trust list, not the
+# mode of the file, so pair_controller has to leave it 0644. The whole function
+# runs here, with its own folders: the only stand-ins are ngc-controller, which
+# writes what the pairing would write, and chown, because this suite is not
+# root.
+pairdir="${ctldir}/pair"
+rm -rf "$pairdir"; mkdir -p "${pairdir}/etc" "${pairdir}/bin" "${pairdir}/work" "${pairdir}/state"
+cat > "${pairdir}/bin/ngc-controller" <<'STUB'
+#!/bin/bash
+# What the real pairing leaves behind: a configuration that names an API and
+# the anchor next to it. 0600 on purpose - that was the bug.
+cat > "${NGC_T_WORK}/controller.json" <<JSON
+{"name":"ngc","apis":[{"url":"wss://ngc.ngc.test:7443/tunnel"}]}
+JSON
+printf '{"seq":1,"hash":"q6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6s"}\n' > "${NGC_T_ANCHOR}"
+chmod 0600 "${NGC_T_ANCHOR}"
+exit 0
+STUB
+cat > "${pairdir}/bin/chown" <<'STUB'
+#!/bin/bash
+printf '%s\n' "$*" >> "${NGC_CHOWN_LOG:-/dev/null}"
+exit 0
+STUB
+chmod +x "${pairdir}/bin/ngc-controller" "${pairdir}/bin/chown"
+ctl_pair_run() (
+    ctl_load
+    export PATH="${pairdir}/bin:${PATH}" NGC_CHOWN_LOG="${pairdir}/chown.log"
+    WORK="${pairdir}/work"
+    NGC_ETC="${pairdir}/etc"
+    NGC_CONF="${pairdir}/etc/controller.json"
+    NGC_ANCHOR="${pairdir}/etc/trust-anchor.json"
+    NGC_BIN="${pairdir}/bin"
+    NGC_STATE_DIR="${pairdir}/state"
+    NGC_PAIRED="${pairdir}/state/paired"
+    NGC_PAIR_CODE="ngc-pair:eyJhIjoxfQ"
+    CHANGED=0
+    export NGC_T_WORK="$WORK" NGC_T_ANCHOR="$NGC_ANCHOR"
+    pair_controller > /dev/null 2>&1
+)
+: > "${pairdir}/chown.log"
+ctl_pair_run
+# Intermediate check: the way through pair_controller is open. Without it the
+# mode below would be the one of a file the stub wrote and nothing else.
+check "pairing (ngc-controller): the configuration of the pairing was taken over" \
+    grep -q 'ngc.ngc.test' "${pairdir}/etc/controller.json"
+check "pairing (ngc-controller): the anchor is 0644, or the interface answers 500" \
+    test "$(stat -c '%a' "${pairdir}/etc/trust-anchor.json")" = 644
+check "pairing (ngc-controller): and root:root is asked for it" \
+    grep -qE '^root:root -- .*trust-anchor.json$' "${pairdir}/chown.log"
+check "pairing (ngc-controller): the configuration itself stays 0600" \
+    test "$(stat -c '%a' "${pairdir}/etc/controller.json")" = 600

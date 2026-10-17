@@ -291,13 +291,19 @@ check "join code: a character outside base64url is refused" not api_join "ngc-jo
 # The whole chain, as install runs it. The CA file is the one written above, so
 # the way through read_db_ca is open - without it every case here would fail at
 # the same wall and prove nothing.
+# Every case that is meant to come THROUGH read_answers names a store of its
+# own: while NGC_STORE_KEY_DEFAULT is the placeholder, two empty store answers
+# are refused by the bolt measured at the end of this block, and a case with
+# them would measure that bolt instead of its own wall.
 check "answers: the ones of the contract are taken" \
-    api_answers "$NODE" "$HOST" mariadb "$DB1 $DB2" "s3cret-pass" "${apidir}/ca.pem" "" "" ""
+    api_answers "$NODE" "$HOST" mariadb "$DB1 $DB2" "s3cret-pass" "${apidir}/ca.pem" \
+    "https://store.example.org" "$K_STORE" ""
 check "answers: a store of its own, with address and key" \
     api_answers "$NODE" "$HOST" mariadb "$DB1" "s3cret-pass" "${apidir}/ca.pem" \
     "https://store.example.org" "$K_STORE" ""
 check "answers: a join code is taken" \
-    api_answers "$NODE" "$HOST" mariadb "$DB1" "s3cret-pass" "${apidir}/ca.pem" "" "" "ngc-join:eyJhIjoxfQ"
+    api_answers "$NODE" "$HOST" mariadb "$DB1" "s3cret-pass" "${apidir}/ca.pem" \
+    "https://store.example.org" "$K_STORE" "ngc-join:eyJhIjoxfQ"
 check "answers: sqlite is refused, that is ngc-all's business" \
     not api_answers "$NODE" "$HOST" sqlite "$DB1" "s3cret-pass" "${apidir}/ca.pem" "" "" ""
 check "answers: no database node is refused" \
@@ -317,6 +323,40 @@ check "answers: a relative path to the CA is refused" \
     not api_answers "$NODE" "$HOST" mariadb "$DB1" "s3cret-pass" "ca.pem" "" "" ""
 check "answers: a broken join code is refused" \
     not api_answers "$NODE" "$HOST" mariadb "$DB1" "s3cret-pass" "${apidir}/ca.pem" "" "" "ngc-join:ey!x"
+
+# --------------------------------------------- the bolt of the store key
+# The same bolt as in ngc-all (point 56 of the contract list, measured on
+# Debian 13 on 16.10.2026): with two empty store answers the placeholder
+# reached /etc/ngc/api.json, the API refused the file with "config: invalid
+# configuration", and the script reported a running API while the service
+# restarted in a loop. The default is read out of the script, so a real store
+# key one day turns these cases over instead of leaving them green.
+api_answers_out() (
+    api_load
+    DB_NODES=()
+    NGC_NODE="$1" NGC_HOSTNAME="$2" NGC_DB_DRIVER=mariadb NGC_DB_NODES="$3"
+    NGC_DB_NAME=ngc NGC_DB_USER=ngc NGC_DB_PASSWORD="s3cret-pass" NGC_DB_CA="$4"
+    NGC_STORE_URL="" NGC_STORE_KEY="" NGC_JOIN_CODE=""
+    read_answers 2>&1
+)
+api_store_default() (
+    api_load
+    printf '%s\n' "$NGC_STORE_KEY_DEFAULT"
+)
+case "$(api_store_default)" in
+*REPLACE-THIS-LINE*)
+    check "store: two empty answers are refused while the key is a placeholder" \
+        not api_answers "$NODE" "$HOST" mariadb "$DB1" "s3cret-pass" "${apidir}/ca.pem" "" "" ""
+    # And it is THIS wall: the CA file and the database node above it are the
+    # ones of the cases that pass, so the way down to the bolt is open.
+    api_answers_out "$NODE" "$HOST" "$DB1" "${apidir}/ca.pem" > "${apidir}/store.msg" 2>&1
+    check "store: and the message names the missing store of NGC" \
+        grep -q "NGC has no official app store yet" "${apidir}/store.msg"
+    ;;
+*)
+    check "store: NGC has a real store key now - these cases belong rewritten" false
+    ;;
+esac
 
 # ------------------------------------------------------------- the fingerprint
 # pin_of_cert is what the whole trust between the parts hangs on
