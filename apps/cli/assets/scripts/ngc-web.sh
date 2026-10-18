@@ -361,6 +361,34 @@ ensure_dir() {
 	chmod "$mode" -- "$d"
 }
 
+# keep_files copies those of the files $2.. that really exist into the directory
+# $1 and prints their names, one per line; the exit status says whether there
+# was anything at all. The directory is made only when the first file goes into
+# it.
+#
+# Why this is a function and not five lines in uninstall: measured on
+# 18.10.2026, on a machine where nothing was installed, every uninstall ended
+# with "Kept: api.json, controller.json, the anchor and the certificate stay in
+# /etc/ngc, with a copy of them under /var/lib/ngc/all-kept" - and all-kept was
+# an EMPTY directory the uninstall had just made. The sentence is worse than
+# useless: whoever reads it believes he has a copy of the keys and deletes the
+# originals by hand. A message about a backup names what was really copied, or
+# says that there was nothing.
+keep_files() {
+	local dir="$1" f n=0
+	shift
+	for f in "$@"; do
+		[ -f "$f" ] || continue
+		if [ "$n" -eq 0 ]; then
+			ensure_dir "$dir" 0700
+		fi
+		cp -p -- "$f" "${dir}/"
+		printf '%s\n' "$f"
+		n=$((n + 1))
+	done
+	[ "$n" -gt 0 ]
+}
+
 # put_file replaces dst with src, but only when the bytes differ: a second run
 # of install changes nothing that is already right, and Apache is reloaded only
 # when something really changed (shared/ulh.md). The new file is written next to
@@ -1235,7 +1263,7 @@ configure_ngc_web() {
 }
 
 uninstall_ngc_web() {
-	local f
+	local f kept
 	need_root
 	need_debian
 	log_section "Removing the NGC web interface"
@@ -1280,13 +1308,12 @@ uninstall_ngc_web() {
 	else
 		# Kept data stays under /var/lib/ngc/, so a new installation finds it
 		# again (shared/ulh.md).
-		ensure_dir "$NGC_KEPT" 0700
-		for f in "$NGC_WEB_JSON" "$NGC_TRUST" "$NGC_CERT" "$NGC_KEY"; do
-			if [ -f "$f" ]; then
-				cp -p -- "$f" "${NGC_KEPT}/"
-			fi
-		done
-		log_info "Kept: web.json and the certificates stay in ${NGC_ETC}, with a copy of them under ${NGC_KEPT}."
+		if kept="$(keep_files "$NGC_KEPT" "$NGC_WEB_JSON" "$NGC_TRUST" "$NGC_CERT" "$NGC_KEY")"; then
+			log_info "Kept: $(printf '%s' "$kept" | tr '
+' ' ') - they stay where they are, with a copy of each under ${NGC_KEPT}."
+		else
+			log_info "There was nothing of the interface to keep: neither web.json nor a certificate was there. No copy was made, and ${NGC_KEPT} was not created."
+		fi
 	fi
 	log_info "Done."
 }

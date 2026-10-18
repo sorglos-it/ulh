@@ -479,6 +479,34 @@ ensure_dir() {
 	chmod "$mode" -- "$d"
 }
 
+# keep_files copies those of the files $2.. that really exist into the directory
+# $1 and prints their names, one per line; the exit status says whether there
+# was anything at all. The directory is made only when the first file goes into
+# it.
+#
+# Why this is a function and not five lines in uninstall: measured on
+# 18.10.2026, on a machine where nothing was installed, every uninstall ended
+# with "Kept: api.json, controller.json, the anchor and the certificate stay in
+# /etc/ngc, with a copy of them under /var/lib/ngc/all-kept" - and all-kept was
+# an EMPTY directory the uninstall had just made. The sentence is worse than
+# useless: whoever reads it believes he has a copy of the keys and deletes the
+# originals by hand. A message about a backup names what was really copied, or
+# says that there was nothing.
+keep_files() {
+	local dir="$1" f n=0
+	shift
+	for f in "$@"; do
+		[ -f "$f" ] || continue
+		if [ "$n" -eq 0 ]; then
+			ensure_dir "$dir" 0700
+		fi
+		cp -p -- "$f" "${dir}/"
+		printf '%s\n' "$f"
+		n=$((n + 1))
+	done
+	[ "$n" -gt 0 ]
+}
+
 # put_file replaces dst with src, but only when the bytes differ: a second run
 # of install changes nothing that is already right, and a service is restarted
 # only when something really changed (shared/ulh.md). The new file is written
@@ -1490,7 +1518,7 @@ configure_ngc_all() {
 }
 
 uninstall_ngc_all() {
-	local f
+	local f kept
 	need_root
 	need_debian
 	work_init
@@ -1519,13 +1547,29 @@ uninstall_ngc_all() {
 	else
 		# Kept data stays under /var/lib/ngc/, so a new installation finds it
 		# again (shared/ulh.md). 0700 and root's: both files hold keys.
-		ensure_dir "$NGC_KEPT" 0700
-		for f in "$NGC_API_JSON" "$NGC_CONF" "$NGC_ANCHOR" "$NGC_CERT" "$NGC_KEY"; do
-			if [ -f "$f" ]; then
-				cp -p -- "$f" "${NGC_KEPT}/"
-			fi
-		done
-		log_info "Kept: api.json, controller.json, the anchor and the certificate stay in ${NGC_ETC}, with a copy of them under ${NGC_KEPT}; the database and the data of the apps stay under ${NGC_DATA}."
+		if kept="$(keep_files "$NGC_KEPT" "$NGC_API_JSON" "$NGC_CONF" "$NGC_ANCHOR" "$NGC_CERT" "$NGC_KEY")"; then
+			log_info "Kept: $(printf '%s' "$kept" | tr '
+' ' ') - they stay where they are, with a copy of each under ${NGC_KEPT}; the database and the data of the apps stay under ${NGC_DATA}."
+		else
+			log_info "There was nothing of the configuration to keep: not one of api.json, controller.json, the anchor and the certificate was there. No copy was made, and ${NGC_KEPT} was not created."
+		fi
+		# The setup code is not data, it is a credential, and until now no
+		# uninstall said a word about it. Measured on 18.10.2026: after
+		# uninstall without purge it lay in /var/lib/ngc/setup-code (0600),
+		# unchanged and in its valid shape - and a fresh install on the same
+		# machine printed THE SAME code again, because it finds the old
+		# database.
+		if [ -s "$NGC_SETUP_CODE" ]; then
+			# The path goes out with printf and not through log_*, as it does
+			# in show_next_steps: a log_* line can end up in a file, and
+			# ngc-shared.test.sh refuses the expansion of this name in one.
+			printf '
+  The setup code of the first admin account is still there:
+    %s
+
+' "$NGC_SETUP_CODE"
+			log_warn "That file stays, and it is not data but a credential: whoever reads it becomes the first administrator of this installation, and a new installation on this machine takes the same code again. Delete the file yourself, or run uninstall with purge=yes."
+		fi
 	fi
 	log_info "Done."
 }

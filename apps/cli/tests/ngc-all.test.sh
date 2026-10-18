@@ -75,6 +75,10 @@ all_kept_db() (
     NGC_API_JSON="$1"
     kept_db_key
 )
+all_keep_files() (
+    all_load
+    keep_files "$@"
+)
 all_host() (
     all_load
     valid_host "$1"
@@ -345,6 +349,41 @@ check "kept_db_key refuses a key of 32 bytes where 64 belong" \
     not all_kept_db "${alldir}/api.short"
 check "kept_key does not find the key of the file, which is not at the top level" \
     not all_kept "${alldir}/api.json" key 86
+
+# ----------------------------------------------------------------- keep_files
+# What uninstall SAYS it kept has to be what it really copied. Measured on
+# 18.10.2026 on a machine where nothing was installed: the old message named
+# api.json, controller.json, the anchor and the certificate and promised a copy
+# under /var/lib/ngc/all-kept - and all-kept was an empty directory that the
+# uninstall had just made. The assurance is therefore in two halves, and both
+# are what a mutant has to break: it copies ONLY the files that exist, and with
+# nothing to copy it makes NO directory and says so.
+# The gate first, so the three "not" cases below cannot pass just because the
+# function is missing (messen.md: a case that is turned away before the line it
+# means measures the earlier wall).
+check "keep_files is in the script at all"     grep -q '^keep_files() {' "${alldir}/body.sh"
+kdir="${alldir}/keep"
+rm -rf "$kdir"; mkdir -p "$kdir/src"
+: > "${kdir}/src/there.json"
+check "keep_files copies the file that is there and names it" \
+    test "$(all_keep_files "${kdir}/d1" "${kdir}/src/there.json" "${kdir}/src/gone.json")" = "${kdir}/src/there.json"
+check "keep_files really put the copy into the directory" \
+    test -f "${kdir}/d1/there.json"
+check "keep_files does not invent the file that was not there" \
+    not test -e "${kdir}/d1/gone.json"
+check "keep_files makes the directory 0700, because these files hold keys" \
+    test "$(stat -c %a "${kdir}/d1")" = 700
+# The half the empty message got wrong: nothing there, nothing said.
+check "keep_files with nothing to keep says so through its exit status" \
+    not all_keep_files "${kdir}/d2" "${kdir}/src/gone.json" "${kdir}/src/also-gone.json"
+check "keep_files with nothing to keep makes NO directory" \
+    not test -e "${kdir}/d2"
+check "keep_files with nothing to keep prints no name" \
+    test -z "$(all_keep_files "${kdir}/d3" "${kdir}/src/gone.json")"
+# A directory of that name is not a file to keep.
+mkdir -p "${kdir}/src/adir"
+check "keep_files passes over a directory of that name" \
+    not all_keep_files "${kdir}/d4" "${kdir}/src/adir"
 
 # --------------------------------------------------- hosts, names, keys, codes
 check "host: a name in lower case" all_host ngc.example.org
