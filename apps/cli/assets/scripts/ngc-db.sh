@@ -297,6 +297,26 @@ read_answers() {
 			msg_err "Not a node as <host>:<port>: ${hp}"
 			return 1
 		fi
+		# The port is the one MariaDB answers on, and it was accepted and then
+		# thrown away: everything below strips it, so a port written with intent
+		# had no effect at all. Measured on 18.10.2026 at the unchanged script:
+		# "db-1.ngc.test:4567 db-2.ngc.test:3306" was accepted and reached the
+		# cluster address as "db-1.ngc.test,db-2.ngc.test".
+		#
+		# It may not simply be passed on either, and that is the reason it is
+		# checked instead: the port inside gcomm:// is GALERA's port, 4567, a
+		# different thing from the one this answer carries. Passing it through
+		# would put MariaDB's port where Galera's belongs.
+		#
+		# So it has to be the port MariaDB really serves. It is not settable:
+		# the rendered configuration carries no port line, so it is the server
+		# default. And this same list is what the admin gives ngc-api as
+		# db_nodes, where the port IS dialled - a wrong one is a fault there,
+		# so it gets caught here, where nothing has been written yet.
+		if [ "${hp##*:}" != "$DB_PORT" ]; then
+			msg_err "The node ${hp} names port ${hp##*:}, and MariaDB answers on ${DB_PORT}. The nodes are written as <host>:${DB_PORT}. The port of the replication between the nodes is a different one (${GALERA_PORT}) and does not belong here."
+			return 1
+		fi
 		NODES+=("$hp")
 		HOSTS+=("${hp%:*}")
 	done
@@ -304,10 +324,16 @@ read_answers() {
 		msg_err "Name one to sixteen nodes, separated by a space."
 		return 1
 	fi
-	for i in "${!NODES[@]}"; do
-		for j in "${!NODES[@]}"; do
-			if [ "$i" -lt "$j" ] && [ "${NODES[$i]}" = "${NODES[$j]}" ]; then
-				msg_err "The node ${NODES[$i]} is named twice."
+	# Over the HOSTS, not over host:port: with the port in the comparison the
+	# same machine passed twice as long as the ports differed, and the cluster
+	# address then carried it twice. Measured on 18.10.2026 at the unchanged
+	# script: "db-1.ngc.test:3306 db-1.ngc.test:3307" was accepted and became
+	# "gcomm://db-1.ngc.test,db-1.ngc.test", while the same host with the same
+	# port was refused - so the check was there and the port walked around it.
+	for i in "${!HOSTS[@]}"; do
+		for j in "${!HOSTS[@]}"; do
+			if [ "$i" -lt "$j" ] && [ "${HOSTS[$i]}" = "${HOSTS[$j]}" ]; then
+				msg_err "The node ${HOSTS[$i]} is named twice."
 				return 1
 			fi
 		done
@@ -684,6 +710,11 @@ sign_into() {
 # ============================================================
 
 # cluster_list is what wsrep_cluster_address carries: every node of the list.
+# cluster_list is the host list of wsrep_cluster_address. The port stays out
+# on purpose: the one inside gcomm:// would be Galera's (4567), and the one
+# the answer carries is MariaDB's (3306). Left in, it would put the wrong
+# number where Galera reads its own. read_answers makes sure it is really
+# MariaDB's before it ever gets here.
 cluster_list() {
 	local out="" hp
 	for hp in "${NODES[@]}"; do

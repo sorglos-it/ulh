@@ -252,6 +252,7 @@ first of three|db-1.ngc.test|${NODE1} ${NODE2} ${NODE3}|yes|${PASS1}|${PASS2}|/e
 a joining node|db-2.ngc.test|${NODE1} ${NODE2} ${NODE3}|no|${PASS1}|${PASS2}|/etc/ngc/db-ca
 one node only|db-1.ngc.test|${NODE1}|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
 an IPv4 address|192.168.1.10|192.168.1.10:3306 192.168.1.11:3306|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
+three nodes on the port MariaDB serves|db-1.ngc.test|db-1.ngc.test:3306 db-2.ngc.test:3306 db-3.ngc.test:3306|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
 EOF
 check "ngc-db takes the answers that are in order" test "$good" = 0
 
@@ -272,6 +273,9 @@ node on port 0|db-1.ngc.test|db-1.ngc.test:0|yes|${PASS1}|${PASS2}|/etc/ngc/db-c
 node on port 99999|db-1.ngc.test|db-1.ngc.test:99999|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
 node with a leading zero in the port|db-1.ngc.test|db-1.ngc.test:03306|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
 the same node twice|db-1.ngc.test|${NODE1} ${NODE1}|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
+node on the port of the replication|db-1.ngc.test|db-1.ngc.test:4567 db-2.ngc.test:3306|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
+node on a port of its own|db-1.ngc.test|db-1.ngc.test:3307 db-2.ngc.test:3306|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
+the same host twice on two ports|db-1.ngc.test|db-1.ngc.test:3306 db-1.ngc.test:3307|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
 bootstrap neither yes nor no|db-1.ngc.test|${NODE1}|maybe|${PASS1}|${PASS2}|/etc/ngc/db-ca
 password too short|db-1.ngc.test|${NODE1}|yes|short|${PASS2}|/etc/ngc/db-ca
 password with a comma|db-1.ngc.test|${NODE1}|yes|Pa55word,ngc|${PASS2}|/etc/ngc/db-ca
@@ -285,6 +289,56 @@ CA folder with ..|db-1.ngc.test|${NODE1}|yes|${PASS1}|${PASS2}|/etc/ngc/../db-ca
 CA folder with a space|db-1.ngc.test|${NODE1}|yes|${PASS1}|${PASS2}|/etc/ngc db-ca
 EOF
 check "ngc-db refuses every answer that is not in order" test "$bad" = 0
+
+# ------------------------------------------- the port of a node has to be real
+# The answer nodes is written <host>:<port>, and the port was accepted and then
+# thrown away: everything after the check strips it. Measured on 18.10.2026 at
+# the unchanged script, three times:
+#   db-1.ngc.test:4567 db-2.ngc.test:3306  -> accepted, and the cluster address
+#                                             became db-1.ngc.test,db-2.ngc.test
+#   db-1.ngc.test:3307 db-2.ngc.test:3306  -> accepted
+#   db-1.ngc.test:3306 db-1.ngc.test:3307  -> accepted, and the cluster address
+#                                             carried the SAME host twice
+# while the same host with the same port WAS refused - so the duplicate check
+# existed and the port walked around it.
+#
+# It may not simply be passed on either: the port inside gcomm:// is Galera's
+# (4567), not MariaDB's (3306). So it is checked here, where nothing has been
+# written yet, and the cluster address stays a list of hosts.
+db_nodes_msg() (
+    db_load
+    NGC_HOSTNAME=db-1.ngc.test NGC_NODES="$1" NGC_BOOTSTRAP=no
+    NGC_PASSWORD_NGC="$PASS1" NGC_PASSWORD_MIGRATE="$PASS2" NGC_CA_DIR=/etc/ngc/db-ca
+    read_answers 2>&1 | sed 's/\x1b\[[0-9;]*m//g'
+)
+nodes_msg="$(db_nodes_msg 'db-1.ngc.test:4567 db-2.ngc.test:3306')"
+# The preparation has to bite: an empty message would pass every grep -q below
+# that looks for an absence, and three of them do.
+check "a refused port really says something" test -n "$nodes_msg"
+check "the refusal names the port that was written" \
+    grep -q 'names port 4567' <<< "$nodes_msg"
+check "and the port MariaDB answers on, so the admin can fix it" \
+    grep -q '<host>:3306' <<< "$nodes_msg"
+check "and it says the replication port is a different one" \
+    grep -q 'different one (4567)' <<< "$nodes_msg"
+# The intermediate check, so the refusals above are not a wall in front of the
+# line that is meant: the right port goes through to the cluster address.
+check "the right port reaches the cluster address as a plain host list" \
+    test "$(db_cluster db-1.ngc.test:3306 db-2.ngc.test:3306)" = 'db-1.ngc.test,db-2.ngc.test'
+# And no port leaks into gcomm://, which is what passing it on would do.
+check "no port of a node reaches the cluster address" \
+    not grep -q ':' <<< "$(db_cluster db-1.ngc.test:3306 db-2.ngc.test:3306)"
+# The check reads DB_PORT, it does not carry a number of its own: a second
+# number somewhere else is how the Apache line of Punkt 56 drifted apart.
+# The COMPARISON has to ask DB_PORT, not just the message beside it: a literal
+# 3306 in the condition reads the same and drifts the day the port moves. That
+# is the drift of the Apache line in Punkt 56, and a case that greps the whole
+# loop cannot see it - the message names ${DB_PORT} too.
+check "the comparison itself asks DB_PORT, not a number of its own" \
+    grep -qF '[ "${hp##*:}" != "$DB_PORT" ]' "${dbdir}/body.sh"
+
+unset -f db_nodes_msg
+unset nodes_msg
 
 # Nothing a shell would read as a command may pass as a host: it would end up in
 # MariaDB's configuration and in a certificate.
@@ -803,6 +857,7 @@ check "write_config does not put put_file behind a pipe"     not grep -qE '[|][[
 unset -f db_changed db_same
 unset chgdir
 unset whydir why_port why_unknown
+unset nodes_msg
 
 # ------------------------------------ what the script says when it did not start
 # The message used to be one fixed sentence, "MariaDB did not come up. Is the
