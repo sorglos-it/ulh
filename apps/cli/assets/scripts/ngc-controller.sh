@@ -458,6 +458,21 @@ keep_files() {
 	[ "$n" -gt 0 ]
 }
 
+# app_users prints the system users of the apps on this machine, one per line:
+# every line of the user database $1 whose home lies UNDER the directory $2.
+# That is how the controller marks them - runtime.EnsureUser gives each app a
+# user of its own with the data directory of the app as its home - and it is
+# the only mark there is, so this reads it and guesses nothing from the name.
+#
+# Under, not equal: the apps directory itself is nobody's home, and a user
+# whose home only CARRIES the path somewhere inside it (/srv/var/lib/ngc/apps/x)
+# is not an app of this machine.
+app_users() {
+	local db="$1" dir="$2"
+	[ -f "$db" ] || return 0
+	awk -F: -v p="${dir}/" 'index($6, p) == 1 { print $1 }' "$db"
+}
+
 # put_file replaces dst with src, but only when the bytes differ: a second run
 # of install changes nothing that is already right, and the service is
 # restarted only when something really changed (shared/ulh.md). The new file is
@@ -1248,7 +1263,7 @@ configure_ngc_controller() {
 }
 
 uninstall_ngc_controller() {
-	local f kept
+	local f kept users
 	need_root
 	need_debian
 	work_init
@@ -1284,6 +1299,28 @@ uninstall_ngc_controller() {
 ' ' ') - they stay where they are, with a copy of each under ${NGC_KEPT}; the local store and the data of the apps stay under ${NGC_DATA}."
 		else
 			log_info "There was nothing of the configuration to keep: neither controller.json nor the anchor was there - this server was never paired. No copy was made, and ${NGC_KEPT} was not created."
+		fi
+	fi
+
+	# The system users of the apps, their groups and their ranges in
+	# /etc/subuid and /etc/subgid are the controller's work
+	# (runtime.EnsureUser) and NOTHING in ulh removes them. Measured on
+	# 18.10.2026 with the controller's own EnsureUser: two app users stood
+	# unchanged in /etc/passwd and /etc/group after uninstall with and without
+	# purge, and so did their two ranges in each of /etc/subuid and
+	# /etc/subgid; with purge their home directories under /var/lib/ngc/apps
+	# were deleted under them, and with them the rootless image store of each
+	# app. Taking a user away is not this script's hand - the controller has
+	# DropUser for it, and the order of user and directory matters there - so
+	# this names them instead of removing them quietly or saying nothing.
+	users="$(app_users /etc/passwd "${NGC_DATA}/apps")"
+	if [ -n "$users" ]; then
+		if [ "$NGC_PURGE" = yes ]; then
+			log_warn "The system users of the apps stay, with their groups and their ranges in /etc/subuid and /etc/subgid - the home directory of each of them under ${NGC_DATA}/apps has just been deleted. Nothing in ulh removes them: $(printf '%s' "$users" | tr '
+' ' ')"
+		else
+			log_warn "The system users of the apps stay as well, with their groups and their ranges in /etc/subuid and /etc/subgid, and their home directories under ${NGC_DATA}/apps - the image store of each app lies in there. Nothing in ulh removes them: $(printf '%s' "$users" | tr '
+' ' ')"
 		fi
 	fi
 	log_info "Done."

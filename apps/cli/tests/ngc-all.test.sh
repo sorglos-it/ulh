@@ -79,6 +79,10 @@ all_keep_files() (
     all_load
     keep_files "$@"
 )
+all_app_users() (
+    all_load
+    app_users "$1" "$2"
+)
 all_host() (
     all_load
     valid_host "$1"
@@ -384,6 +388,38 @@ check "keep_files with nothing to keep prints no name" \
 mkdir -p "${kdir}/src/adir"
 check "keep_files passes over a directory of that name" \
     not all_keep_files "${kdir}/d4" "${kdir}/src/adir"
+
+# ----------------------------------------------------------------- app_users
+# The system users of the apps are the controller's work, and nothing in ulh
+# removes them. Measured on 18.10.2026 with the controller's own EnsureUser:
+# two app users, their groups and their subid ranges stood unchanged after
+# uninstall with and without purge. So the uninstall has to NAME them, and the
+# mark it reads is the home directory - the only mark there is.
+udir="${alldir}/users"
+rm -rf "$udir"; mkdir -p "$udir"
+cat > "${udir}/passwd" <<'PW'
+root:x:0:0:root:/root:/bin/bash
+ngc-demo-108ffeda:x:995:990::/var/lib/ngc/apps/org.example.demo:/usr/sbin/nologin
+ngc-notes-c73e2a92:x:994:989::/var/lib/ngc/apps/net.sorglos.notes:/usr/sbin/nologin
+decoy-elsewhere:x:993:988::/srv/var/lib/ngc/apps/not-ours:/usr/sbin/nologin
+decoy-thedir:x:992:987::/var/lib/ngc/apps:/usr/sbin/nologin
+decoy-neighbour:x:991:986::/var/lib/ngc/appsstore/x:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+PW
+check "app_users is in the script at all" \
+    grep -q '^app_users() {' "${alldir}/body.sh"
+check "app_users names the two app users and nothing else" \
+    test "$(all_app_users "${udir}/passwd" /var/lib/ngc/apps | tr '\n' ' ')" = "ngc-demo-108ffeda ngc-notes-c73e2a92 "
+check "app_users passes over a home that only carries the path inside it" \
+    test -z "$(all_app_users "${udir}/passwd" /var/lib/ngc/apps | grep decoy-elsewhere)"
+check "app_users passes over the apps directory itself, which is nobody's home" \
+    test -z "$(all_app_users "${udir}/passwd" /var/lib/ngc/apps | grep decoy-thedir)"
+check "app_users passes over a neighbour directory of the same beginning" \
+    test -z "$(all_app_users "${udir}/passwd" /var/lib/ngc/apps | grep decoy-neighbour)"
+check "app_users says nothing about a user database that is not there" \
+    test -z "$(all_app_users "${udir}/nothing" /var/lib/ngc/apps)"
+check "app_users does not fall over a user database that is not there" \
+    all_app_users "${udir}/nothing" /var/lib/ngc/apps
 
 # --------------------------------------------------- hosts, names, keys, codes
 check "host: a name in lower case" all_host ngc.example.org
