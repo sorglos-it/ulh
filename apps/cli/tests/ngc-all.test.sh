@@ -271,7 +271,7 @@ RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 LockPersonality=yes
 MemoryDenyWriteExecute=yes
 SystemCallArchitectures=native
-ReadWritePaths=/var/lib/ngc /etc/ngc/tls
+ReadWritePaths=/var/lib/ngc /etc/ngc /etc/ngc/tls
 
 [Install]
 WantedBy=multi-user.target
@@ -283,6 +283,12 @@ check "ngc-api.service: byte for byte what the script writes" \
 # that path would stop the API at its first write.
 check "ngc-api.service may write where the database file lies" \
     grep -q '^ReadWritePaths=/var/lib/ngc ' "${alldir}/unit-api.got"
+# The trust anchor is written ATOMICALLY (config.SaveAnchor: a temp file in the
+# same folder and a rename), so the FOLDER /etc/ngc has to be in the line - a
+# writable file alone is not enough. Measured on 19.10.2026: without it the
+# anchor stayed on seq 1 while the database was already on 2.
+check "ngc-api.service may write the folder the trust anchor lies in" \
+    grep -qE '^ReadWritePaths=.*(^| )/etc/ngc( |$)' "${alldir}/unit-api.got"
 
 all_unit_ctrl > "${alldir}/unit-ctrl.got"
 check "ngc-controller.service starts the program out of /usr/lib/ngc" \

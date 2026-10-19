@@ -1030,7 +1030,18 @@ mark_joined() {
 # render_unit writes ngc-api.service (config.ServiceAPI). The API runs as root:
 # it binds port 7443 and reads api.json, which is 0600 and root's. What it does
 # not need is taken away instead - no new privileges, a read-only system, and
-# only the two places it writes.
+# only the places it writes.
+#
+# ReadWritePaths carries three places, and each of them is load-bearing:
+# /var/lib/ngc for the database, which is a file here and not a server;
+# /etc/ngc/tls for the certificate the API makes itself at the first start;
+# and /etc/ngc for the trust anchor (trust-anchor.json), because
+# config.SaveAnchor writes it ATOMICALLY - a temp file in the SAME FOLDER and
+# a rename over the old one - so the FOLDER has to be writable, not just the
+# file. Measured on 19.10.2026 without it: the stored version went to 2, the
+# anchor on disk stayed at 1, and the API logged "the trust anchor outside
+# the database could not be moved up ... pinned=1 stored=2". Nobody should
+# narrow this line later.
 render_unit() {
 	printf '%s\n' \
 		'# /etc/systemd/system/ngc-api.service' \
@@ -1062,7 +1073,7 @@ render_unit() {
 		'LockPersonality=yes' \
 		'MemoryDenyWriteExecute=yes' \
 		'SystemCallArchitectures=native' \
-		"ReadWritePaths=${NGC_DATA} ${NGC_TLS}" \
+		"ReadWritePaths=${NGC_DATA} ${NGC_ETC} ${NGC_TLS}" \
 		'' \
 		'[Install]' \
 		'WantedBy=multi-user.target'

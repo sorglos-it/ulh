@@ -1280,10 +1280,24 @@ roles_json() {
 # it does not need is taken away instead - no new privileges, a read-only
 # system, and only the places it writes.
 #
-# ReadWritePaths carries /var/lib/ngc because on this machine the DATABASE
-# lives in there as a file, not on a database server. The line looks the same
-# as its sibling's, and the comment is here so that nobody narrows it later
-# without knowing that the whole installation hangs on it.
+# ReadWritePaths carries three places, and each of them is load-bearing:
+#
+# 1. /var/lib/ngc, because on this machine the DATABASE lives in there as a
+#    file, not on a database server.
+# 2. /etc/ngc, because of the trust anchor (trust-anchor.json). The API does
+#    not write that file in place: config.SaveAnchor writes ATOMICALLY, which
+#    means a temp file in the SAME FOLDER and a rename over the old one. So
+#    the FOLDER has to be writable, not just the file - making only the file
+#    writable looks right and still fails. What it fails at was measured on
+#    19.10.2026: taking the controller into the trust list bumped the stored
+#    version to 2 while the anchor on disk stayed at 1, and the API logged
+#    "the trust anchor outside the database could not be moved up ...
+#    pinned=1 stored=2" and kept pinning the older version.
+# 3. /etc/ngc/tls, where the API makes its own certificate at the first start.
+#
+# The line looks the same as its sibling's, and the comment is here so that
+# nobody narrows it later without knowing that the whole installation hangs
+# on it.
 render_unit_api() {
 	printf '%s\n' \
 		'# /etc/systemd/system/ngc-api.service' \
@@ -1319,7 +1333,7 @@ render_unit_api() {
 		'LockPersonality=yes' \
 		'MemoryDenyWriteExecute=yes' \
 		'SystemCallArchitectures=native' \
-		"ReadWritePaths=${NGC_DATA} ${NGC_TLS}" \
+		"ReadWritePaths=${NGC_DATA} ${NGC_ETC} ${NGC_TLS}" \
 		'' \
 		'[Install]' \
 		'WantedBy=multi-user.target'
