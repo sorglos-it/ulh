@@ -1281,9 +1281,12 @@ roles_json() {
 # system, and only the places it writes.
 #
 # ReadWritePaths carries /var/lib/ngc because on this machine the DATABASE
-# lives in there as a file, not on a database server. The line looks the same
-# as its sibling's, and the comment is here so that nobody narrows it later
-# without knowing that the whole installation hangs on it.
+# lives in there as a file, not on a database server. It carries /etc/ngc
+# because the trust anchor in there is replaced atomically, which needs the
+# DIRECTORY and not just the file; api.json is taken back out with
+# ReadOnlyPaths. The line looks the same as its sibling's, and the comment is
+# here so that nobody narrows it later without knowing that the whole
+# installation hangs on it (NGC docs/vertraege-v1.2.md, point 71, wall 1).
 render_unit_api() {
 	printf '%s\n' \
 		'# /etc/systemd/system/ngc-api.service' \
@@ -1319,7 +1322,21 @@ render_unit_api() {
 		'LockPersonality=yes' \
 		'MemoryDenyWriteExecute=yes' \
 		'SystemCallArchitectures=native' \
-		"ReadWritePaths=${NGC_DATA} ${NGC_TLS}" \
+		'# /etc/ngc is in there as a DIRECTORY, and that is the point: the API' \
+		'# replaces the trust anchor atomically (config.SaveAnchor ->' \
+		'# writeAtomic), so it creates .trust-anchor.json.tmp-* NEXT TO the' \
+		'# file first. A directory in which no file may appear allows no' \
+		'# atomic replace, however the target file itself is set. Without this' \
+		'# the API stays pinned to the older version of the trust list and' \
+		'# says so: "the trust anchor outside the database could not be moved' \
+		'# up". /etc/ngc/tls is inside it and needs no entry of its own.' \
+		"ReadWritePaths=${NGC_DATA} ${NGC_ETC}" \
+		'# api.json is taken back out by hand: it holds the secrets, it is' \
+		'# 0600 and owned by root, and NOTHING in the API ever writes it -' \
+		'# there is no SaveAPI beside SaveAnchor and SaveWeb. So the one file' \
+		'# that would hurt stays read-only although the directory around it' \
+		'# is writable. A nested entry wins over the wider one.' \
+		"ReadOnlyPaths=${NGC_API_JSON}" \
 		'' \
 		'[Install]' \
 		'WantedBy=multi-user.target'
