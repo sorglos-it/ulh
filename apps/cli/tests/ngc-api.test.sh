@@ -209,9 +209,21 @@ Type=simple
 ExecStart=/usr/lib/ngc/ngc-api -config /etc/ngc/api.json
 Restart=on-failure
 RestartSec=5
-# /run/ngc, which the join writes its answer into.
+# /run/ngc, which the join writes its answer into (join-secret,
+# join-noise and join-sign, each 0600 and root).
+#
+# 0711 and not 0700, and the reason is not this service: the CONTROLLER
+# keeps the runtime directory of every app below the same /run/ngc, and
+# an app runs as its own user, so that user has to walk THROUGH here to
+# reach its own. 0700 does not let it: rootless podman then falls over
+# "lstat /run/ngc/<user>: permission denied" and the controller cannot
+# even say whether the app runs. 0711 lets it through without letting
+# it READ the directory, so no app learns the names of the others, and
+# the three files above stay unreadable on their own 0600. The
+# controller sets the same number itself (runtime.EnsureRun), so 0700
+# here only disagreed with the program it starts.
 RuntimeDirectory=ngc
-RuntimeDirectoryMode=0700
+RuntimeDirectoryMode=0711
 NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=yes
