@@ -271,7 +271,21 @@ RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 LockPersonality=yes
 MemoryDenyWriteExecute=yes
 SystemCallArchitectures=native
-ReadWritePaths=/var/lib/ngc /etc/ngc/tls
+# /etc/ngc is in there as a DIRECTORY, and that is the point: the API
+# replaces the trust anchor atomically (config.SaveAnchor ->
+# writeAtomic), so it creates .trust-anchor.json.tmp-* NEXT TO the
+# file first. A directory in which no file may appear allows no
+# atomic replace, however the target file itself is set. Without this
+# the API stays pinned to the older version of the trust list and
+# says so: "the trust anchor outside the database could not be moved
+# up". /etc/ngc/tls is inside it and needs no entry of its own.
+ReadWritePaths=/var/lib/ngc /etc/ngc
+# api.json is taken back out by hand: it holds the secrets, it is
+# 0600 and owned by root, and NOTHING in the API ever writes it -
+# there is no SaveAPI beside SaveAnchor and SaveWeb. So the one file
+# that would hurt stays read-only although the directory around it
+# is writable. A nested entry wins over the wider one.
+ReadOnlyPaths=/etc/ngc/api.json
 
 [Install]
 WantedBy=multi-user.target
