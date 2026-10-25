@@ -257,7 +257,19 @@ Restart=on-failure
 RestartSec=5
 # /run/ngc, where the API keeps what one run needs.
 RuntimeDirectory=ngc
-RuntimeDirectoryMode=0700
+#
+# 0711 and not 0700: the controller keeps the runtime directory of every
+# app below this same /run/ngc, and an app runs as its own user, so that
+# user has to walk THROUGH here to reach its own. 0700 does not let it:
+# rootless podman falls over "lstat /run/ngc/<user>: permission denied",
+# the controller cannot say whether the app runs, leaves it out of the
+# status entirely, and after a restart never starts it again. 0711 lets
+# the app through without letting it READ this directory, so no app learns
+# the names of the others; what the API keeps here (join-secret, join-noise,
+# join-sign) stays unreadable on its own 0600 and root. The controller sets
+# the same number itself (runtime.EnsureRun), so 0700 here only disagreed
+# with the program it starts.
+RuntimeDirectoryMode=0711
 NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=yes
@@ -309,6 +321,15 @@ check "ngc-controller.service: Restart=on-failure" \
     grep -qx 'Restart=on-failure' "${alldir}/unit-ctrl.got"
 check "ngc-controller.service: RestartSec=5" \
     grep -qx 'RestartSec=5' "${alldir}/unit-ctrl.got"
+# The controller unit of this script is compared line by line and not byte for
+# byte, so the mode of /run/ngc had no case here at all: measured on
+# 25.10.2026, a mutant that put 0700 back in render_unit_ctrl ALONE moved no
+# number (826 passed / 1 failed, same as the base), while the same mutant in
+# the other three places killed three cases. 0711 and not 0700 because the
+# controller keeps the runtime directory of every app below /run/ngc and an
+# app runs as its own user, so it has to walk THROUGH here to reach its own.
+check "ngc-controller.service (ngc-all): /run/ngc lets an app through (0711)" \
+    grep -qx 'RuntimeDirectoryMode=0711' "${alldir}/unit-ctrl.got"
 check "ngc-api.service carries the same restart" \
     test "$(grep -cx 'Restart=on-failure' "${alldir}/unit-api.got")" = 1
 # This is the one thing a script can do about two programs on one file: the API

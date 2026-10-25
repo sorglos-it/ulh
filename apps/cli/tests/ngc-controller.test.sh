@@ -253,7 +253,19 @@ RestartSec=5
 User=root
 # /run/ngc, where the controller keeps what one run needs.
 RuntimeDirectory=ngc
-RuntimeDirectoryMode=0700
+#
+# 0711 and not 0700: the controller keeps the runtime directory of every
+# app below this same /run/ngc, and an app runs as its own user, so that
+# user has to walk THROUGH here to reach its own. 0700 does not let it:
+# rootless podman falls over "lstat /run/ngc/<user>: permission denied",
+# the controller cannot say whether the app runs, leaves it out of the
+# status entirely, and after a restart never starts it again. 0711 lets
+# the app through without letting it READ this directory, so no app learns
+# the names of the others; what the API keeps here (join-secret, join-noise,
+# join-sign) stays unreadable on its own 0600 and root. The controller sets
+# the same number itself (runtime.EnsureRun), so 0700 here only disagreed
+# with the program it starts.
+RuntimeDirectoryMode=0711
 
 [Install]
 WantedBy=multi-user.target

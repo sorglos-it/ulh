@@ -2,6 +2,21 @@
 
 ## Unreleased – 2026-09-22
 
+- `/run/ngc` is 0711 and no longer 0700, in all four places that write such a
+  unit (`ngc-api.sh`, `ngc-controller.sh` and both units of `ngc-all.sh`). The
+  controller keeps the runtime directory of every app below the same
+  `/run/ngc`, and an app runs as its own user, so that user has to walk
+  THROUGH the directory to reach its own: at 0700 rootless podman falls over
+  `lstat /run/ngc/<user>: permission denied`, the controller cannot say
+  whether the app runs, leaves it out of the status and never starts it again
+  after a restart (sorglos-it/nextgencloud#111, measured on the Debian VM on
+  23.10.2026). 0711 lets the app through without letting it READ the
+  directory, so no app learns the names of the others, and what the API keeps
+  there stays on its own 0600. The controller sets the same number itself
+  (`runtime.EnsureRun`), so 0700 only disagreed with the program it starts.
+  The controller unit of `ngc-all.sh` is compared line by line and not byte
+  for byte and had no case for the mode at all; it has one now.
+
 - `ngc-api.service` lets the API write /etc/ngc, and takes `api.json` back out
   with `ReadOnlyPaths`. The trust anchor in that directory is replaced
   atomically (NGC: `config.SaveAnchor` -> `writeAtomic`), so a temporary file
