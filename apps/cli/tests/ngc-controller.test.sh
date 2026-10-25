@@ -492,3 +492,42 @@ check "pairing (ngc-controller): and root:root is asked for it" \
     grep -qE '^root:root -- .*trust-anchor.json$' "${pairdir}/chown.log"
 check "pairing (ngc-controller): the configuration itself stays 0600" \
     test "$(stat -c '%a' "${pairdir}/etc/controller.json")" = 600
+
+# ------------------------------------------------- can this machine encrypt app data
+# The same question as in ngc-all, because this script sets up the same
+# controller: without a filesystem that can carry an fscrypt policy no app that
+# keeps data can ever be activated (runtime.ErrNoFscrypt). The sentence itself
+# and the shapes of "not read" are measured in ngc-all.test.sh; what has to
+# hold here is that this copy answers alike and that both ways in ask it.
+ctl_appdata_reason() (
+    ctl_load
+    app_data_encryption_reason "$1" "$2" "$3"
+)
+CTL_EXT4_WITH='has_journal ext_attr dir_index encrypt sparse_super metadata_csum'
+CTL_EXT4_WITHOUT='has_journal ext_attr dir_index orphan_file sparse_super metadata_csum_seed'
+
+check "app data (controller): ext4 with the encrypt feature is fine" \
+    test -z "$(ctl_appdata_reason ext4 "$CTL_EXT4_WITH" y)"
+check "app data (controller): ext4 WITHOUT the feature is named" \
+    test "$(ctl_appdata_reason ext4 "$CTL_EXT4_WITHOUT" y)" = ext4-feature
+check "app data (controller): a kernel without CONFIG_FS_ENCRYPTION beats the filesystem" \
+    test "$(ctl_appdata_reason ext4 "$CTL_EXT4_WITH" n)" = kernel
+check "app data (controller): tmpfs cannot carry a policy" \
+    test "$(ctl_appdata_reason tmpfs '' y)" = fstype
+check "app data (controller): f2fs needs no feature of its own" \
+    test -z "$(ctl_appdata_reason f2fs '' y)"
+check "app data (controller): a feature line that was not read says nothing" \
+    test -z "$(ctl_appdata_reason ext4 '' y)"
+check "app data (controller): encrypt inside another feature name does not count" \
+    test "$(ctl_appdata_reason ext4 'has_journal encrypted_casefold metadata_csum' y)" = ext4-feature
+# The wiring: without these two lines every case above would pass while no
+# setup of a controller ever asked the question.
+check "app data (controller): the question is asked right after work_init" \
+    test "$(grep -A1 --no-group-separator '^	work_init$' "${ctldir}/body.sh" |
+        grep -c '^	check_app_data_encryption$')" = 2
+check "app data (controller): both ways in - install and configure - ask it" \
+    test "$(grep -c '^	check_app_data_encryption$' "${ctldir}/body.sh")" = 2
+# And the two copies have to stay the same answer, not drift apart.
+check "app data: ngc-all and ngc-controller carry the same function" \
+    test "$(sed -n '/^app_data_encryption_reason() {/,/^}/p' "${alldir}/body.sh" | md5sum)" \
+       = "$(sed -n '/^app_data_encryption_reason() {/,/^}/p' "${ctldir}/body.sh" | md5sum)"
