@@ -144,10 +144,20 @@ check "and in [mariabackup], for the copy to a new node" test "$back" = 0
 # a part of it.
 prov=0
 for part in socket.ssl_ca=/etc/ngc/db-tls/ca.crt socket.ssl_cert=/etc/ngc/db-tls/node.crt \
-    socket.ssl_key=/etc/ngc/db-tls/node.key socket.ssl_cipher=TLS_AES_256_GCM_SHA384; do
+    socket.ssl_key=/etc/ngc/db-tls/node.key socket.ssl_cipher=ECDHE-ECDSA-AES256-GCM-SHA384; do
     grep -qF "$part" "${dbdir}/galera.got" || { prov=$((prov + 1)); echo "    missing: ${part}"; }
 done
-check "wsrep_provider_options carries the CA, the certificate and TLS 1.3" test "$prov" = 0
+check "wsrep_provider_options carries the CA, the certificate and the cipher list" test "$prov" = 0
+# The loop above holds the rendering against this file's own list, so a wrong
+# value moved into both stays green - the gap Punkt 56 found in the Apache
+# template. This case knows something the rendering does not say about itself:
+# socket.ssl_cipher reaches SSL_CTX_set_cipher_list, which knows TLS 1.2 names
+# only. A TLS 1.3 name (TLS_*) restricts nothing and aborts mariadbd with "no
+# cipher match" - measured on Debian 13 with Galera 26.4.23 on 17.10.2026.
+cipher_val="$(grep -o 'socket[.]ssl_cipher=[^;"]*' "${dbdir}/galera.got" | head -1 | cut -d= -f2)"
+check "the cipher of the cluster is a TLS 1.2 name, not a TLS 1.3 suite" not grep -qE '^TLS_' <<< "$cipher_val"
+# And dropping the option would pass that alone, so the pin has to stay a pin.
+check "the cipher of the cluster still names AES-256-GCM" grep -q 'AES256-GCM' <<< "$cipher_val"
 
 forbidden=0
 for line in skip-ssl ssl=0 require_secure_transport=OFF wsrep_on=OFF \
@@ -242,6 +252,7 @@ first of three|db-1.ngc.test|${NODE1} ${NODE2} ${NODE3}|yes|${PASS1}|${PASS2}|/e
 a joining node|db-2.ngc.test|${NODE1} ${NODE2} ${NODE3}|no|${PASS1}|${PASS2}|/etc/ngc/db-ca
 one node only|db-1.ngc.test|${NODE1}|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
 an IPv4 address|192.168.1.10|192.168.1.10:3306 192.168.1.11:3306|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
+three nodes on the port MariaDB serves|db-1.ngc.test|db-1.ngc.test:3306 db-2.ngc.test:3306 db-3.ngc.test:3306|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
 EOF
 check "ngc-db takes the answers that are in order" test "$good" = 0
 
@@ -262,6 +273,9 @@ node on port 0|db-1.ngc.test|db-1.ngc.test:0|yes|${PASS1}|${PASS2}|/etc/ngc/db-c
 node on port 99999|db-1.ngc.test|db-1.ngc.test:99999|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
 node with a leading zero in the port|db-1.ngc.test|db-1.ngc.test:03306|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
 the same node twice|db-1.ngc.test|${NODE1} ${NODE1}|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
+node on the port of the replication|db-1.ngc.test|db-1.ngc.test:4567 db-2.ngc.test:3306|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
+node on a port of its own|db-1.ngc.test|db-1.ngc.test:3307 db-2.ngc.test:3306|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
+the same host twice on two ports|db-1.ngc.test|db-1.ngc.test:3306 db-1.ngc.test:3307|yes|${PASS1}|${PASS2}|/etc/ngc/db-ca
 bootstrap neither yes nor no|db-1.ngc.test|${NODE1}|maybe|${PASS1}|${PASS2}|/etc/ngc/db-ca
 password too short|db-1.ngc.test|${NODE1}|yes|short|${PASS2}|/etc/ngc/db-ca
 password with a comma|db-1.ngc.test|${NODE1}|yes|Pa55word,ngc|${PASS2}|/etc/ngc/db-ca
@@ -275,6 +289,56 @@ CA folder with ..|db-1.ngc.test|${NODE1}|yes|${PASS1}|${PASS2}|/etc/ngc/../db-ca
 CA folder with a space|db-1.ngc.test|${NODE1}|yes|${PASS1}|${PASS2}|/etc/ngc db-ca
 EOF
 check "ngc-db refuses every answer that is not in order" test "$bad" = 0
+
+# ------------------------------------------- the port of a node has to be real
+# The answer nodes is written <host>:<port>, and the port was accepted and then
+# thrown away: everything after the check strips it. Measured on 18.10.2026 at
+# the unchanged script, three times:
+#   db-1.ngc.test:4567 db-2.ngc.test:3306  -> accepted, and the cluster address
+#                                             became db-1.ngc.test,db-2.ngc.test
+#   db-1.ngc.test:3307 db-2.ngc.test:3306  -> accepted
+#   db-1.ngc.test:3306 db-1.ngc.test:3307  -> accepted, and the cluster address
+#                                             carried the SAME host twice
+# while the same host with the same port WAS refused - so the duplicate check
+# existed and the port walked around it.
+#
+# It may not simply be passed on either: the port inside gcomm:// is Galera's
+# (4567), not MariaDB's (3306). So it is checked here, where nothing has been
+# written yet, and the cluster address stays a list of hosts.
+db_nodes_msg() (
+    db_load
+    NGC_HOSTNAME=db-1.ngc.test NGC_NODES="$1" NGC_BOOTSTRAP=no
+    NGC_PASSWORD_NGC="$PASS1" NGC_PASSWORD_MIGRATE="$PASS2" NGC_CA_DIR=/etc/ngc/db-ca
+    read_answers 2>&1 | sed 's/\x1b\[[0-9;]*m//g'
+)
+nodes_msg="$(db_nodes_msg 'db-1.ngc.test:4567 db-2.ngc.test:3306')"
+# The preparation has to bite: an empty message would pass every grep -q below
+# that looks for an absence, and three of them do.
+check "a refused port really says something" test -n "$nodes_msg"
+check "the refusal names the port that was written" \
+    grep -q 'names port 4567' <<< "$nodes_msg"
+check "and the port MariaDB answers on, so the admin can fix it" \
+    grep -q '<host>:3306' <<< "$nodes_msg"
+check "and it says the replication port is a different one" \
+    grep -q 'different one (4567)' <<< "$nodes_msg"
+# The intermediate check, so the refusals above are not a wall in front of the
+# line that is meant: the right port goes through to the cluster address.
+check "the right port reaches the cluster address as a plain host list" \
+    test "$(db_cluster db-1.ngc.test:3306 db-2.ngc.test:3306)" = 'db-1.ngc.test,db-2.ngc.test'
+# And no port leaks into gcomm://, which is what passing it on would do.
+check "no port of a node reaches the cluster address" \
+    not grep -q ':' <<< "$(db_cluster db-1.ngc.test:3306 db-2.ngc.test:3306)"
+# The check reads DB_PORT, it does not carry a number of its own: a second
+# number somewhere else is how the Apache line of Punkt 56 drifted apart.
+# The COMPARISON has to ask DB_PORT, not just the message beside it: a literal
+# 3306 in the condition reads the same and drifts the day the port moves. That
+# is the drift of the Apache line in Punkt 56, and a case that greps the whole
+# loop cannot see it - the message names ${DB_PORT} too.
+check "the comparison itself asks DB_PORT, not a number of its own" \
+    grep -qF '[ "${hp##*:}" != "$DB_PORT" ]' "${dbdir}/body.sh"
+
+unset -f db_nodes_msg
+unset nodes_msg
 
 # Nothing a shell would read as a command may pass as a host: it would end up in
 # MariaDB's configuration and in a certificate.
@@ -739,6 +803,348 @@ unset GOODPASS BADPASS store enc empty broken other cut backup_code restore_code
 unset r_warn r_load r_conf r_tables r_ren back_vars rest_vars restore_q spaced
 unset bad_line bad_dir
 
+# --------------------------------------- does a written configuration reach it
+# CHANGED is what tells start_cluster that MariaDB has to pick the new
+# configuration up. put_file sets it - and on the right of a pipe put_file runs
+# in a subshell, where that assignment dies with the subshell. The tick
+# "written: ..." is printed either way, so the loss is invisible: measured on
+# Debian 13 on 17.10.2026 with a probe inside start_cluster,
+# "action=nothing bootstrap=1 changed=0 running=yes" right after that tick.
+chgdir="${dbdir}/changed"
+mkdir -p "$chgdir"
+db_changed() (
+    db_load
+    CONF_FILE="${chgdir}/60-ngc.cnf"
+    NGC_HOSTNAME=db-1.ngc.test
+    NGC_NODES="${NODE1} ${NODE2} ${NODE3}"
+    NGC_BOOTSTRAP=no NGC_PASSWORD_NGC="$PASS1" NGC_PASSWORD_MIGRATE="$PASS2"
+    NGC_CA_DIR=/etc/ngc/db-ca
+    read_answers > /dev/null 2>&1 || exit 1
+    SST_PASS="0123456789abcdef"
+    load_sst_password() { :; }
+    ensure_dir() { :; }
+    CHANGED=0
+    printf '%s
+' "$1" > "$CONF_FILE"
+    write_config > /dev/null 2>&1
+    printf '%s' "$CHANGED"
+)
+# The preparation has to work before an answer counts: a first file that really
+# differs, so there is something to notice.
+check "a configuration that differs is noticed, so start_cluster is told"     test "$(db_changed 'this is not the configuration')" = 1
+# And the other way: nothing written, nothing to apply. The file is the one
+# write_config itself produced the line before, so this is not a second shape.
+db_same() (
+    db_load
+    CONF_FILE="${chgdir}/60-ngc.cnf"
+    NGC_HOSTNAME=db-1.ngc.test
+    NGC_NODES="${NODE1} ${NODE2} ${NODE3}"
+    NGC_BOOTSTRAP=no NGC_PASSWORD_NGC="$PASS1" NGC_PASSWORD_MIGRATE="$PASS2"
+    NGC_CA_DIR=/etc/ngc/db-ca
+    read_answers > /dev/null 2>&1 || exit 1
+    SST_PASS="0123456789abcdef"
+    load_sst_password() { :; }
+    ensure_dir() { :; }
+    write_config > /dev/null 2>&1   # first write: makes the file
+    CHANGED=0
+    write_config > /dev/null 2>&1   # second write: the same content
+    printf '%s' "$CHANGED"
+)
+check "a configuration that is already right changes nothing"     test "$(db_same)" = 0
+# And the cause, named: put_file may not sit on the right of a pipe.
+check "write_config does not put put_file behind a pipe"     not grep -qE '[|][[:space:]]*put_file'         <(awk '/^write_config\(\) \{/,/^\}/' "${dbdir}/body.sh")
+
+unset -f db_changed db_same
+unset chgdir
+unset whydir why_port why_unknown
+unset nodes_msg
+
+# ------------------------------------ what the script says when it did not start
+# The message used to be one fixed sentence, "MariaDB did not come up. Is the
+# first node running?" - and it named the wrong cause: measured on 17.10.2026,
+# the first node WAS running and the port was taken by it, in another WSL
+# instance of the same network namespace. A sentence that names one of several
+# possible causes and rules out none is the same class of finding as the one
+# sentence of ngc-controller in Punkt 61.
+#
+# The journals below are not invented: every line is verbatim off this
+# machine's own mariadb journal, collected while measuring ngc-db on 17. and
+# 18.10.2026. unit_journal is the only thing stubbed - why_it_did_not_start
+# itself is the one out of the script.
+whydir="${dbdir}/why"
+mkdir -p "$whydir"
+db_why() (
+    db_load
+    NGC_HOSTNAME=db-1.ngc.test
+    NGC_KEYS=/etc/ngc/db-keys
+    CONF_FILE=/etc/mysql/mariadb.conf.d/60-ngc.cnf
+    DB_PORT=3306
+    GALERA_PORT=4567
+    HOSTS=(db-1.ngc.test db-2.ngc.test)
+    local recorded="$1"
+    unit_journal() { cat "$recorded"; }
+    why_it_did_not_start 0
+)
+# Each file holds the lines of ONE real failure, in the order they appeared.
+cat > "${whydir}/port" <<'J'
+2026-10-17 23:36:30 0 [ERROR] Can't start server: Bind on TCP/IP port. Got error: 98: Address already in use
+2026-10-17 23:36:30 0 [ERROR] Do you already have another server running on port: 3306 ?
+2026-10-17 23:36:30 0 [ERROR] Aborting
+J
+cat > "${whydir}/ownname" <<'J'
+2026-10-17 23:34:28 0 [ERROR] Can't create IP socket: Name or service not known
+2026-10-17 23:34:28 0 [ERROR] Aborting
+J
+cat > "${whydir}/nodename" <<'J'
+2026-10-17 22:15:10 0 [ERROR] WSREP: getaddrinfo() failed on 'db-1.ngc.test': -2 (Name or service not known)
+2026-10-17 22:15:10 0 [ERROR] WSREP: failed to open gcomm backend connection: 110: failed to reach primary view
+2026-10-17 22:15:10 0 [ERROR] Aborting
+J
+cat > "${whydir}/keys" <<'J'
+2026-10-17 21:15:34 0 [ERROR] mariadbd: Cannot decrypt /etc/ngc/db-keys/keys.enc. Wrong key?
+2026-10-17 21:15:34 0 [ERROR] Plugin 'file_key_management' init function returned error.
+2026-10-17 21:15:34 0 [ERROR] InnoDB: cannot enable encryption, encryption plugin is not available
+2026-10-17 21:15:34 0 [ERROR] Aborting
+J
+cat > "${whydir}/olddata" <<'J'
+2026-10-17 22:15:10 0 [ERROR] InnoDB: Obtaining redo log encryption key version 1 failed (4294967295). Maybe the key or the required encryption key management plugin was not found.
+2026-10-17 22:15:10 0 [ERROR] InnoDB: Reading log encryption info failed; the log was created with MariaDB 11.8.6.
+2026-10-17 22:15:10 0 [ERROR] Unknown/unsupported storage engine: InnoDB
+2026-10-17 22:15:10 0 [ERROR] Aborting
+J
+cat > "${whydir}/provider" <<'J'
+2026-10-17 21:26:23 0 [ERROR] WSREP: Error setting SSL cipher list to 'TLS_AES_256_GCM_SHA384': 167772345: 'error:0A0000B9:SSL routines::no cipher match'
+2026-10-17 21:26:23 0 [ERROR] WSREP: Failed to create a new provider '/usr/lib/galera/libgalera_smm.so' with options 'socket.ssl_ca=/etc/ngc/db-tls/ca.crt': Failed to initialize wsrep provider
+2026-10-17 21:26:23 0 [ERROR] WSREP: Failed to load provider
+2026-10-17 21:26:23 0 [ERROR] Aborting
+J
+cat > "${whydir}/noquorum" <<'J'
+2026-10-17 23:45:34 0 [ERROR] WSREP: failed to open gcomm backend connection: 110: failed to reach primary view
+2026-10-17 23:45:35 0 [ERROR] WSREP: gcs connect failed: Operation timed out
+2026-10-17 23:45:35 0 [ERROR] WSREP: wsrep::connect(gcomm://db-1.ngc.test) failed: 7
+2026-10-17 23:45:35 0 [ERROR] Aborting
+J
+cat > "${whydir}/unknown" <<'J'
+2026-10-18 00:00:00 0 [ERROR] something nobody here has ever seen
+J
+# The preparation has to bite before any answer counts: an empty journal would
+# make every one of these look like the last case.
+check "the measurement really hands the recorded journal over" \
+    grep -q 'port 3306' <<< "$(db_why "${whydir}/port")"
+# 1. the one that was reported wrong
+why_port="$(db_why "${whydir}/port")"
+check "a taken port is named as a taken port" \
+    grep -q 'already holds port 3306' <<< "$why_port"
+check "and it does NOT blame the other nodes any more" \
+    not grep -qiE 'first node|other node of the installation answered' <<< "$why_port"
+# 2. this node's own name
+check "an unresolvable own name is named, with the name" \
+    grep -q 'db-1.ngc.test, does not resolve' <<< "$(db_why "${whydir}/ownname")"
+# 3. a name of the node list
+check "an unresolvable node of the list is named, with the list" \
+    grep -q 'db-1.ngc.test db-2.ngc.test' <<< "$(db_why "${whydir}/nodename")"
+# and that one matters: its journal ALSO carries the timeout line, so the order
+# of the questions is what keeps it from being read as a missing node.
+check "a name that does not resolve beats the timeout in the same journal" \
+    not grep -q 'answered on port' <<< "$(db_why "${whydir}/nodename")"
+# 4. the key pair
+check "a key file that cannot be opened is named, with its folder" \
+    grep -q '/etc/ngc/db-keys/keys.enc' <<< "$(db_why "${whydir}/keys")"
+# 5. data written with another key
+check "data written with another key is told apart from a missing key" \
+    grep -q 'written with another encryption key' <<< "$(db_why "${whydir}/olddata")"
+# 6. the provider
+check "a refused provider setting points at the configuration file" \
+    grep -q '60-ngc.cnf' <<< "$(db_why "${whydir}/provider")"
+check "and it says nothing was reached over the network" \
+    grep -q 'Nothing was reached over the network' <<< "$(db_why "${whydir}/provider")"
+# 7. and only here is the cluster the answer
+check "a real timeout does name the nodes and the Galera port" \
+    grep -q 'answered on port 4567' <<< "$(db_why "${whydir}/noquorum")"
+# 8. and nothing is ever answered with silence
+why_unknown="$(db_why "${whydir}/unknown")"
+check "an unknown journal says so and points at journalctl" \
+    grep -q 'journalctl -u mariadb' <<< "$why_unknown"
+check "and it does not invent a cause" \
+    not grep -qiE 'port|resolve|key|provider' <<< "$why_unknown"
+# No journal line may be printed back: a line carries whatever MariaDB put in
+# it, and these sentences end up in reports.
+check "no journal line is echoed into the message" \
+    not grep -qE '\[ERROR\]' <<< "$why_port$(db_why "${whydir}/keys")$(db_why "${whydir}/provider")"
+# And every failing branch of start_cluster has to ask, not just one of them.
+check "all three failures of start_cluster say what was found" \
+    test "$(awk '/^start_cluster\(\) \{/,/^\}/' "${dbdir}/body.sh" | grep -c 'why_it_did_not_start')" = 3
+# Comments stripped first: the sentence still stands in one, as the record of
+# what it used to say, and a case that counts comments measures prose.
+check "no fixed guess about the first node is left in the code" \
+    not grep -q 'Is the first node running' \
+        <(grep -vE '^[[:space:]]*#' "${dbdir}/body.sh")
+# The journal is read from the attempt onwards, not from the whole history: an
+# older attempt's cause would otherwise be read as this one's.
+check "the journal is read from the attempt onwards" \
+    grep -q 'since "@' <<< "$(awk '/^unit_journal\(\) \{/,/^\}/' "${dbdir}/body.sh")"
+
+unset -f db_why
+unset whydir why_port why_unknown
+# ------------------------------------------- which branch start_cluster takes
+# The decision is its own function (cluster_action), so it can be measured
+# without a database: node_in_cluster, mariadb_running and other_node_answers
+# are stubbed, and grastate.dat is a file in the test folder - but
+# cluster_state_here and may_open_again are the ones out of the script, since
+# they are what is being measured. The answer is open / restart / start /
+# nothing.
+#
+# Two bolts are pinned here. The first: the old order asked "is mariadbd
+# running?", and the package leaves mariadbd running WITHOUT wsrep, so on a
+# fresh bootstrap node the restart branch won and the node tried to JOIN a
+# cluster that does not exist. Measured on Debian 13 on 17.10.2026,
+# "wsrep::connect(gcomm://db-1.ngc.test) failed: 7". The second: a node that
+# holds cluster state never came back after the whole cluster was down, for
+# the same reason, and only galera_new_cluster brought it up - so every reboot
+# of a small installation needed a hand.
+bootdir="${dbdir}/boot"
+mkdir -p "$bootdir"
+# db_act reads its inputs from the environment, because there are six of them:
+#   B   BOOTSTRAP            C    CHANGED
+#   INC node_in_cluster      RUN  mariadb_running   (0 = yes, 1 = no)
+#   OTH other_node_answers   (0 = another node answers)
+#   UUID / SEQ / STB         what grastate.dat says, UUID=none for no file
+#   NN  how many nodes the installation has
+db_act() (
+    db_load
+    BOOTSTRAP="${B:-0}"
+    CHANGED="${C:-0}"
+    # Caught in locals first: inside a stub, $1 would be the stub's OWN
+    # argument, and these are called without any. The first check below is
+    # what catches that.
+    local inc="${INC:-1}" run="${RUN:-1}" oth="${OTH:-1}" i
+    node_in_cluster() { return "$inc"; }
+    mariadb_running() { return "$run"; }
+    other_node_answers() { return "$oth"; }
+    GRASTATE="${bootdir}/grastate.dat"
+    if [ "${UUID:-none}" = none ]; then
+        rm -f "$GRASTATE"
+    else
+        printf '# GALERA saved state
+version: 2.1
+uuid:    %s
+seqno:   %s
+safe_to_bootstrap: %s
+'             "$UUID" "${SEQ:--1}" "${STB:-1}" > "$GRASTATE"
+    fi
+    NODES=()
+    for i in $(seq 1 "${NN:-1}"); do NODES+=("db-${i}.ngc.test:3306"); done
+    cluster_action
+)
+REAL=65b4d82f-ca64-11f1-8026-9f3253e2f221
+ZERO=00000000-0000-0000-0000-000000000000
+# The stubs have to be the ones talking before any answer counts.
+check "the measurement can make cluster_action answer at all"     test -n "$(db_act)"
+# --- the fresh bootstrap node, the first bolt
+check "a fresh bootstrap node opens the cluster, although mariadbd runs"     test "$(B=1 C=1 RUN=0 db_act)" = open
+check "and it opens it even when mariadbd does not run"     test "$(B=1 C=1 db_act)" = open
+check "a grastate.dat with the all-zero uuid is no cluster state"     test "$(B=1 C=1 RUN=0 UUID=$ZERO db_act)" = open
+# --- the node that comes back after the cluster was down, the second bolt
+check "a first node whose cluster is gone opens it again"     test "$(B=1 UUID=$REAL SEQ=14 db_act)" = open
+check "and it does so after a crash too, as long as it is alone"     test "$(B=1 UUID=$REAL SEQ=-1 NN=1 db_act)" = open
+# --- and every refusal, because opening is the branch that can cost data
+check "a node that is already a member is never bootstrapped again"     test "$(B=1 INC=0 UUID=$REAL SEQ=14 db_act)" = nothing
+check "a member picks up a new configuration with a restart"     test "$(B=1 C=1 INC=0 UUID=$REAL SEQ=14 db_act)" = restart
+check "nobody opens a cluster while another node answers"     test "$(B=1 OTH=0 UUID=$REAL SEQ=14 db_act)" = start
+check "a node that is not the first one never opens anything"     test "$(B=0 UUID=$REAL SEQ=14 db_act)" = start
+check "safe_to_bootstrap 0 refuses, that is Galera's own answer"     test "$(B=1 UUID=$REAL SEQ=14 STB=0 db_act)" = start
+check "with several nodes a crash refuses: no seqno, no decision"     test "$(B=1 UUID=$REAL SEQ=-1 NN=3 db_act)" = start
+check "with several nodes an orderly shutdown is allowed"     test "$(B=1 UUID=$REAL SEQ=14 NN=3 db_act)" = open
+# --- and the plain cases
+check "a running node that is no member reads the configuration again"     test "$(B=0 C=1 RUN=0 UUID=$REAL SEQ=14 db_act)" = restart
+check "a node that is down and not the first one just starts"     test "$(B=0 UUID=$REAL SEQ=14 db_act)" = start
+# --- the order itself has to stay the order
+check "cluster_action asks about membership before it asks about the service"     test "$(awk '/^cluster_action\(\) \{/,/^\}/' "${dbdir}/body.sh" | grep -nE 'node_in_cluster|mariadb_running' | head -1 | cut -d: -f2 | grep -c node_in_cluster)" = 1
+# other_node_answers really does talk to the network: a port nothing listens
+# on has to answer "no", or condition 2 would never refuse anything.
+db_reach() (
+    db_load
+    HOSTS=(127.0.0.1)
+    NGC_HOSTNAME=db-1.ngc.test
+    GALERA_PORT=1
+    other_node_answers && printf yes || printf no
+)
+check "other_node_answers says no for a port nothing listens on"     test "$(db_reach)" = no
+db_self() (
+    db_load
+    HOSTS=(db-1.ngc.test)
+    NGC_HOSTNAME=db-1.ngc.test
+    GALERA_PORT=1
+    other_node_answers && printf yes || printf no
+)
+check "and it does not count this node itself as another one"     test "$(db_self)" = no
+
+unset -f db_act db_reach db_self
+unset bootdir REAL ZERO
+
+# ------------------------------------------------- the key file MariaDB reads
+# file_key_management opens a "Salted__" file with the old EVP_BytesToKey of
+# OpenSSL over SHA-1. A file written with -pbkdf2 -md sha256 is sound, decrypts
+# fine with those same flags, and MariaDB still cannot read it: measured on a
+# fresh Debian 13 on 17.10.2026 as "Cannot decrypt .../keys.enc. Wrong key?",
+# whereupon file_key_management, InnoDB and the server fall. So the check here
+# is not "it decrypts" but "it decrypts the way MariaDB decrypts".
+db_keys() (
+    db_load
+    NGC_KEYS="${dbdir}/keys"
+    mkdir -p "$NGC_KEYS"
+    rm -f "${NGC_KEYS}/keys.enc" "${NGC_KEYS}/keyfile.key"
+    put_secret() { install -m 0400 "$1" "$2"; }
+    ensure_encryption_keys > /dev/null 2>&1 || exit 1
+    # Read it back the way the plugin does, and nothing else.
+    openssl enc -d -aes-256-cbc -md sha1 -in "${NGC_KEYS}/keys.enc"         -pass "file:${NGC_KEYS}/keyfile.key" 2>/dev/null
+)
+keys_out="$(db_keys)"
+check "the key file opens the way MariaDB's file_key_management opens it"     grep -qE '^1;[0-9a-f]{64}$' <<< "$keys_out"
+# And the flags themselves, named, so nobody puts the better derivation back
+# without reading why it is not there.
+check "the key file is not written with pbkdf2"     not grep -qE 'keys[.]enc.*pbkdf2|pbkdf2.*keys[.]enc'         <(awk '/^ensure_encryption_keys\(\) \{/,/^\}/' "${dbdir}/body.sh")
+check "the key file is written over sha1, as that plugin derives"     grep -q 'openssl enc -aes-256-cbc -md sha1 -salt'         <(awk '/^ensure_encryption_keys\(\) \{/,/^\}/' "${dbdir}/body.sh")
+
+unset -f db_keys
+unset keys_out
+
+# ---------------------------------------------------------------- the group mysql
+# A machine that never had MariaDB has no group mysql, and prepare makes the
+# two folders BEFORE ensure_packages installs it (render_ca_cnf writes into
+# NGC_TLS). Measured on a fresh Debian 13 on 17.10.2026: install died at
+# "chown: invalid group: 'root:mysql'" with RC=1, before anything was written.
+mkdir -p "${dbdir}/gbin"
+db_owner() (
+    db_load
+    PATH="${dbdir}/gbin:${PATH}"
+    db_dir_owner
+)
+printf '#!/bin/bash
+exit 2
+' > "${dbdir}/gbin/getent"
+chmod +x "${dbdir}/gbin/getent"
+check "without the group mysql the two folders stay with root alone"     test "$(db_owner)" = root:root
+printf '#!/bin/bash
+exit 0
+' > "${dbdir}/gbin/getent"
+check "with the group mysql the two folders go to it"     test "$(db_owner)" = root:mysql
+# prepare must not name the group itself: that is the line that died.
+check "prepare names no group that may not exist yet"     not grep -qE 'ensure_dir "\$NGC_(TLS|KEYS)" root:mysql'         <(awk '/^prepare\(\) \{/,/^\}/' "${dbdir}/body.sh")
+# And the handover has to sit after the packages, not before them.
+inst="$(awk '/^install_ngc_db\(\) \{/,/^\}/' "${dbdir}/body.sh")"
+pkg_ln="$(grep -n 'ensure_packages' <<< "$inst" | head -1 | cut -d: -f1)"
+dir_ln="$(grep -n 'ensure_db_dirs' <<< "$inst" | head -1 | cut -d: -f1)"
+check "install hands the folders to mysql after it installed MariaDB"     test -n "$pkg_ln" -a -n "$dir_ln" -a "${dir_ln:-0}" -gt "${pkg_ln:-0}"
+# configure calls prepare too, and there MariaDB is already running - but the
+# folders still have to end up with the group, not with root.
+check "configure hands the folders to mysql as well"     grep -q 'ensure_db_dirs' <<< "$(awk '/^configure_ngc_db\(\) \{/,/^\}/' "${dbdir}/body.sh")"
+
+unset -f db_owner
+unset inst pkg_ln dir_ln
+
 unset -f db_load db_galera db_cacnf db_answers db_host db_cluster
 unset dbdir NODE1 NODE2 NODE3 PASS1 PASS2 missing unpinned head back prov forbidden good bad shell o
+unset cipher_val
+unset bootdir
 unset warn_line rm_line chk_line del_line purge_q line

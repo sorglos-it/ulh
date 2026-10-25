@@ -69,6 +69,18 @@ NGC_KEYS="/etc/ngc/db-keys"     # keys.enc and keyfile.key for file_key_manageme
 CONF_FILE="/etc/mysql/mariadb.conf.d/60-ngc.cnf"
 CA_CNF="/etc/ngc/db-tls/db-ca.cnf"   # the rendered OpenSSL configuration
 SST_FILE="/etc/ngc/db-keys/sst.pass" # the SST password, made once and kept
+# Galera writes its own state beside the data. It is a variable so a test can
+# point cluster_state_here at a file of its own instead of replacing that
+# function - a stub of the function under measurement measures the stub.
+GRASTATE="${GRASTATE:-/var/lib/mysql/grastate.dat}"
+# The port the nodes talk to each other on: Galera's own default, as a running
+# provider reports it (gmcast.listen_addr = ssl://0.0.0.0:4567, measured on
+# 17.10.2026). The template sets no other one.
+GALERA_PORT="${GALERA_PORT:-4567}"
+# The port MariaDB itself answers on. The rendered configuration sets none, so
+# it is the server default and no answer of ulh can change it (measured:
+# 60-ngc.cnf carries no port line). It is here for the messages below.
+DB_PORT="${DB_PORT:-3306}"
 
 # Packages: the server, Galera's provider, the copy tool for a new node, and
 # openssl for the CA and the node certificates.
@@ -206,6 +218,34 @@ ensure_dir() {
 	chmod "$mode" "$dir"
 }
 
+# db_dir_owner names the owner of the two folders MariaDB reads. The group
+# mysql comes with mariadb-server, and prepare makes these folders BEFORE that
+# package is there: render_ca_cnf writes the OpenSSL configuration into
+# NGC_TLS. On a machine that never had MariaDB, chown root:mysql therefore dies
+# with "chown: invalid group" and install stops before it has written anything
+# (measured on a fresh Debian 13, 17.10.2026). Until the package is there the
+# folders belong to root alone - 0710 gives nobody else anything either way -
+# and ensure_db_dirs hands them over as soon as the group exists.
+db_dir_owner() {
+	if getent group mysql > /dev/null 2>&1; then
+		printf 'root:mysql'
+	else
+		printf 'root:root'
+	fi
+}
+
+# ensure_db_dirs gives the two folders to the group mysql. It belongs AFTER
+# ensure_packages: MariaDB runs as mysql and has to read ssl_cert, ssl_key, the
+# CA and both file_key_management files that lie in there; through a folder it
+# may not enter, the chown on those files would be worth nothing, and the
+# server would come up without TLS or stop at the encryption.
+ensure_db_dirs() {
+	getent group mysql > /dev/null 2>&1 ||
+		log_error "MariaDB is installed, but there is no group mysql. Nothing more was changed."
+	ensure_dir "$NGC_TLS" root:mysql 0710
+	ensure_dir "$NGC_KEYS" root:mysql 0710
+}
+
 # put_file writes stdin to a file only if the content differs, and always
 # atomically: a reader never sees half a configuration. It sets CHANGED when it
 # wrote.
@@ -257,6 +297,26 @@ read_answers() {
 			msg_err "Not a node as <host>:<port>: ${hp}"
 			return 1
 		fi
+		# The port is the one MariaDB answers on, and it was accepted and then
+		# thrown away: everything below strips it, so a port written with intent
+		# had no effect at all. Measured on 18.10.2026 at the unchanged script:
+		# "db-1.ngc.test:4567 db-2.ngc.test:3306" was accepted and reached the
+		# cluster address as "db-1.ngc.test,db-2.ngc.test".
+		#
+		# It may not simply be passed on either, and that is the reason it is
+		# checked instead: the port inside gcomm:// is GALERA's port, 4567, a
+		# different thing from the one this answer carries. Passing it through
+		# would put MariaDB's port where Galera's belongs.
+		#
+		# So it has to be the port MariaDB really serves. It is not settable:
+		# the rendered configuration carries no port line, so it is the server
+		# default. And this same list is what the admin gives ngc-api as
+		# db_nodes, where the port IS dialled - a wrong one is a fault there,
+		# so it gets caught here, where nothing has been written yet.
+		if [ "${hp##*:}" != "$DB_PORT" ]; then
+			msg_err "The node ${hp} names port ${hp##*:}, and MariaDB answers on ${DB_PORT}. The nodes are written as <host>:${DB_PORT}. The port of the replication between the nodes is a different one (${GALERA_PORT}) and does not belong here."
+			return 1
+		fi
 		NODES+=("$hp")
 		HOSTS+=("${hp%:*}")
 	done
@@ -264,10 +324,16 @@ read_answers() {
 		msg_err "Name one to sixteen nodes, separated by a space."
 		return 1
 	fi
-	for i in "${!NODES[@]}"; do
-		for j in "${!NODES[@]}"; do
-			if [ "$i" -lt "$j" ] && [ "${NODES[$i]}" = "${NODES[$j]}" ]; then
-				msg_err "The node ${NODES[$i]} is named twice."
+	# Over the HOSTS, not over host:port: with the port in the comparison the
+	# same machine passed twice as long as the ports differed, and the cluster
+	# address then carried it twice. Measured on 18.10.2026 at the unchanged
+	# script: "db-1.ngc.test:3306 db-1.ngc.test:3307" was accepted and became
+	# "gcomm://db-1.ngc.test,db-1.ngc.test", while the same host with the same
+	# port was refused - so the check was there and the port walked around it.
+	for i in "${!HOSTS[@]}"; do
+		for j in "${!HOSTS[@]}"; do
+			if [ "$i" -lt "$j" ] && [ "${HOSTS[$i]}" = "${HOSTS[$j]}" ]; then
+				msg_err "The node ${HOSTS[$i]} is named twice."
 				return 1
 			fi
 		done
@@ -344,7 +410,19 @@ innodb_autoinc_lock_mode=2
 
 # The replication between the nodes runs over TLS against the CA of the
 # installation - the same CA the API and the controller check.
-wsrep_provider_options="socket.ssl_ca=${NGC_TLS}/ca.crt;socket.ssl_cert=${NGC_TLS}/node.crt;socket.ssl_key=${NGC_TLS}/node.key;socket.ssl_cipher=TLS_AES_256_GCM_SHA384"
+#
+# socket.ssl_cipher is the TLS 1.2 cipher LIST of Galera and nothing else: it
+# goes to SSL_CTX_set_cipher_list, which knows no TLS 1.3 suite. A TLS 1.3 name
+# there does not restrict TLS 1.3, it kills the server - measured on Debian 13
+# with Galera 26.4.23 on 17.10.2026: "Error setting SSL cipher list to
+# 'TLS_AES_256_GCM_SHA384': no cipher match", then the provider and the server
+# abort. So the value is the TLS 1.2 spelling of the one suite Entwurf 4.5
+# allows, and ECDSA because the CA of this installation signs Ed25519 only.
+# What it buys is measured too: with this list a TLS 1.2 peer offering
+# AES-128-GCM or a CBC suite gets a handshake failure, and without it both
+# come through. Under TLS 1.3 Galera offers no knob at all; measured, that
+# socket negotiates TLS_AES_256_GCM_SHA384 by itself.
+wsrep_provider_options="socket.ssl_ca=${NGC_TLS}/ca.crt;socket.ssl_cert=${NGC_TLS}/node.crt;socket.ssl_key=${NGC_TLS}/node.key;socket.ssl_cipher=ECDHE-ECDSA-AES256-GCM-SHA384"
 
 # A new node copies the data with mariabackup, over TLS as well.
 wsrep_sst_method=mariabackup
@@ -489,9 +567,25 @@ ensure_encryption_keys() {
 	local plain="${WORK}/keys.txt" pass="${WORK}/pass.txt"
 	printf '1;%s\n' "$(openssl rand -hex 32)" > "$plain"
 	openssl rand -base64 48 | tr -d '\n' > "$pass"
-	openssl enc -aes-256-cbc -pbkdf2 -md sha256 -salt \
-		-in "$plain" -out "${WORK}/keys.enc" -pass "file:${pass}" ||
+	# -md sha1 and NO -pbkdf2, although pbkdf2 is the better derivation: the
+	# reader of this file is MariaDB's file_key_management, and that plugin
+	# opens a "Salted__" file with the old EVP_BytesToKey of OpenSSL over SHA-1
+	# and nothing else. Written with -pbkdf2 -md sha256 the file is sound and
+	# MariaDB cannot read it: measured on a fresh Debian 13 on 17.10.2026,
+	# "Cannot decrypt /etc/ngc/db-keys/keys.enc. Wrong key?", upon which
+	# file_key_management, InnoDB and the server fall in that order. The key
+	# itself is 32 random bytes and stays AES-256; what the derivation guards
+	# is keyfile.key, which lies beside it as 0400 for mysql.
+	openssl enc -aes-256-cbc -md sha1 -salt \
+		-in "$plain" -out "${WORK}/keys.enc" -pass "file:${pass}" 2>/dev/null ||
 		log_error "Could not encrypt the key file."
+	# The derivation above is the one thing about this file nobody sees go
+	# wrong: a file written with the wrong one decrypts fine with the wrong one
+	# too, and only MariaDB says no, minutes later and about InnoDB. So read it
+	# back the way MariaDB will read it, before anything is kept.
+	openssl enc -d -aes-256-cbc -md sha1 -in "${WORK}/keys.enc" \
+		-pass "file:${pass}" 2>/dev/null | grep -q '^1;' ||
+		log_error "The key file cannot be read back the way MariaDB reads it. Nothing was kept."
 	shred -u "$plain" 2>/dev/null || rm -f "$plain"
 	put_secret "${WORK}/keys.enc" "${NGC_KEYS}/keys.enc"
 	put_secret "$pass" "${NGC_KEYS}/keyfile.key"
@@ -616,6 +710,11 @@ sign_into() {
 # ============================================================
 
 # cluster_list is what wsrep_cluster_address carries: every node of the list.
+# cluster_list is the host list of wsrep_cluster_address. The port stays out
+# on purpose: the one inside gcomm:// would be Galera's (4567), and the one
+# the answer carries is MariaDB's (3306). Left in, it would put the wrong
+# number where Galera reads its own. read_answers makes sure it is really
+# MariaDB's before it ever gets here.
 cluster_list() {
 	local out="" hp
 	for hp in "${NODES[@]}"; do
@@ -633,7 +732,14 @@ load_sst_password() {
 write_config() {
 	[ -n "$SST_PASS" ] || load_sst_password
 	ensure_dir /etc/mysql/mariadb.conf.d root:root 0755
-	render_galera "$(cluster_list)" | put_file "$CONF_FILE" root:root 0644
+	# NOT a pipe. put_file sets CHANGED, and on the right of a pipe it runs in a
+	# subshell, where that assignment dies with the subshell. This is the one
+	# file whose change has to reach start_cluster, so losing it means a new
+	# configuration gets written and never applied - silently, with a tick
+	# beside it. Measured on Debian 13 on 17.10.2026 with a probe inside
+	# start_cluster: "action=nothing bootstrap=1 changed=0 running=yes" right
+	# after the line "written: /etc/mysql/mariadb.conf.d/60-ngc.cnf".
+	put_file "$CONF_FILE" root:root 0644 < <(render_galera "$(cluster_list)")
 }
 
 mariadb_running() {
@@ -656,22 +762,241 @@ wait_synced() {
 	log_error "This node did not report Synced. Look at the log: journalctl -u mariadb."
 }
 
-start_cluster() {
-	if mariadb_running; then
-		if [ "$CHANGED" = 1 ]; then
-			log_section "Restarting MariaDB"
-			systemctl restart mariadb || log_error "MariaDB did not come up again."
+# cluster_state_here says whether this node already holds the state of a Galera
+# cluster. The existence of grastate.dat is NOT the answer: a start that failed
+# at the provider leaves one behind whose uuid is all zeroes, and a node that
+# never reached a cluster must still be allowed to open one. Measured on
+# Debian 13 on 17.10.2026: after a bootstrap that worked the uuid is a real one
+# (seqno -1 while the server runs, safe_to_bootstrap 1); a start that fell
+# recovers the position 00000000-0000-0000-0000-000000000000.
+cluster_state_here() {
+	local uuid
+	[ -f "$GRASTATE" ] || return 1
+	uuid="$(sed -n 's/^uuid:[[:space:]]*//p' "$GRASTATE" | head -1)"
+	case "$uuid" in
+		'' | 00000000-0000-0000-0000-000000000000) return 1 ;;
+	esac
+	return 0
+}
+
+# node_in_cluster is the question the old order should have asked instead of
+# "is mariadbd running?": a server that is up WITHOUT wsrep is not a cluster.
+# Synced is the normal answer; Donor/Desynced is a node that is feeding another
+# one and is just as much a member.
+node_in_cluster() {
+	local state
+	state="$(mariadb --protocol=socket -N -B 		-e "SHOW STATUS LIKE '"'"'wsrep_local_state_comment'"'"'" 2>/dev/null | cut -f2)"
+	case "$state" in
+		Synced | Donor/Desynced) return 0 ;;
+	esac
+	return 1
+}
+
+# grastate_field prints one field of the state file Galera keeps.
+grastate_field() {
+	[ -f "$GRASTATE" ] || return 1
+	sed -n "s/^$1:[[:space:]]*//p" "$GRASTATE" | head -1
+}
+
+# other_node_answers says whether any OTHER node of this installation answers
+# on the Galera port. It is the difference between "the cluster is gone" and
+# "the cluster is up and I have to join it", and no status of this machine can
+# tell them apart.
+other_node_answers() {
+	local h
+	for h in "${HOSTS[@]}"; do
+		[ "$h" = "$NGC_HOSTNAME" ] && continue
+		if timeout 2 bash -c "exec 3<>/dev/tcp/${h}/${GALERA_PORT}" 2>/dev/null; then
+			return 0
 		fi
-	elif [ "$BOOTSTRAP" = 1 ] && [ ! -f /var/lib/mysql/grastate.dat ]; then
+	done
+	return 1
+}
+
+# may_open_again decides whether this node may OPEN a cluster - the one action
+# that can cost data, so every condition here is a refusal and the default is
+# no.
+#
+# Why it is needed at all: a node that holds cluster state does not come back
+# on its own after the whole cluster was down. A plain start makes it JOIN the
+# address list, which contains itself, and that times out - measured on
+# Debian 13 on 17.10.2026 at a one-node installation: after a clean stop,
+# "wsrep::connect(gcomm://db-1.ngc.test) failed: 7", and only
+# galera_new_cluster brings it up. Every reboot of a small installation needed
+# a hand.
+#
+# Three conditions, all of them:
+#
+#  1. This machine is the one the admin named as the first node. The decision
+#     stays where the answer put it.
+#  2. No other node answers on the Galera port. With one reachable, there is a
+#     cluster to join and opening a second one is exactly the mistake.
+#  3. Galera itself says this node may do it: safe_to_bootstrap 1. After a
+#     full cluster shutdown Galera marks exactly ONE node that way; a node
+#     with 0 must never open, and does not here either.
+#
+# And the weighing, because this is the dangerous branch:
+#
+#  - Measured on a ONE-node installation, safe_to_bootstrap is 1 at every
+#    moment - while it runs (seqno -1), after a clean stop (seqno 14) and
+#    after a kill -9 (seqno -1). So condition 3 protects nothing there, and
+#    the whole protection is condition 2.
+#  - Which is why a cluster of MORE than one node additionally needs a seqno
+#    of 0 or more, that is an orderly last shutdown. After a crash the seqno
+#    is -1, Galera cannot say who is furthest ahead, and the documented way is
+#    to recover and let a human decide. This script then refuses and joins,
+#    rather than guessing.
+#  - What stays open and cannot be closed from here: if the network is split,
+#    a node may see nobody and still be the one with safe_to_bootstrap 1. Two
+#    primary components need two such nodes, and Galera marks only one - so
+#    this cannot split a cluster that was shut down properly. It CAN split one
+#    whose nodes were bootstrapped by hand before, and no automation undoes
+#    that.
+#  - The case that is NOT measured here: safe_to_bootstrap 0, because that
+#    needs two nodes running at once, and all WSL instances of this machine
+#    share one network namespace (measured: same netns inode, same addresses),
+#    so two nodes cannot both hold port 3306. The branch therefore fails
+#    closed, which is the side to be wrong on.
+may_open_again() {
+	[ "$BOOTSTRAP" = 1 ] || return 1
+	other_node_answers && return 1
+	# Never been in a cluster: this is the very first start.
+	cluster_state_here || return 0
+	[ "$(grastate_field safe_to_bootstrap)" = 1 ] || return 1
+	[ "${#NODES[@]}" -gt 1 ] || return 0
+	case "$(grastate_field seqno)" in
+		'' | -*) return 1 ;;
+	esac
+	return 0
+}
+
+# cluster_action names what this node has to do with the service, and it is a
+# function of its own so the decision can be measured without a database:
+# "open", "restart", "start" or "nothing".
+#
+# The CLUSTER comes first, not the service. The old order asked
+# "is mariadbd running?" first - and the package leaves mariadbd running,
+# without wsrep. So on a fresh bootstrap node the restart branch won, and a
+# plain restart makes the node JOIN the cluster named in
+# wsrep_cluster_address instead of opening it. With itself as the only entry
+# that cannot work: measured on Debian 13 on 17.10.2026, "failed to reach
+# primary view" and then "wsrep::connect(gcomm://db-1.ngc.test) failed: 7"
+# after about a minute and a half. Whether mariadbd happens to be up says
+# nothing about whether the cluster exists, so it is the second question now.
+cluster_action() {
+	# A node that is already a member is never bootstrapped again - that, and
+	# not "mariadbd is up", is what a working cluster looks like.
+	if node_in_cluster; then
+		if [ "$CHANGED" = 1 ]; then
+			printf 'restart'
+		else
+			printf 'nothing'
+		fi
+	elif may_open_again; then
+		printf 'open'
+	elif mariadb_running; then
+		# Up, but no member: it has to read the configuration and join.
+		printf 'restart'
+	else
+		printf 'start'
+	fi
+}
+
+# unit_journal prints what MariaDB's service said since a point in time. Its
+# own function so a measurement can hand the diagnosis a recorded journal
+# instead of this machine's.
+#
+# --since matters and is not decoration: the journal holds the attempts before
+# this one too, and the cause of an older one would be read as the cause of
+# this. It cost exactly that in this project - a stale port clash from an
+# earlier run sat in the same journal as a fresh timeout.
+unit_journal() {
+	journalctl -u mariadb --no-pager --since "@${1}" 2>/dev/null
+}
+
+# why_it_did_not_start says what the journal really holds. $1 is the time the
+# attempt began.
+#
+# The answer is OURS, never a journal line: a line carries whatever MariaDB put
+# in it, and these sentences end up in reports and in chats.
+#
+# The ORDER is the whole point. An exit code does not separate these causes -
+# every one of them ends in "Aborting" - and several of them appear in one
+# journal at once. So the questions run from the ones that stop the server
+# earliest to the one that only shows up at the very end, and the first match
+# wins. The timeout of the cluster connection is last on purpose: it is the
+# most common line and it would otherwise hide every cause in front of it.
+# That is how a port clash came to be reported as "Is the first node running?"
+# while the first node was running perfectly well.
+#
+# Every pattern below was read off this machine's own journal while measuring
+# ngc-db on 17. and 18.10.2026. None of them is guessed.
+why_it_did_not_start() {
+	local j
+	j="$(unit_journal "$1")"
+	# 1. Nothing of ours ever got a port.
+	if printf '%s' "$j" | grep -q 'Address already in use'; then
+		printf 'Another program on this machine already holds port %s. MariaDB never got its port, so this says nothing about the other nodes: look for the other server first (ss -ltnp | grep %s).' "$DB_PORT" "$DB_PORT"
+		return 0
+	fi
+	# 2. The server cannot bind, because its OWN name is unknown here.
+	if printf '%s' "$j" | grep -q "Can't create IP socket"; then
+		printf 'The name of this node, %s, does not resolve on this machine, so MariaDB cannot bind to it. It has to be in DNS or in /etc/hosts.' "$NGC_HOSTNAME"
+		return 0
+	fi
+	# 3. A name of the NODE LIST is unknown here.
+	if printf '%s' "$j" | grep -q 'getaddrinfo() failed'; then
+		printf 'A node of this installation does not resolve on this machine. The names are the ones of the answer nodes: %s. Each of them has to be in DNS or in /etc/hosts.' "${HOSTS[*]}"
+		return 0
+	fi
+	# 4. The key pair of the encryption cannot be opened.
+	if printf '%s' "$j" | grep -q 'Cannot decrypt'; then
+		printf 'MariaDB cannot open the key file %s/keys.enc with %s/keyfile.key. The two belong together and are made once; put the pair back from the backup rather than guessing.' "$NGC_KEYS" "$NGC_KEYS"
+		return 0
+	fi
+	# 5. The data on disk was written with a DIFFERENT key.
+	if printf '%s' "$j" | grep -qE 'Reading log encryption info failed|Obtaining redo log encryption key'; then
+		printf 'The data in /var/lib/mysql was written with another encryption key than the one in %s. It cannot be read with this key: the pair that wrote it has to come back.' "$NGC_KEYS"
+		return 0
+	fi
+	# 6. Galera refused the options of the provider.
+	if printf '%s' "$j" | grep -qE 'no cipher match|Failed to initialize wsrep provider|Failed to load provider'; then
+		printf 'Galera refused the settings of its provider in %s (wsrep_provider_options). Nothing was reached over the network yet; the line itself is wrong.' "$CONF_FILE"
+		return 0
+	fi
+	# 7. Last, because this line also appears when one of the above is the cause.
+	if printf '%s' "$j" | grep -qE 'failed to reach primary view|wsrep::connect'; then
+		printf 'No other node of the installation answered on port %s within the timeout. The nodes are %s: at least one of them has to be running and reachable, and the first node has to have opened the cluster.' "$GALERA_PORT" "${HOSTS[*]}"
+		return 0
+	fi
+	printf 'The journal of the service names no cause this script knows. Read it with: journalctl -u mariadb -n 80'
+}
+
+start_cluster() {
+	local at
+	case "$(cluster_action)" in
+	open)
 		# The very first start of the whole cluster: this node opens it.
 		log_section "Opening the cluster on this node"
 		systemctl stop mariadb > /dev/null 2>&1 || true
-		galera_new_cluster || log_error "galera_new_cluster did not come up."
-	else
+		at="$(date +%s)"
+		galera_new_cluster ||
+			log_error "The cluster could not be opened. $(why_it_did_not_start "$at")"
+		;;
+	restart)
+		log_section "Restarting MariaDB"
+		at="$(date +%s)"
+		systemctl restart mariadb ||
+			log_error "MariaDB did not come up again. $(why_it_did_not_start "$at")"
+		;;
+	start)
 		log_section "Starting MariaDB"
 		systemctl enable mariadb > /dev/null 2>&1 || true
-		systemctl start mariadb || log_error "MariaDB did not come up. Is the first node running?"
-	fi
+		at="$(date +%s)"
+		systemctl start mariadb ||
+			log_error "MariaDB did not come up. $(why_it_did_not_start "$at")"
+		;;
+	esac
 	wait_synced
 }
 
@@ -875,8 +1200,8 @@ prepare() {
 	# would be worth nothing, and the server would come up without TLS or stop
 	# at the encryption. 0710 gives mysql the way through and no listing, and
 	# nobody else anything at all.
-	ensure_dir "$NGC_TLS" root:mysql 0710
-	ensure_dir "$NGC_KEYS" root:mysql 0710
+	ensure_dir "$NGC_TLS" "$(db_dir_owner)" 0710
+	ensure_dir "$NGC_KEYS" "$(db_dir_owner)" 0710
 	if [ "$BOOTSTRAP" = 1 ]; then
 		# This one stays root:root 0700: the private key of the CA is the
 		# whole trust of the installation, and MariaDB never reads it.
@@ -889,6 +1214,7 @@ install_ngc_db() {
 	log_section "NextGenCloud: MariaDB with Galera for ${NGC_HOSTNAME}"
 	prepare
 	ensure_packages
+	ensure_db_dirs
 	# MariaDB has to be there before the keys: they belong to its user.
 	ensure_sst_password
 	ensure_encryption_keys
@@ -911,6 +1237,7 @@ configure_ngc_db() {
 	log_section "NextGenCloud: changing the database configuration"
 	prepare
 	mariadb_running || log_error "MariaDB is not running. Use install."
+	ensure_db_dirs
 	ensure_node_cert
 	write_config
 	start_cluster
