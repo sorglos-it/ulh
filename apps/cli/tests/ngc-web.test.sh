@@ -589,7 +589,58 @@ check "b64url: a slash is refused" not ngc_b64url "aG/k"
 for nc in aGl aGm aGn; do
     check "b64url: ${nc} is a second spelling of hi and is refused" not ngc_b64url "$nc"
 done
-check "NOT MEASURED: b64url's own two bolts (character class and re-encode) - GNU base64 refuses these inputs before they reach them" false
+# MEASURED again on 25.10.2026, and the marker above is gone, because the
+# re-encode CAN be measured: the reason it never fired is the base64 on the
+# machine, so the cases below bring their own. The stub is forgiving exactly
+# where GNU coreutils is strict - the unused trailing bits of the last
+# character need not be zero, which is what busybox does - and it hands the
+# encoding side to the real tool, so only the one difference is in play.
+#
+# The fixture is checked before anything is concluded from it: a stub that
+# refused aGl as well would make the three cases below measure GNU's wall a
+# second time and look like a result.
+b64_forgiving="${ngcdir}/forgiving"
+mkdir -p "$b64_forgiving"
+{
+    printf '#!/bin/bash
+'
+    printf 'if [ "${1:-}" != -d ]; then exec %s "$@"; fi
+' "$(command -v base64)"
+    cat <<'AWK'
+awk '
+BEGIN { a="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+        for (i=1;i<=64;i++) v[substr(a,i,1)]=i-1 }
+{ s = s $0 }
+END { gsub(/=/,"",s); b=0; n=0
+      for (i=1;i<=length(s);i++) { c=substr(s,i,1)
+        if (!(c in v)) exit 1
+        b=b*64+v[c]; n+=6
+        while (n>=8) { n-=8; d=int(b/(2^n)); b=b%(2^n); printf "%c", d } } }
+'
+AWK
+} > "${b64_forgiving}/base64"
+chmod 755 "${b64_forgiving}/base64"
+
+ngc_b64url_forgiving() (
+    ngc_load
+    PATH="${b64_forgiving}:${PATH}"
+    printf '%s' "$1" | b64url
+)
+
+# the fixture itself, and the way through: without both of these the three
+# cases after them say nothing
+check "the forgiving base64 of these cases really decodes aGl"     test "$(printf 'aGl' | PATH="${b64_forgiving}:${PATH}" base64 -d)" = hi
+check "with the forgiving base64 the way to the re-encode is open (aGk still decodes)"     test "$(ngc_b64url_forgiving aGk)" = hi
+for nc in aGl aGm aGn; do
+    check "b64url: ${nc} is refused by b64url itself, on a base64 that decodes it"         not ngc_b64url_forgiving "$nc"
+done
+
+# The third bolt, the character class over $s, stays unreachable and that is
+# measured, not guessed: the od check above it allows only alphabet bytes and
+# at most one trailing newline, and the newline is gone from $s, which comes
+# from a command substitution. Taking the class out changes no case, in either
+# base64. It is kept as the belt to the od check's braces - a single-line
+# guard that costs nothing - and it is NOT counted as measured anywhere.
 check "b64url: one character over is refused" not ngc_b64url "a"
 check "b64url: a space is refused" not ngc_b64url "aG k"
 
