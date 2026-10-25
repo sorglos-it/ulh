@@ -1125,6 +1125,22 @@ render_unit() {
 		'# /run/ngc, where the controller keeps what one run needs.' \
 		'RuntimeDirectory=ngc' \
 		'RuntimeDirectoryMode=0700' \
+		'# The cgroup of this unit is handed to it, and the controller puts' \
+		'# itself one level below the root of it. Both lines are needed' \
+		'# before an app container can have a limit at all, and each for' \
+		'# its own reason (shared/ulh.md of nextgencloud says it in full):' \
+		'#   Delegate=yes       - without it the subtree belongs to systemd' \
+		'#                        and not even root may make a cgroup in it.' \
+		'#   DelegateSubgroup=  - without it the unit holds processes right' \
+		'#                        in the root of the subtree, and cgroup v2' \
+		'#                        refuses to switch controllers on for the' \
+		'#                        children of a cgroup that does - so an app' \
+		'#                        cgroup would never get pids.max at all.' \
+		'# Measured 24./25.10.2026 on three nodes: no app container had a' \
+		'# cgroup of its own, so --pids-limit, --memory and --cpus were' \
+		'# given to podman and enforced by nothing.' \
+		'Delegate=yes' \
+		'DelegateSubgroup=supervisor' \
 		'' \
 		'[Install]' \
 		'WantedBy=multi-user.target'
