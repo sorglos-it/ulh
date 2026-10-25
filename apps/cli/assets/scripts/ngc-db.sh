@@ -104,6 +104,7 @@ NGC_RESTORE_CONFIRM="${NGC_RESTORE_CONFIRM:-no}"
 NODES=()        # the checked <host>:<port> of every node, in the order given
 HOSTS=()        # only their hosts, same order
 NODE_NAME=""    # wsrep_node_name: the first label of NGC_HOSTNAME
+NODE_ADDR=""    # wsrep_node_address and bind-address: an address, not a name
 SST_PASS=""     # the password for the copy to a new node, read from SST_FILE
 BOOTSTRAP=0     # 1 on the node that holds the CA and makes the database
 CHANGED=0       # something was written: MariaDB needs a restart
@@ -277,6 +278,77 @@ put_secret() {
 	CHANGED=1
 }
 
+# hold_secret takes a secret that is ALREADY in its place and puts it there
+# again THROUGH put_secret, so owner and mode are set inside WORK and never on
+# the file where it lies.
+#
+# Why it is needed: a key pair carried over from the first node arrives as
+# root:root, and MariaDB then says of its own key file "not found (Errcode:
+# 13)" - which does not mean it is missing but that it may not be read. Both
+# places that find a secret already there returned without looking at its
+# owner, and that stopped db-2 on 24.10.2026.
+#
+# Why not a chmod on the file itself: that is exactly the window put_secret
+# exists to avoid, and the test forbids it by name. The detour through WORK
+# costs a copy of 64 to 96 bytes.
+hold_secret() {
+	local path="$1" tmp
+	[ -e "$path" ] || return 0
+	if [ "$(stat -c "%U:%G %a" "$path" 2>/dev/null)" = "mysql:mysql 400" ]; then
+		return 0
+	fi
+	work_init
+	tmp="$(mktemp "${WORK}/hold.XXXXXX")"
+	cat "$path" > "$tmp" || log_error "Could not read ${path}."
+	put_secret "$tmp" "$path"
+	log_info "mysql may now read ${path}"
+}
+
+# resolve_node_address fills NODE_ADDR: the address this node tells the others
+# to reach it at. A NAME there is not enough, and this is the one place where
+# that was learned the hard way.
+#
+# Galera resolves wsrep_node_address itself and opens its receivers on
+# whatever it picks, while it tells the donor the value as written. On
+# 24.10.2026 db-3 fell out of the cluster after its machine was restarted: it
+# had opened the receiver on a link-local address,
+#   IST receiver for 0-1481, listening at: ssl://[fe80::...%eth0]:4568
+# and announced "db-3.ngc.mein.lan:4568". The donor resolved that name to the
+# IPv4 address of the machine, where nothing was listening, and gave up with
+# "IST failed ... Connection refused" - 71 times over. An address written out
+# leaves nothing to pick. It also survives a restart, which an /etc/hosts line
+# does not: cloud-init writes that file anew on every boot.
+#
+# The loopback is refused outright. A node that announces 127.0.0.1 never gets
+# its data either, because the donor then calls itself; that was how db-2
+# failed on the same day, after hostnamectl had put its real name on 127.0.1.1
+# the way Debian does.
+#
+# Where nothing resolves the name, the name stays - a first node is installed
+# on machines that have no DNS entry yet, and stopping there would help nobody.
+# It is said out loud, because such a node announces whatever it resolves to
+# later.
+resolve_node_address() {
+	local addr
+	NODE_ADDR="$NGC_HOSTNAME"
+	# An answer that is already an address needs nothing resolved.
+	case "$NGC_HOSTNAME" in
+	[0-9]*.[0-9]*.[0-9]*.[0-9]*) return 0 ;;
+	esac
+	command -v getent >/dev/null 2>&1 || return 0
+	addr="$(getent ahostsv4 "$NGC_HOSTNAME" 2>/dev/null | awk 'NR==1{print $1}')"
+	if [ -z "$addr" ]; then
+		log_warn "The name ${NGC_HOSTNAME} does not resolve on this machine. The configuration carries the name, and this node will announce to the others whatever the name resolves to when MariaDB starts. Put the name into the DNS of the installation, or give an IPv4 address as the name of this node."
+		return 0
+	fi
+	case "$addr" in
+	127.*)
+		log_error "The name ${NGC_HOSTNAME} resolves on this machine to ${addr}, the loopback. A node that announces itself there never gets its data: the donor would call itself. Put the real address of this machine into /etc/hosts in place of the 127.0.0.1 or 127.0.1.1 line that carries this name, and run install again."
+		;;
+	esac
+	NODE_ADDR="$addr"
+}
+
 # ============================================================
 # THE ANSWERS
 # ============================================================
@@ -289,6 +361,7 @@ read_answers() {
 		return 1
 	fi
 	NODE_NAME="${NGC_HOSTNAME%%.*}"
+	resolve_node_address
 
 	NODES=()
 	HOSTS=()
@@ -403,7 +476,7 @@ wsrep_provider=/usr/lib/galera/libgalera_smm.so
 wsrep_cluster_name=ngc
 wsrep_cluster_address=gcomm://${cluster_address}
 wsrep_node_name=${NODE_NAME}
-wsrep_node_address=${NGC_HOSTNAME}
+wsrep_node_address=${NODE_ADDR}
 binlog_format=ROW
 default_storage_engine=InnoDB
 innodb_autoinc_lock_mode=2
@@ -449,7 +522,7 @@ aria_encrypt_tables=ON
 
 # The database listens on the node's own address only; the API and the
 # controllers reach it from the network, nobody else has to.
-bind-address=${NGC_HOSTNAME}
+bind-address=${NODE_ADDR}
 
 # A blob may carry a canonical ui-tar (store.MaxUITotal is 64 MiB), so the
 # packet limit has to be above it; the Go driver is set to the same value.
@@ -538,6 +611,9 @@ ensure_packages() {
 # keeps it, so a second run of install writes the same configuration.
 ensure_sst_password() {
 	if [ -s "$SST_FILE" ] && [ "$(wc -c < "$SST_FILE")" -gt 16 ]; then
+		# Same as with the encryption keys: a file carried here by hand belongs to
+		# root, and mysql has to read it for the copy to a new node.
+		hold_secret "$SST_FILE"
 		load_sst_password
 		return 0
 	fi
@@ -557,6 +633,11 @@ ensure_sst_password() {
 # before this function returns.
 ensure_encryption_keys() {
 	if [ -s "${NGC_KEYS}/keys.enc" ] && [ -s "${NGC_KEYS}/keyfile.key" ]; then
+		# There, but readable? A pair brought over from the first node belongs to
+		# root, and MariaDB cannot read it then. Held every run, not only when the
+		# pair is made.
+		hold_secret "${NGC_KEYS}/keys.enc"
+		hold_secret "${NGC_KEYS}/keyfile.key"
 		log_info "encryption keys are there"
 		return 0
 	fi
