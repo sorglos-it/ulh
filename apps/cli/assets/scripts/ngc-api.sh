@@ -1020,6 +1020,22 @@ mark_joined() {
 # it binds port 7443 and reads api.json, which is 0600 and root's. What it does
 # not need is taken away instead - no new privileges, a read-only system, and
 # only the two places it writes.
+#
+# ReadWritePaths carries /etc/ngc, not /etc/ngc/tls, because the API writes the
+# trust anchor itself: after it has taken a new version of the trust list in, it
+# moves /etc/ngc/trust-anchor.json up. shared/config writeAtomic does that by
+# creating a neighbour file in the same directory, renaming it over the target
+# and syncing the DIRECTORY - so naming the anchor file alone is refused too.
+# Measured on Debian 13 on 17.10.2026: with /etc/ngc/tls the mktemp in /etc/ngc
+# is refused (exit 11), with /etc/ngc it writes (exit 0); on the running
+# installation the API said "the trust anchor outside the database could not be
+# moved up" until a drop-in opened the path.
+#
+# What that costs, named out loud: the service may now also rewrite api.json
+# and the certificates, which lie in the same directory. It already reads
+# api.json and holds every key in it, so this hands it nothing it did not have
+# - but it is wider than before, and /etc/ngc/tls is now covered by the parent
+# and no longer named.
 render_unit() {
 	printf '%s\n' \
 		'# /etc/systemd/system/ngc-api.service' \
@@ -1051,7 +1067,7 @@ render_unit() {
 		'LockPersonality=yes' \
 		'MemoryDenyWriteExecute=yes' \
 		'SystemCallArchitectures=native' \
-		"ReadWritePaths=${NGC_DATA} ${NGC_TLS}" \
+		"ReadWritePaths=${NGC_DATA} ${NGC_ETC}" \
 		'' \
 		'[Install]' \
 		'WantedBy=multi-user.target'
