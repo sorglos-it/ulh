@@ -136,6 +136,7 @@ NGC_API_DB="/var/lib/ngc/api/ngc.db"            # config.API.DB.Path - the API's
 NGC_STATE_DIR="/var/lib/ngc/controller"         # the controller's own folder
 NGC_STATE="/var/lib/ngc/controller/state.db"    # config.Controller.DB - its own file
 NGC_PAIRED="/var/lib/ngc/controller/paired"     # set once a pairing came off
+NGC_APP_DATA="/var/lib/ngc/apps"                # config.AppDataDir: one folder per app
 NGC_KEPT="/var/lib/ngc/all-kept"                # uninstall keeps the configuration here
 UNIT_API="/etc/systemd/system/ngc-api.service"
 UNIT_CTRL="/etc/systemd/system/ngc-controller.service"
@@ -240,6 +241,103 @@ check_two_files() {
 	if [ "$NGC_API_DB" = "$NGC_STATE" ]; then
 		log_error "The API and the controller are set to the same database file (${NGC_API_DB}). On SQLite every program migrates at its own start and the migration lock does not keep two programs apart, so this script does not write anything. Give each of the two its own file."
 	fi
+}
+
+# ============================================================
+# CAN THIS MACHINE ENCRYPT THE DATA OF AN APP?
+# ============================================================
+
+# The data folder of an app is encrypted by the kernel itself: the controller
+# sets an fscrypt policy on ${NGC_APP_DATA}/<app> and derives the key from the
+# one in controller.json. That needs two things this script does not make - a
+# kernel built with CONFIG_FS_ENCRYPTION, and a filesystem that can carry such
+# a policy: ext4 with the "encrypt" feature, or f2fs.
+#
+# Measured on 18.10.2026, and this is why the check is here: the root ext4 of a
+# plain Debian 13 does NOT carry that feature and /etc/mke2fs.conf does not set
+# it, and the WSL2 kernel of this machine has CONFIG_FS_ENCRYPTION unset
+# altogether. On such a machine the controller refuses to activate any app that
+# keeps data - runtime.ErrNoFscrypt - and the admin reads a sentence about ext4
+# and f2fs at the moment he wanted to install something, with nothing left to
+# act on: the feature is set when a filesystem is MADE and cannot be added
+# while it is mounted.
+#
+# It warns and does not abort, and that half is the decision: everything else
+# of NGC works on such a machine - the desktop, the database, the updates - so
+# an abort would turn a usable installation into none at all, which is the trap
+# docs/STAND.md describes for the delivery chain. The controller refusing to
+# write an unencrypted data folder is the safe half already; what was missing
+# is that somebody is told BEFORE the first app instead of after it.
+
+# app_data_encryption_reason prints why this machine cannot encrypt the data of
+# an app, or nothing when it can. It is handed the three facts instead of
+# reading them itself, so every answer it gives can be driven by a test:
+#   $1  the filesystem type of the mount that carries the folder
+#   $2  the feature line of that filesystem (ext4 only; "" when not read)
+#   $3  "y" or "n" from the kernel configuration, "" when none was readable
+app_data_encryption_reason() {
+	local fstype="${1:-}" features="${2:-}" kernel="${3:-}"
+	# The kernel comes first: without the feature in it no filesystem can
+	# carry a policy, however it was made.
+	if [ "$kernel" = "n" ]; then
+		echo "kernel"
+		return 0
+	fi
+	case "$fstype" in
+	ext4)
+		# An empty feature line means "not read", never "absent": dumpe2fs
+		# needs root and the device behind the mount, and a missing answer
+		# must not become a warning about a machine that is fine.
+		if [ -n "$features" ] && ! printf '%s' "$features" | grep -qw encrypt; then
+			echo "ext4-feature"
+		fi
+		;;
+	# f2fs carries no feature of its own for this: it can do it whenever the
+	# kernel can, which the line above has already asked.
+	f2fs) ;;
+	# No answer from findmnt is no finding either - the same rule as the
+	# feature line above.
+	"") ;;
+	*) echo "fstype" ;;
+	esac
+}
+
+# check_app_data_encryption reads the three facts off this machine and warns
+# once. It answers 0 whatever it finds: see the section head.
+check_app_data_encryption() {
+	local probe fstype src features kernel conf reason
+	# The folder itself does not exist before the controller makes it, so the
+	# question is put to the nearest parent that does - that is the mount the
+	# folder will land on.
+	probe="$NGC_APP_DATA"
+	while [ ! -d "$probe" ] && [ "$probe" != "/" ]; do
+		probe="$(dirname -- "$probe")"
+	done
+	fstype="$(findmnt -no FSTYPE --target "$probe" 2>/dev/null)" || fstype=""
+	src="$(findmnt -no SOURCE --target "$probe" 2>/dev/null)" || src=""
+	features=""
+	if [ "$fstype" = "ext4" ] && [ -b "$src" ] && command -v dumpe2fs >/dev/null 2>&1; then
+		features="$(dumpe2fs -h "$src" 2>/dev/null |
+			sed -n 's/^Filesystem features:[[:space:]]*//p')"
+	fi
+	# NGC_KCONFIG is a seam and nothing else: the suite points it at a
+	# configuration it wrote itself, because otherwise the kernel branch below
+	# could only ever be measured on a machine that happens to have the wrong
+	# kernel. Nothing in ulh sets it.
+	conf="${NGC_KCONFIG:-/boot/config-$(uname -r)}"
+	kernel=""
+	if [ -r "$conf" ]; then
+		if grep -q '^CONFIG_FS_ENCRYPTION=y$' "$conf"; then kernel="y"; else kernel="n"; fi
+	fi
+	reason="$(app_data_encryption_reason "$fstype" "$features" "$kernel")"
+	[ -n "$reason" ] || return 0
+	case "$reason" in
+	kernel) reason="the kernel ($(uname -r)) was built without CONFIG_FS_ENCRYPTION" ;;
+	ext4-feature) reason="${probe} is ext4 without the \"encrypt\" feature, which is set when a filesystem is made and cannot be added while it is mounted" ;;
+	fstype) reason="${probe} is ${fstype}, and only ext4 with the \"encrypt\" feature or f2fs can carry an encrypted folder" ;;
+	esac
+	log_warn "This machine cannot encrypt the data folder of an app: ${reason}. Everything else of NGC works here - the desktop, the database, the updates - and the setup goes on. What will not work is installing an app that keeps data of its own: the controller refuses that rather than writing the data unencrypted, and says so at that moment. To get it, ${NGC_APP_DATA} has to lie on ext4 made with \"-O encrypt\" or on f2fs, on a kernel that has CONFIG_FS_ENCRYPTION."
+	return 0
 }
 
 # ============================================================
@@ -1281,9 +1379,12 @@ roles_json() {
 # system, and only the places it writes.
 #
 # ReadWritePaths carries /var/lib/ngc because on this machine the DATABASE
-# lives in there as a file, not on a database server. The line looks the same
-# as its sibling's, and the comment is here so that nobody narrows it later
-# without knowing that the whole installation hangs on it.
+# lives in there as a file, not on a database server. It carries /etc/ngc
+# because the trust anchor in there is replaced atomically, which needs the
+# DIRECTORY and not just the file; api.json is taken back out with
+# ReadOnlyPaths. The line looks the same as its sibling's, and the comment is
+# here so that nobody narrows it later without knowing that the whole
+# installation hangs on it (NGC docs/vertraege-v1.2.md, point 71, wall 1).
 render_unit_api() {
 	printf '%s\n' \
 		'# /etc/systemd/system/ngc-api.service' \
@@ -1319,7 +1420,21 @@ render_unit_api() {
 		'LockPersonality=yes' \
 		'MemoryDenyWriteExecute=yes' \
 		'SystemCallArchitectures=native' \
-		"ReadWritePaths=${NGC_DATA} ${NGC_TLS}" \
+		'# /etc/ngc is in there as a DIRECTORY, and that is the point: the API' \
+		'# replaces the trust anchor atomically (config.SaveAnchor ->' \
+		'# writeAtomic), so it creates .trust-anchor.json.tmp-* NEXT TO the' \
+		'# file first. A directory in which no file may appear allows no' \
+		'# atomic replace, however the target file itself is set. Without this' \
+		'# the API stays pinned to the older version of the trust list and' \
+		'# says so: "the trust anchor outside the database could not be moved' \
+		'# up". /etc/ngc/tls is inside it and needs no entry of its own.' \
+		"ReadWritePaths=${NGC_DATA} ${NGC_ETC}" \
+		'# api.json is taken back out by hand: it holds the secrets, it is' \
+		'# 0600 and owned by root, and NOTHING in the API ever writes it -' \
+		'# there is no SaveAPI beside SaveAnchor and SaveWeb. So the one file' \
+		'# that would hurt stays read-only although the directory around it' \
+		'# is writable. A nested entry wins over the wider one.' \
+		"ReadOnlyPaths=${NGC_API_JSON}" \
 		'' \
 		'[Install]' \
 		'WantedBy=multi-user.target'
@@ -1436,6 +1551,7 @@ install_ngc_all() {
 	need_debian
 	work_init
 	check_two_files
+	check_app_data_encryption
 	log_section "Setting up NextGenCloud on ${NGC_HOSTNAME}"
 	read_answers
 	ensure_packages
@@ -1461,6 +1577,7 @@ configure_ngc_all() {
 	need_debian
 	work_init
 	check_two_files
+	check_app_data_encryption
 	log_section "Changing the settings of NextGenCloud on this machine"
 	read_answers
 	if ! programs_here; then
