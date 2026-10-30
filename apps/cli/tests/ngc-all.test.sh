@@ -257,7 +257,19 @@ Restart=on-failure
 RestartSec=5
 # /run/ngc, where the API keeps what one run needs.
 RuntimeDirectory=ngc
-RuntimeDirectoryMode=0700
+#
+# 0711 and not 0700: the controller keeps the runtime directory of every
+# app below this same /run/ngc, and an app runs as its own user, so that
+# user has to walk THROUGH here to reach its own. 0700 does not let it:
+# rootless podman falls over "lstat /run/ngc/<user>: permission denied",
+# the controller cannot say whether the app runs, leaves it out of the
+# status entirely, and after a restart never starts it again. 0711 lets
+# the app through without letting it READ this directory, so no app learns
+# the names of the others; what the API keeps here (join-secret, join-noise,
+# join-sign) stays unreadable on its own 0600 and root. The controller sets
+# the same number itself (runtime.EnsureRun), so 0700 here only disagreed
+# with the program it starts.
+RuntimeDirectoryMode=0711
 NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=yes
@@ -271,7 +283,21 @@ RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 LockPersonality=yes
 MemoryDenyWriteExecute=yes
 SystemCallArchitectures=native
-ReadWritePaths=/var/lib/ngc /etc/ngc/tls
+# /etc/ngc is in there as a DIRECTORY, and that is the point: the API
+# replaces the trust anchor atomically (config.SaveAnchor ->
+# writeAtomic), so it creates .trust-anchor.json.tmp-* NEXT TO the
+# file first. A directory in which no file may appear allows no
+# atomic replace, however the target file itself is set. Without this
+# the API stays pinned to the older version of the trust list and
+# says so: "the trust anchor outside the database could not be moved
+# up". /etc/ngc/tls is inside it and needs no entry of its own.
+ReadWritePaths=/var/lib/ngc /etc/ngc
+# api.json is taken back out by hand: it holds the secrets, it is
+# 0600 and owned by root, and NOTHING in the API ever writes it -
+# there is no SaveAPI beside SaveAnchor and SaveWeb. So the one file
+# that would hurt stays read-only although the directory around it
+# is writable. A nested entry wins over the wider one.
+ReadOnlyPaths=/etc/ngc/api.json
 
 [Install]
 WantedBy=multi-user.target
@@ -295,6 +321,15 @@ check "ngc-controller.service: Restart=on-failure" \
     grep -qx 'Restart=on-failure' "${alldir}/unit-ctrl.got"
 check "ngc-controller.service: RestartSec=5" \
     grep -qx 'RestartSec=5' "${alldir}/unit-ctrl.got"
+# The controller unit of this script is compared line by line and not byte for
+# byte, so the mode of /run/ngc had no case here at all: measured on
+# 25.10.2026, a mutant that put 0700 back in render_unit_ctrl ALONE moved no
+# number (826 passed / 1 failed, same as the base), while the same mutant in
+# the other three places killed three cases. 0711 and not 0700 because the
+# controller keeps the runtime directory of every app below /run/ngc and an
+# app runs as its own user, so it has to walk THROUGH here to reach its own.
+check "ngc-controller.service (ngc-all): /run/ngc lets an app through (0711)" \
+    grep -qx 'RuntimeDirectoryMode=0711' "${alldir}/unit-ctrl.got"
 check "ngc-api.service carries the same restart" \
     test "$(grep -cx 'Restart=on-failure' "${alldir}/unit-api.got")" = 1
 # This is the one thing a script can do about two programs on one file: the API
@@ -562,3 +597,101 @@ check "pairing (ngc-all): and root:root is asked for it" \
     grep -qE '^root:root -- .*trust-anchor.json$' "${pairdir}/chown.log"
 check "pairing (ngc-all): the configuration itself stays 0600" \
     test "$(stat -c '%a' "${pairdir}/etc/controller.json")" = 600
+
+# ------------------------------------------------- can this machine encrypt app data
+# The controller encrypts ${NGC_APP_DATA}/<app> with fscrypt and refuses to
+# activate an app that keeps data when the filesystem cannot carry a policy
+# (runtime.ErrNoFscrypt). Measured on 18.10.2026: the root ext4 of a plain
+# Debian 13 does NOT carry the "encrypt" feature, and the WSL2 kernel has
+# CONFIG_FS_ENCRYPTION unset - so the refusal is the normal case, not the
+# exception, and nothing used to say so before the first app.
+#
+# app_data_encryption_reason takes the three facts as arguments, so every
+# answer is driven here instead of being read off this test machine.
+all_appdata_reason() (
+    all_load
+    app_data_encryption_reason "$1" "$2" "$3"
+)
+EXT4_WITH='has_journal ext_attr dir_index encrypt sparse_super metadata_csum'
+EXT4_WITHOUT='has_journal ext_attr dir_index orphan_file sparse_super metadata_csum_seed'
+
+check "app data: ext4 with the encrypt feature is fine" \
+    test -z "$(all_appdata_reason ext4 "$EXT4_WITH" y)"
+check "app data: ext4 WITHOUT the encrypt feature is named" \
+    test "$(all_appdata_reason ext4 "$EXT4_WITHOUT" y)" = ext4-feature
+check "app data: a kernel without CONFIG_FS_ENCRYPTION beats a willing filesystem" \
+    test "$(all_appdata_reason ext4 "$EXT4_WITH" n)" = kernel
+check "app data: tmpfs cannot carry a policy" \
+    test "$(all_appdata_reason tmpfs '' y)" = fstype
+check "app data: overlay cannot either" \
+    test "$(all_appdata_reason overlay '' y)" = fstype
+check "app data: btrfs cannot either" \
+    test "$(all_appdata_reason btrfs '' y)" = fstype
+check "app data: f2fs needs no feature of its own" \
+    test -z "$(all_appdata_reason f2fs '' y)"
+# The two shapes of "not read" must stay silent: a missing answer must never
+# become a warning about a machine that is fine. dumpe2fs needs root and the
+# device, findmnt can answer nothing at all.
+check "app data: ext4 whose feature line could not be read says nothing" \
+    test -z "$(all_appdata_reason ext4 '' y)"
+check "app data: no filesystem type at all says nothing" \
+    test -z "$(all_appdata_reason '' '' y)"
+check "app data: an unreadable kernel configuration says nothing by itself" \
+    test -z "$(all_appdata_reason ext4 "$EXT4_WITH" '')"
+# The word boundary is the bolt: "encrypt" has to be a feature of its own.
+# Without -w a line carrying "encrypted_casefold" would pass as encrypting.
+check "app data: encrypt as part of another feature name does not count" \
+    test "$(all_appdata_reason ext4 'has_journal encrypted_casefold metadata_csum' y)" = ext4-feature
+
+# And the whole function, with the three facts coming off a stubbed machine, so
+# the sentence the admin reads is measured and not only the reason word.
+appdir="${alldir}/appdata"
+rm -rf "$appdir"; mkdir -p "${appdir}/bin" "${appdir}/boot" "${appdir}/var/lib/ngc"
+cat > "${appdir}/bin/findmnt" <<'STUB'
+#!/bin/bash
+# -no FSTYPE --target <dir> / -no SOURCE --target <dir>
+case "$2" in
+    FSTYPE) printf '%s\n' "${NGC_T_FSTYPE}" ;;
+    SOURCE) printf '%s\n' "${NGC_T_SOURCE}" ;;
+esac
+exit 0
+STUB
+cat > "${appdir}/bin/uname" <<'STUB'
+#!/bin/bash
+printf '%s\n' "${NGC_T_RELEASE}"
+exit 0
+STUB
+chmod +x "${appdir}/bin/findmnt" "${appdir}/bin/uname"
+all_appdata_check() (
+    all_load
+    export PATH="${appdir}/bin:${PATH}"
+    export NGC_T_FSTYPE="$1" NGC_T_SOURCE="${appdir}/nodevice" NGC_T_RELEASE="6.18.0-test"
+    NGC_APP_DATA="${appdir}/var/lib/ngc/apps"
+    NGC_KCONFIG="${appdir}/boot/config-6.18.0-test"
+    printf '%s\n' "$2" > "$NGC_KCONFIG"
+    check_app_data_encryption 2>&1
+)
+# Intermediate check: the way through the function is open at all. Without it
+# the empty output of the good case below would prove nothing.
+check "app data: the check warns on a filesystem that cannot encrypt" \
+    test -n "$(all_appdata_check tmpfs 'CONFIG_FS_ENCRYPTION=y')"
+check "app data: the warning names the folder the controller will use" \
+    grep -q 'apps' <<<"$(all_appdata_check tmpfs 'CONFIG_FS_ENCRYPTION=y')"
+check "app data: the warning names both ways out, ext4 -O encrypt and f2fs" \
+    grep -qE 'O encrypt.*f2fs|f2fs.*O encrypt' <<<"$(all_appdata_check tmpfs 'CONFIG_FS_ENCRYPTION=y')"
+check "app data: the warning says the rest of NGC keeps working" \
+    grep -q 'desktop' <<<"$(all_appdata_check tmpfs 'CONFIG_FS_ENCRYPTION=y')"
+check "app data: it names the kernel release when the kernel is the reason" \
+    grep -q '6.18.0-test' <<<"$(all_appdata_check ext4 'CONFIG_FS_ENCRYPTION is not set')"
+check "app data: and it stays quiet on f2fs with a willing kernel" \
+    test -z "$(all_appdata_check f2fs 'CONFIG_FS_ENCRYPTION=y')"
+check "app data: the check never stops the setup" \
+    all_appdata_check tmpfs 'CONFIG_FS_ENCRYPTION is not set'
+
+# The wiring: without these two lines every case above would pass while no
+# installation ever asked the question.
+check "app data: the question is asked right after check_two_files, before the first write" \
+    test "$(grep -A1 --no-group-separator '^	check_two_files$' "${alldir}/body.sh" |
+        grep -c '^	check_app_data_encryption$')" = 2
+check "app data: and both ways in - install and configure - ask it" \
+    test "$(grep -c '^	check_app_data_encryption$' "${alldir}/body.sh")" = 2

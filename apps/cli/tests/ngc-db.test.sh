@@ -172,9 +172,14 @@ check "60-ngc.cnf carries none of the forbidden lines" test "$forbidden" = 0
 # MariaDB cannot read.
 check "no @...@ mark is left in the written configuration" \
     not grep -qE '@[A-Z_]+@' "${dbdir}/galera.got"
-check "the node is named with its own address" \
+# db-1.ngc.test resolves nowhere, so these two show the exception and say so:
+# a name that nothing resolves stays, because a first node is installed before
+# it has a DNS entry. The normal case - an address - is checked further down
+# with a getent of its own, and that is the case that matters, since Galera
+# otherwise picks the address itself and told a donor a name it could not reach.
+check "a name that nothing resolves stays in wsrep_node_address" \
     grep -qx 'wsrep_node_address=db-1.ngc.test' "${dbdir}/galera.got"
-check "the server listens on its own address only" \
+check "and in bind-address" \
     grep -qx 'bind-address=db-1.ngc.test' "${dbdir}/galera.got"
 check "wsrep_node_name is the first label of the host" \
     grep -qx 'wsrep_node_name=db-1' "${dbdir}/galera.got"
@@ -377,8 +382,12 @@ check "and it is the only folder left that closed" \
 # Owner and mode are set before the move, inside WORK, which is 0700 and
 # root's. A chmod after the write leaves a window in which the key lies
 # readable where it will stay.
-check "all four key files go into place through put_secret" \
-    test "$(grep -c '^	put_secret ' "${dbdir}/body.sh")" = 4
+# Four key files, and a fifth call: hold_secret puts a secret that is already
+# in its place back through put_secret instead of chmod-ing it where it lies.
+# The number is checked and not just allowed to grow, so a sixth call has to be
+# argued for.
+check "the key files go into place through put_secret, and nothing else does" \
+    test "$(grep -c '^	put_secret ' "${dbdir}/body.sh")" = 5
 check "put_secret moves last, after chown and chmod" \
     test "$(sed -n '/^put_secret() {/,/^}/p' "${dbdir}/body.sh" | grep -cE '^	(chown|chmod).*"\$from"')" = 2
 check "no key file is chmod-ed after it lies in its place" \
@@ -1142,6 +1151,91 @@ check "configure hands the folders to mysql as well"     grep -q 'ensure_db_dirs
 
 unset -f db_owner
 unset inst pkg_ln dir_ln
+
+# ============================================================
+# WHAT A SECOND NODE RUNS INTO
+# ============================================================
+# Both measured on 24.10.2026 while db-2 and db-3 were built. Each stopped the
+# run, neither had anything to do with Galera, and neither can be hit on a
+# first node - which is why they had stayed hidden since 02.10.2026.
+
+# ------------------------------------------------- an address, not a name
+# Galera resolves wsrep_node_address itself and opens its receivers on whatever
+# it picks, while it tells the donor the value as written. db-3 opened its IST
+# receiver on a link-local IPv6 address and announced its name; the donor
+# resolved the name to IPv4, found nothing listening, and gave up with
+# "IST failed ... Connection refused".
+#
+# NOT addr as the name of the stub variable: resolve_node_address has a local
+# addr of its own and the stub runs inside its scope - it would read that empty
+# variable instead of this one.
+db_addr() (
+    db_load
+    pruef_addr="$1"
+    getent() { [ -n "$pruef_addr" ] || return 2; printf '%s STREAM db-2.ngc.test\n' "$pruef_addr"; }
+    NGC_HOSTNAME="${2:-db-2.ngc.test}"
+    # The node has to be in the list, even when it is given as an address.
+    NGC_NODES="${NODE1} ${NGC_HOSTNAME}:3306 ${NODE3}"
+    NGC_BOOTSTRAP=no NGC_PASSWORD_NGC="$PASS1" NGC_PASSWORD_MIGRATE="$PASS2"
+    NGC_CA_DIR=/etc/ngc/db-ca
+    read_answers > /dev/null 2>&1 || exit 1
+    SST_PASS="0123456789abcdef"
+    render_galera "$(cluster_list)"
+)
+check "a name that resolves becomes an address in wsrep_node_address" \
+    grep -qxF "wsrep_node_address=10.2.3.217" <(db_addr 10.2.3.217)
+check "and in bind-address" \
+    grep -qxF "bind-address=10.2.3.217" <(db_addr 10.2.3.217)
+check "no letter is left in either address line" \
+    not grep -qE "^(wsrep_node_address|bind-address)=.*[a-z]" <(db_addr 10.2.3.217)
+# The loopback is refused: a node that announces it never gets its data,
+# because the donor then calls itself. That was db-2, after hostnamectl had put
+# its real name on 127.0.1.1 the way Debian does.
+check "a name on 127.0.1.1 stops the run before anything is written" \
+    not db_addr 127.0.1.1
+check "a name on 127.0.0.1 does too" not db_addr 127.0.0.1
+# An address given as the name is taken as it is - nothing may be resolved, or
+# a machine without DNS could not be installed by address at all.
+check "an address given as the name is taken as it is" \
+    grep -qxF "wsrep_node_address=10.2.3.218" <(db_addr "" 10.2.3.218)
+
+# ------------------------------------------------- a secret that is already there
+# A key pair carried over from the first node arrives as root:root, and MariaDB
+# then says of its own key file "not found (Errcode: 13)" - which does not mean
+# it is missing but that it may not be read.
+check "the encryption keys that are already there are held" \
+    test "$(sed -n '/^ensure_encryption_keys() {/,/^}/p' "${dbdir}/body.sh" | grep -c 'hold_secret')" = 2
+check "the password for the copy to a new node is held too" \
+    test "$(sed -n '/^ensure_sst_password() {/,/^}/p' "${dbdir}/body.sh" | grep -c 'hold_secret')" = 1
+# And it goes through put_secret, so owner and mode are still set inside WORK -
+# a chmod on the file where it lies is the window put_secret exists to avoid.
+check "hold_secret puts the secret back through put_secret" \
+    test "$(sed -n '/^hold_secret() {/,/^}/p' "${dbdir}/body.sh" | grep -c 'put_secret ')" = 1
+check "and never chmods it where it lies" \
+    not grep -qE 'chmod .*"\$path"' <(sed -n '/^hold_secret() {/,/^}/p' "${dbdir}/body.sh")
+# What is already right is left alone, and silently: a run that finds
+# everything in order may not report a change.
+db_hold_ok() (
+    db_load
+    printf 'x' > "${dbdir}/held-ok"
+    stat() { echo "mysql:mysql 400"; }
+    put_secret() { echo "put_secret was called"; }
+    hold_secret "${dbdir}/held-ok" 2>&1
+)
+check "a secret already in order is left alone, and silently" test -z "$(db_hold_ok)"
+# And one that is not gets moved: root:root 0600 is what a copied key looks
+# like, and mysql cannot read that.
+db_hold_bad() (
+    db_load
+    printf 'x' > "${dbdir}/held-bad"
+    stat() { echo "root:root 600"; }
+    put_secret() { echo "put_secret ${2}"; }
+    hold_secret "${dbdir}/held-bad" 2>&1
+)
+check "a secret that mysql cannot read is put back into place" \
+    grep -q "put_secret ${dbdir}/held-bad" <<< "$(db_hold_bad)"
+
+unset -f db_addr db_hold_ok db_hold_bad
 
 unset -f db_load db_galera db_cacnf db_answers db_host db_cluster
 unset dbdir NODE1 NODE2 NODE3 PASS1 PASS2 missing unpinned head back prov forbidden good bad shell o

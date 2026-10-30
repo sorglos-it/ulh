@@ -2,6 +2,35 @@
 
 ## Unreleased – 2026-09-22
 
+- `/run/ngc` is 0711 and no longer 0700, in all four places that write such a
+  unit (`ngc-api.sh`, `ngc-controller.sh` and both units of `ngc-all.sh`). The
+  controller keeps the runtime directory of every app below the same
+  `/run/ngc`, and an app runs as its own user, so that user has to walk
+  THROUGH the directory to reach its own: at 0700 rootless podman falls over
+  `lstat /run/ngc/<user>: permission denied`, the controller cannot say
+  whether the app runs, leaves it out of the status and never starts it again
+  after a restart (sorglos-it/nextgencloud#111, measured on the Debian VM on
+  23.10.2026). 0711 lets the app through without letting it READ the
+  directory, so no app learns the names of the others, and what the API keeps
+  there stays on its own 0600. The controller sets the same number itself
+  (`runtime.EnsureRun`), so 0700 only disagreed with the program it starts.
+  The controller unit of `ngc-all.sh` is compared line by line and not byte
+  for byte and had no case for the mode at all; it has one now.
+
+- `ngc-api.service` lets the API write /etc/ngc, and takes `api.json` back out
+  with `ReadOnlyPaths`. The trust anchor in that directory is replaced
+  atomically (NGC: `config.SaveAnchor` -> `writeAtomic`), so a temporary file
+  appears NEXT TO it first, and `ProtectSystem=strict` with only
+  `/var/lib/ngc` and `/etc/ngc/tls` writable allowed no such file. Measured on
+  a Debian VM from a published release, 19.-21.10.2026: the API kept pinning
+  the older version of the trust list and said so in the journal, `pinned=1
+  stored=2` (NGC docs/vertraege-v1.2.md, point 71, wall 1). `api.json` holds
+  the secrets, is 0600 and owned by root, and nothing in the API ever writes
+  it - there is no `SaveAPI` beside `SaveAnchor` and `SaveWeb` - so it stays
+  read-only although the directory around it is now writable. Both scripts
+  that write the unit carry the change (`ngc-api.sh`, `ngc-all.sh`), and both
+  test files expect it byte for byte.
+
 - The five NextGenCloud scripts were written on five branches and are now one
   set: `ngc-all`, `ngc-api`, `ngc-controller`, `ngc-db` and `ngc-web`, the
   category `NextGenCloud` in all five languages, 101 scripts in 17 categories.

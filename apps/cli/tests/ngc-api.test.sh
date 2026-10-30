@@ -211,7 +211,19 @@ Restart=on-failure
 RestartSec=5
 # /run/ngc, which the join writes its answer into.
 RuntimeDirectory=ngc
-RuntimeDirectoryMode=0700
+#
+# 0711 and not 0700: the controller keeps the runtime directory of every
+# app below this same /run/ngc, and an app runs as its own user, so that
+# user has to walk THROUGH here to reach its own. 0700 does not let it:
+# rootless podman falls over "lstat /run/ngc/<user>: permission denied",
+# the controller cannot say whether the app runs, leaves it out of the
+# status entirely, and after a restart never starts it again. 0711 lets
+# the app through without letting it READ this directory, so no app learns
+# the names of the others; what the API keeps here (join-secret, join-noise,
+# join-sign) stays unreadable on its own 0600 and root. The controller sets
+# the same number itself (runtime.EnsureRun), so 0700 here only disagreed
+# with the program it starts.
+RuntimeDirectoryMode=0711
 NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=yes
@@ -225,7 +237,21 @@ RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 LockPersonality=yes
 MemoryDenyWriteExecute=yes
 SystemCallArchitectures=native
-ReadWritePaths=/var/lib/ngc /etc/ngc/tls
+# /etc/ngc is in there as a DIRECTORY, and that is the point: the API
+# replaces the trust anchor atomically (config.SaveAnchor ->
+# writeAtomic), so it creates .trust-anchor.json.tmp-* NEXT TO the
+# file first. A directory in which no file may appear allows no
+# atomic replace, however the target file itself is set. Without this
+# the API stays pinned to the older version of the trust list and
+# says so: "the trust anchor outside the database could not be moved
+# up". /etc/ngc/tls is inside it and needs no entry of its own.
+ReadWritePaths=/var/lib/ngc /etc/ngc
+# api.json is taken back out by hand: it holds the secrets, it is
+# 0600 and owned by root, and NOTHING in the API ever writes it -
+# there is no SaveAPI beside SaveAnchor and SaveWeb. So the one file
+# that would hurt stays read-only although the directory around it
+# is writable. A nested entry wins over the wider one.
+ReadOnlyPaths=/etc/ngc/api.json
 
 [Install]
 WantedBy=multi-user.target
